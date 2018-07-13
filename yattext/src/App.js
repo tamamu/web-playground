@@ -191,4 +191,48 @@ class App extends Component {
   }
 }
 
+/*
+
+<Stage
+  width={screenWidth}
+  height={screenHeight}
+  >
+  <Layer
+    zIndex={1000}
+    x={0}
+    y={0}
+    width={screenWidth}
+    height={screenHeight}
+    onClick={forwardEvent}
+    />
+  <Layer
+    zIndex={100}
+    x={0}
+    y={screenHeight-textHeight}
+    width={screenWidth}
+    height={textHeight}
+    >
+    <Text ref={this.text} />
+  </Layer>
+  <Layer ref={this.mainLayer}
+    zIndex={1}
+    x={0}
+    y={0}
+    width={screenWidth}
+    height={screenHeight}
+    >
+  </Layer>
+  <Layer
+    zIndex={2}
+    >
+    <Image ref={this.backgroundImage}
+      x={0}
+      y={0}
+      width={screenWidth}
+      height={screenHeight}
+      />
+  </Layer>
+</Stage>
+*/
+
 export default App;
