@@ -54,7 +54,7 @@ const Line = styled.div`
   display: inline-block;
   width: 300px;
   overflow-x: hidden;
-  white-space: nowrap;
+  white-space: pre;
 `
 
 const Composition = styled.span`
@@ -95,7 +95,7 @@ const Trasparent = styled.span`
 const Monospace = styled.span`
   display: inline;
   font-family: monospace;
-  white-space: nowrap;
+  white-space: pre;
 `
 
 const Pad = props => {
@@ -141,12 +141,15 @@ class App extends Component {
     console.log(this.state)
   }
   moveCaretLeft() {
-    let coordinate = Object.assign(this.state.coordinate, {x: this.state.coordinate.x-1})
+    let x = Math.max(this.state.coordinate.x-1, 0)
+    let coordinate = Object.assign(this.state.coordinate, {x})
     this.setState({coordinate})
     this.moveCaret()
   }
   moveCaretRight() {
-    let coordinate = Object.assign(this.state.coordinate, {x: this.state.coordinate.x+1})
+    let max = this.state.content.length
+    let x = Math.min(this.state.coordinate.x+1, max)
+    let coordinate = Object.assign(this.state.coordinate, {x})
     this.setState({coordinate})
     this.moveCaret()
   }
@@ -159,10 +162,12 @@ class App extends Component {
   }
   deleteText() {
     let x = this.state.coordinate.x
-    let before = this.state.content.slice(0, x-1)
-    let after = this.state.content.slice(x)
-    let coordinate = Object.assign(this.state.coordinate, {x: x-1})
-    this.setState({content: before+after, coordinate})
+    if (x >= 1) {
+      let before = this.state.content.slice(0, x-1)
+      let after = this.state.content.slice(x)
+      let coordinate = Object.assign(this.state.coordinate, {x: x-1})
+      this.setState({content: before+after, coordinate})
+    }
   }
   handleKeyDown(e) {
     console.log(e.key)
