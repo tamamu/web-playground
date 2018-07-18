@@ -12,7 +12,7 @@ const ContentArea = styled.div`
   position: absolute;
   display: block;
   width: 300px;
-  height: 100px;
+  height: 120px;
   background-color: lightgreen;
   font-family: monospace;
 `
@@ -50,7 +50,7 @@ class InputPosition extends Component {
 }
 
 const Line = styled.div`
-  position: absolute;
+  position: relative;
   display: inline-block;
   width: 300px;
   overflow-x: hidden;
@@ -110,6 +110,10 @@ const Text = props => {
   )
 }
 
+const LineContainer = styled.div`
+  position: absolute;
+`
+
 class App extends Component {
   constructor() {
     super()
@@ -118,7 +122,7 @@ class App extends Component {
       compositing: false,
       editValue: "",
       composition: "",
-      content: "",
+      content: [""],
       coordinate: {x: 0, y: 0},
       focused: false,
       selection: {x: 0, y: 0},
@@ -147,7 +151,8 @@ class App extends Component {
     this.moveCaret()
   }
   moveCaretRight() {
-    let max = this.state.content.length
+    let y = this.state.coordinate.y
+    let max = this.state.content[y].length
     let x = Math.min(this.state.coordinate.x+1, max)
     let coordinate = Object.assign(this.state.coordinate, {x})
     this.setState({coordinate})
@@ -155,19 +160,35 @@ class App extends Component {
   }
   insertText(str) {
     let count = this.state.coordinate.x
-    let before = this.state.content.slice(0, count)
-    let after = this.state.content.slice(count)
+    let y = this.state.coordinate.y
+    let content = this.state.content.concat()
+    let line = content[y]
+    let before = line.slice(0, count)
+    let after = line.slice(count)
     let coordinate = Object.assign(this.state.coordinate, {x: this.state.coordinate.x+str.length})
-    this.setState({content: before+str+after, coordinate})
+    content[y] = before+str+after
+    this.setState({content, coordinate})
   }
   deleteText() {
     let x = this.state.coordinate.x
+    let y = this.state.coordinate.y
+    let content = this.state.content
+    let line = content[y]
     if (x >= 1) {
-      let before = this.state.content.slice(0, x-1)
-      let after = this.state.content.slice(x)
+      let before = line.slice(0, x-1)
+      let after = line.slice(x)
       let coordinate = Object.assign(this.state.coordinate, {x: x-1})
-      this.setState({content: before+after, coordinate})
+      content[y] = before+after
+      this.setState({content, coordinate})
     }
+  }
+  breakLine() {
+    let x = this.state.coordinate.x
+    let y = this.state.coordinate.y
+    let coordinate = Object.assign(this.state.coordinate, {x: 0, y: y+1})
+    let content = this.state.content
+    content.splice(y+1, 0, "")
+    this.setState({content, coordinate})
   }
   handleKeyDown(e) {
     console.log(e.key)
@@ -183,7 +204,7 @@ class App extends Component {
         return this.deleteText()
       case 'Enter':
         e.preventDefault()
-        return
+        return this.breakLine()
       default:
         /*
         if (e.key.length === 1) {
@@ -217,8 +238,11 @@ class App extends Component {
     }
   }
   render() {
-    let caretLeft = this.state.content.slice(0, this.state.coordinate.x);
-    let caretRight = this.state.content.slice(this.state.coordinate.x);
+    let {content, coordinate, composition, focused, editValue} = this.state
+    let onCaret = content[coordinate.y]
+    let caretLeft = onCaret.slice(0, coordinate.x);
+    let caretRight = onCaret.slice(coordinate.x);
+    let caretUpper = content.slice(0, coordinate.y) || []
     return (
       <div className="App">
         <header className="App-header">
@@ -230,11 +254,13 @@ class App extends Component {
         </p>
         <Root>
           <ContentArea onClick={this.focusInputPosition.bind(this)}></ContentArea>
+          <LineContainer>
+          {caretUpper.map((s, i) => <Line key={i}><Text content={s} /></Line>)}
           <Line>
             <Text content={caretLeft} />
-            <Composition>{this.state.composition}</Composition>
-            <Caret visible={this.state.focused} coordinate={this.state.coordinate} />
-            <InputPosition ref={this.inputPosition} value={this.state.editValue}
+            <Composition>{composition}</Composition>
+            <Caret visible={focused} coordinate={coordinate} />
+            <InputPosition ref={this.inputPosition} value={editValue}
               compositionStart={this.handleCompositionStart.bind(this)}
               compositionUpdate={this.handleCompositionUpdate.bind(this)}
               compositionEnd={this.handleCompositionEnd.bind(this)}
@@ -244,6 +270,7 @@ class App extends Component {
             </InputPosition>
             <Text content={caretRight} />
           </Line>
+          </LineContainer>
         </Root>
       </div>
     );
