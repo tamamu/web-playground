@@ -1,9 +1,9 @@
 import * as Text from '../constants/Text';
 
-export function change(text) {
+export function change(chars) {
   return {
     type: Text.CHANGE_TEXT,
-    text
+    chars
   };
 }
 
