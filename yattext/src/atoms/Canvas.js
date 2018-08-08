@@ -19,7 +19,7 @@ export default class Canvas extends Component {
     this.renderFunc(this.state.ctx, this.props);
   }
   render() {
-    const {x, y, width, height} = this.props
+    const {x, y, width, height, onClick} = this.props
     return (
       <canvas
         ref={this.canvas}
@@ -27,7 +27,8 @@ export default class Canvas extends Component {
         height={height?height+"px":"10px"}
         style={{position: "absolute",
                 left: x?x+"px":0,
-                top: y?y+"px":0}}>
+                top: y?y+"px":0}}
+        onClick={onClick}>
       </canvas>
     )
   }

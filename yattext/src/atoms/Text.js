@@ -46,7 +46,32 @@ const renderText = (ctx, props) => {
   }
 }
 
+const Text = props => {
+  const {width, height, chars, show} = props
+  return (
+    <Canvas
+      {...props}
+      width={width?width:100}
+      height={height?height:24}
+      renderFunc={renderText}
+      chars={chars}
+      show={show}>
+    </Canvas>
+  )
+}
 
+const RenderableFactory = com => {
+  return props => (
+    <com
+      {...props}
+      renderedIndex={props.renderedIndex}>
+    </com>
+  )
+}
+
+const RenderableText = RenderableFactory(Text)
+
+/*
 const RenderableText = props => {
   const {width, height} = props
   return (
@@ -54,11 +79,13 @@ const RenderableText = props => {
       {...props}
       width={width?width:100}
       height={height?height:24}
-      renderFunc={renderText}>
+      renderFunc={renderText}
+      chars={chars}>
     </Canvas>
   )
 }
+*/
 
-const Text = connect(mapStateToProps/*, mapDispatchToProps*/)(RenderableText)
+//const Text = connect(mapStateToProps/*, mapDispatchToProps*/)(RenderableText)
 
 export default Text
