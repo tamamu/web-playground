@@ -6,6 +6,7 @@ import Rect from './atoms/Rect'
 import Button from './atoms/Button'
 import Graphic from './atoms/Graphic'
 import Layer from './atoms/Layer'
+import TextLayer from './containers/TextLayer'
 import Stage from './atoms/Stage'
 import Text from './atoms/Text'
 import createFinalState from './store'
@@ -57,6 +58,7 @@ class App extends Component {
     super()
     this.forwarding = false
     this.actions = [];
+    this.actionIndex = 0;
     for (let com of rawCommands) {
       switch (com.type) {
         case 'text':
@@ -66,7 +68,7 @@ class App extends Component {
             this.actions.push(TextAction.forward())
           }
         case 'command':
-          this.actions.push(commandToAction(com))
+          //this.actions.push(commandToAction(com))
           break
         default:
           break
@@ -97,6 +99,14 @@ class App extends Component {
     ]
     store.dispatch(TextAction.change(_chars));
   }
+  async processAction() {
+    store.dispatch(this.actions[this.actionIndex])
+    this.actionIndex += 1
+    await timeout(50)
+    if (this.actionIndex < this.actions.length) {
+      this.processAction()
+    }
+  }
   toggleForwarding() {
     this.forwarding = !this.forwarding
     if (this.forwarding) this.forwardText.bind(this)()
@@ -123,13 +133,12 @@ class App extends Component {
                 <Graphic src={tamamu} x={0} y={0} width={100} height={100} />
                 <Button label="push me" x={120} y={180} width={200} height={64} onClick={this.pushed} />
               </Layer>
-              <Layer width={640} height={100} y={380}>
-                <Text width={640} height={100} />
-              </Layer>
+              <TextLayer width={640} height={100} y={380} />
             </Stage>
           </div>
           <button onClick={this.changeText}>Change Text</button>
           <button onClick={this.toggleForwarding.bind(this)}>Forward On/Off</button>
+          <button onClick={this.processAction.bind(this)}>Start</button>
         </div>
       </Provider>
     );
