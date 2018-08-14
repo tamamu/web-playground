@@ -3,11 +3,14 @@ import { connect } from 'react-redux';
 import Canvas from './Canvas'
 //import * as TextAction from '../actions/Text'
 
-const mapStateToProps = store => ({
+const mapStateToProps = store => {
+  console.log(store)
+  return {
     chars: store.text.chars,
     renderedIndex: store.text.renderedIndex,
     show: store.text.show
-})
+  }
+}
 
 /*
 const mapDispatchToProps = dispatch => ({
@@ -23,12 +26,16 @@ const renderChar = (ctx, char, x, y) => {
 }
 
 const renderText = (ctx, props) => {
+  console.log("render text")
   const { width, height, chars, renderedIndex, show } = props
+  console.log(chars)
   if (chars && show) {
     const fontSize = 24;
     ctx.font = '' + fontSize + 'px sans'
     ctx.textBaseline = "top"
     ctx.clearRect(0, 0, width, height)
+    //ctx.fillStyle = 'black'
+    //ctx.fillRect(0, 0, width, height)
     let x = 0, y = 0;
     /*
      * { string: String,
@@ -46,7 +53,7 @@ const renderText = (ctx, props) => {
   }
 }
 
-const Text = props => {
+export const Text = props => {
   const {width, height, chars, show} = props
   return (
     <Canvas
@@ -60,16 +67,16 @@ const Text = props => {
   )
 }
 
-const RenderableFactory = com => {
+const RenderableFactory = Com => {
   return props => (
-    <com
+    <Com
       {...props}
       renderedIndex={props.renderedIndex}>
-    </com>
+    </Com>
   )
 }
 
-const RenderableText = RenderableFactory(Text)
+export const RenderableText = connect(mapStateToProps)(RenderableFactory(Text))
 
 /*
 const RenderableText = props => {
@@ -88,4 +95,3 @@ const RenderableText = props => {
 
 //const Text = connect(mapStateToProps/*, mapDispatchToProps*/)(RenderableText)
 
-export default Text
