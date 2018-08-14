@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Canvas from './Canvas'
+import Canvas from '../atoms/Canvas'
 import Layer from '../atoms/Layer'
-import Text from '../atoms/Text'
+import { Text, RenderableText } from '../atoms/Text'
 
 const mapStateToProps = store => ({
     chars: store.text.chars,
@@ -20,10 +20,12 @@ const mapDispatchToProps = dispatch => ({
 
 const TextLayerBase = props => {
   return (
-    <Layer width={640} height={100} y={380}>
-      <RenderableText width={640} height={100} renderedIndex={0} />
+    <Layer {...props}>
+      <RenderableText width={640} height={100} />
     </Layer>
   )
 }
 
 const TextLayer = connect(mapStateToProps)(TextLayerBase)
+
+export default TextLayer
