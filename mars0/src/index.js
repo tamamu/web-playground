@@ -182,23 +182,25 @@ class MarsZero {
     this.field = testMap
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
-    this.player = {x: 1, y: 1}
     this.renderableList = []
     this.keyStore = new KeyboardStore()
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
-    let t = document.createElement('canvas')
-    t.width = t.height = 32
-    let tctx = t.getContext('2d')
-    tctx.fillStyle = 'green'
-    tctx.fillRect(0, 0, 32, 32)
-    let p = new Animatable(this.player.x*32, this.player.y*32, [t], 0, {
-      "left": [new AnimationState(-32, 0, 0, 300)],
-      "right": [new AnimationState(32, 0, 0, 300)],
-      "up": [new AnimationState(0, -32, 0, 300)],
-      "down": [new AnimationState(0, 32, 0, 300)],
-    })
-    this.renderableList.push(p)
+    // Animation Test {
+      this.player = {x: 1, y: 1}
+      let t = document.createElement('canvas')
+      t.width = t.height = 32
+      let tctx = t.getContext('2d')
+      tctx.fillStyle = 'green'
+      tctx.fillRect(0, 0, 32, 32)
+      let p = new Animatable(this.player.x*32, this.player.y*32, [t], 0, {
+        "left": [new AnimationState(-32, 0, 0, 300)],
+        "right": [new AnimationState(32, 0, 0, 300)],
+        "up": [new AnimationState(0, -32, 0, 300)],
+        "down": [new AnimationState(0, 32, 0, 300)],
+      })
+      this.renderableList.push(p)
+    // } End Animation Test
     this.lifecycle = this.genLifeCycle()
   }
   playerAction() {
@@ -221,11 +223,9 @@ class MarsZero {
   }
   *genLifeCycle() {
     while(true) {
-      //this.syncAM.push(new Animation(this.renderableList[0], "right"))
       checkEvent()
       yield 1
       checkGrowth()
-      //animationTrigger()
       yield 2
       while (true) {
         if (this.playerAction()) {
@@ -237,7 +237,6 @@ class MarsZero {
       checkPlayerFloor()
       npcAction()
       checkNpcFloor()
-      //animationTrigger()
       yield 4
     }
   }
