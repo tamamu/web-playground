@@ -66,13 +66,16 @@ class GameObject {
     this.renderable = renderable
     this._x = x
     this._y = y
-    this.tileId = tileId
+    this._tileId = tileId
   }
   get x() {
     return this._x
   }
   get y() {
     return this._y
+  }
+  get tileId() {
+    return this._tileId
   }
   set x(value) {
     this._x = value
@@ -81,6 +84,10 @@ class GameObject {
   set y(value) {
     this._y = value
     this.renderable.prop.y = value * 32
+  }
+  set tileId(value) {
+    this._tileId = value
+    this.renderable.prop.tileId = value
   }
   fix() {
     this.renderable.prop.x = this.x * 32
@@ -200,13 +207,13 @@ export default class MarsZero {
     // Animation Test {
       let p = createWalkAnimatable(this.tm3, 1*32, 1*32, 1)
       let e = createWalkAnimatable(this.tm4, 9*32, 1*32, 5)
-      let c = new Renderable(0, 0, this.tm_coin, 0)
+      let c = new Renderable(1*32, 4*32, this.tm_coin, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let eStat = new CharaStatus("Enemy", 10, 5, 4, 3)
       let cStat = new ItemState("Coin")
       this.player = new Character(pStat, p, 1, 1, 1)
       this.enemy = new Character(eStat, e, 9, 1, 5)
-      this.coin = new Item(cStat, c, 0, 0, 0)
+      this.coin = new Item(cStat, c, 1, 4, 0)
       this.dropList.push(this.coin)
       //this.renderableList.push(p)
       //this.renderableList.push(e)
@@ -217,6 +224,9 @@ export default class MarsZero {
 
     this.lifecycle = this.genLifeCycle()
   }
+  collision(x, y) {
+    return this.field[y][x] == 1
+  }
   playerAction() {
     if (new Date() - this.keyStore.lastGet < 1000/10) {
       return false
@@ -224,12 +234,21 @@ export default class MarsZero {
     let keys = this.keyStore.get()
     if (keys["ArrowDown"]) {
       this.player.tileId = 1
+      if (this.collision(this.player.x, this.player.y+1)) {
+        return false
+      }
       if (keys["ArrowRight"]) {
+        if (this.collision(this.player.x+1, this.player.y+1) || this.collision(this.player.x+1, this.player.y)) {
+          return false
+        }
         this.syncAM.push(new Animation(this.player.renderable, "down-right", () => {
           this.player.x += 1
           this.player.y += 1
         }))
       } else if (keys["ArrowLeft"]) {
+        if (this.collision(this.player.x-1, this.player.y+1)) {
+          return false
+        }
         this.syncAM.push(new Animation(this.player.renderable, "down-left", () => {
           this.player.x -= 1
           this.player.y += 1
@@ -242,12 +261,21 @@ export default class MarsZero {
       return true
     } else if (keys["ArrowUp"]) {
       this.player.tileId = 10
+      if (this.collision(this.player.x, this.player.y-1)) {
+        return false
+      }
       if (keys["ArrowRight"]) {
+        if (this.collision(this.player.x+1, this.player.y-1) || this.collision(this.player.x+1, this.player.y)) {
+          return false
+        }
         this.syncAM.push(new Animation(this.player.renderable, "up-right", () => {
           this.player.x += 1
           this.player.y -= 1
         }))
       } else if (keys["ArrowLeft"]) {
+        if (this.collision(this.player.x-1, this.player.y-1) || this.collision(this.player.x-1, this.player.y)) {
+          return false
+        }
         this.syncAM.push(new Animation(this.player.renderable, "up-left", () => {
           this.player.x -= 1
           this.player.y -= 1
@@ -259,15 +287,21 @@ export default class MarsZero {
       }
       return true
     } else if (keys["ArrowLeft"]) {
+      this.player.tileId = 4
+      if (this.collision(this.player.x-1, this.player.y)) {
+        return false
+      }
       this.syncAM.push(new Animation(this.player.renderable, "left", () => {
         this.player.x -= 1
-        this.player.tileId = 4
       }))
       return true
     } else if (keys["ArrowRight"]) {
+      this.player.tileId = 7
+      if (this.collision(this.player.x+1, this.player.y)) {
+        return false
+      }
       this.syncAM.push(new Animation(this.player.renderable, "right", () => {
         this.player.x += 1
-        this.player.tileId = 7
       }))
       return true
     } else if (keys["Shift"]) {
@@ -315,14 +349,14 @@ export default class MarsZero {
     console.log("npcAction")
     let x = Math.floor(Math.random() * 3 - 1)
     let y = Math.floor(Math.random() * 3 - 1)
-    if (y < 0) {
+    if (y < 0 && !this.collision(this.enemy.x, this.enemy.y+y)) {
       this.enemy.tileId = 10
-      if (x < 0) {
+      if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
         this.syncAM.push(new Animation(this.enemy.renderable, "up-left", () => {
           this.enemy.x -= 1
           this.enemy.y -= 1
         }))
-      } else if (x > 0) {
+      } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
         this.syncAM.push(new Animation(this.enemy.renderable, "up-right", () => {
           this.enemy.x += 1
           this.enemy.y -= 1
@@ -332,14 +366,14 @@ export default class MarsZero {
           this.enemy.y -= 1
         }))
       }
-    } else if (y > 0) {
+    } else if (y > 0 && !this.collision(this.enemy.x, this.enemy.y+y)) {
       this.enemy.tileId = 1
-      if (x < 0) {
+      if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
         this.syncAM.push(new Animation(this.enemy.renderable, "down-left", () => {
           this.enemy.x -= 1
           this.enemy.y += 1
         }))
-      } else if (x > 0) {
+      } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
         this.syncAM.push(new Animation(this.enemy.renderable, "down-right", () => {
           this.enemy.x += 1
           this.enemy.y += 1
@@ -349,12 +383,12 @@ export default class MarsZero {
           this.enemy.y += 1
         }))
       }
-    } else if (x < 0) {
+    } else if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y)) {
       this.enemy.tileId = 4
       this.syncAM.push(new Animation(this.enemy.renderable, "left", () => {
         this.enemy.x -= 1
       }))
-    } else if (x > 0) {
+    } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y)) {
       this.enemy.tileId = 7
       this.syncAM.push(new Animation(this.enemy.renderable, "right", () => {
         this.enemy.x += 1
