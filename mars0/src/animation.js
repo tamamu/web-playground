@@ -20,7 +20,7 @@ export class AnimationState {
 }
 
 export class Animation {
-  constructor(target, type) {
+  constructor(target, type, animated = null) {
     this.prevProp = Object.assign({}, target.prop)
     this.prop = target.prop
     let states = []
@@ -28,6 +28,7 @@ export class Animation {
       states.push(new AnimationState(s.x, s.y, s.tileId, s.time))
     }
     this.queue = new Queue(states)
+    this.animated = animated
   }
 }
 
@@ -47,6 +48,7 @@ export class AnimationManager {
     this.animationList = this.animationList.filter(target => {
       let head = target.queue.head()
       if (!head) {
+        target.animated ? target.animated() : null
         return false
       }
 
@@ -54,11 +56,14 @@ export class AnimationManager {
       while (head.elapsed > head.time) {
         target.prevProp.x += head.x
         target.prevProp.y += head.y
-        target.prevProp.tileId = head.tileId
+        target.prop.tileId = head.tileId
         delta = head.elapsed - head.time
         target.queue.pop()
         head = target.queue.head()
-        if (!head) return false
+        if (!head) {
+          target.animated ? target.animated() : null
+          return false
+        }
         head.elapsed += delta
       }
 
@@ -69,6 +74,9 @@ export class AnimationManager {
       target.prop.y = calculatedY
       return true
     })
+    this.lastProcessed = new Date()
+  }
+  wait() {
     this.lastProcessed = new Date()
   }
 }
