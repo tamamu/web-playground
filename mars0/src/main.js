@@ -110,7 +110,7 @@ class Item extends GameObject {
 }
 
 class CharaStatus {
-  constructor(name, maxhp, str, dex, luk) {
+  constructor(name, maxhp, str, dex, luk, isEnemy=false) {
     this.name = name
     this.maxhp = maxhp
     this.hp = maxhp
@@ -120,6 +120,7 @@ class CharaStatus {
     this.itemList = []
     this.money = 0
     this.holding = null
+    this.isEnemy = isEnemy
   }
 }
 
@@ -132,6 +133,10 @@ class Character extends GameObject {
 
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
+    "right-attack": [
+      new AnimationState(32, 0, 7, 150),
+      new AnimationState(-32, 0, 7, 150),
+    ],
     "right": [
       new AnimationState(8, 0, 6, 50),
       new AnimationState(8, 0, 7, 50),
@@ -192,7 +197,8 @@ export default class MarsZero {
     this.renderableList = []
     this.holdingList = this.renderableList[0] = []
     this.dropList = this.renderableList[1] = []
-    this.charaList = this.renderableList[2] = []
+    this.playerList = this.renderableList[2] = []
+    this.npcList = this.renderableList[3] = []
     this.keyStore = new KeyboardStore()
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
@@ -209,7 +215,7 @@ export default class MarsZero {
       let e = createWalkAnimatable(this.tm4, 9*32, 1*32, 5)
       let c = new Renderable(1*32, 4*32, this.tm_coin, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
-      let eStat = new CharaStatus("Enemy", 10, 5, 4, 3)
+      let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
       this.player = new Character(pStat, p, 1, 1, 1)
       this.enemy = new Character(eStat, e, 9, 1, 5)
@@ -218,8 +224,8 @@ export default class MarsZero {
       //this.renderableList.push(p)
       //this.renderableList.push(e)
       //this.renderableList.push(c)
-      this.charaList.push(this.player)
-      this.charaList.push(this.enemy)
+      this.playerList.push(this.player)
+      this.npcList.push(this.enemy)
     // } End Animation Test
 
     this.lifecycle = this.genLifeCycle()
@@ -227,19 +233,28 @@ export default class MarsZero {
   collision(x, y) {
     return this.field[y][x] == 1
   }
+  detectEnemy(x, y) {
+    console.log(this.npcList)
+    for (const npc of this.npcList) {
+      if (npc.x == x && npc.y == y && npc.stat.isEnemy) {
+        return npc
+      }
+    }
+    return null
+  }
   playerAction() {
     if (new Date() - this.keyStore.lastGet < 1000/10) {
-      return false
+      return 0
     }
     let keys = this.keyStore.get()
     if (keys["ArrowDown"]) {
       this.player.tileId = 1
       if (this.collision(this.player.x, this.player.y+1)) {
-        return false
+        return 0
       }
       if (keys["ArrowRight"]) {
         if (this.collision(this.player.x+1, this.player.y+1) || this.collision(this.player.x+1, this.player.y)) {
-          return false
+          return 0
         }
         this.syncAM.push(new Animation(this.player.renderable, "down-right", () => {
           this.player.x += 1
@@ -247,7 +262,7 @@ export default class MarsZero {
         }))
       } else if (keys["ArrowLeft"]) {
         if (this.collision(this.player.x-1, this.player.y+1)) {
-          return false
+          return 0
         }
         this.syncAM.push(new Animation(this.player.renderable, "down-left", () => {
           this.player.x -= 1
@@ -258,15 +273,15 @@ export default class MarsZero {
           this.player.y += 1
         }))
       }
-      return true
+      return 1
     } else if (keys["ArrowUp"]) {
       this.player.tileId = 10
       if (this.collision(this.player.x, this.player.y-1)) {
-        return false
+        return 0
       }
       if (keys["ArrowRight"]) {
         if (this.collision(this.player.x+1, this.player.y-1) || this.collision(this.player.x+1, this.player.y)) {
-          return false
+          return 0
         }
         this.syncAM.push(new Animation(this.player.renderable, "up-right", () => {
           this.player.x += 1
@@ -274,7 +289,7 @@ export default class MarsZero {
         }))
       } else if (keys["ArrowLeft"]) {
         if (this.collision(this.player.x-1, this.player.y-1) || this.collision(this.player.x-1, this.player.y)) {
-          return false
+          return 0
         }
         this.syncAM.push(new Animation(this.player.renderable, "up-left", () => {
           this.player.x -= 1
@@ -285,31 +300,42 @@ export default class MarsZero {
           this.player.y -= 1
         }))
       }
-      return true
+      return 1
     } else if (keys["ArrowLeft"]) {
       this.player.tileId = 4
       if (this.collision(this.player.x-1, this.player.y)) {
-        return false
+        return 0
       }
       this.syncAM.push(new Animation(this.player.renderable, "left", () => {
         this.player.x -= 1
       }))
-      return true
+      return 1
     } else if (keys["ArrowRight"]) {
       this.player.tileId = 7
       if (this.collision(this.player.x+1, this.player.y)) {
-        return false
+        return 0
+      } else {
+        let enemy = this.detectEnemy(this.player.x+1, this.player.y)
+        console.log(enemy)
+        if (enemy) {
+          this.syncAM.push(new Animation(this.player.renderable, "right-attack", () => {
+            let damage = Math.max(0, this.player.stat.str-enemy.stat.dex)
+            console.log(`${enemy.stat.name} got damage ${damage}`)
+            enemy.stat.hp -= damage
+          }))
+          return 2
+        }
       }
       this.syncAM.push(new Animation(this.player.renderable, "right", () => {
         this.player.x += 1
       }))
-      return true
+      return 1
     } else if (keys["Shift"]) {
       this.playerPickUp()
       //return true
-      return false
+      return 0
     }
-    return false
+    return 0
   }
   playerPickUp() {
     let j, target = null
@@ -408,11 +434,16 @@ export default class MarsZero {
       //yield 1
       checkGrowth()
       //yield 2
-      while (true) {
-        if (this.playerAction()) {
-          break
-        } else {
-          yield 3
+      PlayerTurn: while (true) {
+        switch (this.playerAction()) {
+          case 0:
+            yield 3
+            break
+          case 1:
+            break PlayerTurn
+          case 2:
+            yield 3
+            break PlayerTurn
         }
       }
       this.npcAction()
