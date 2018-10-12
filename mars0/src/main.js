@@ -67,6 +67,7 @@ class GameObject {
     this._x = x
     this._y = y
     this._tileId = tileId
+    this._direction = 'down'
   }
   get x() {
     return this._x
@@ -77,17 +78,43 @@ class GameObject {
   get tileId() {
     return this._tileId
   }
+  get direction() {
+    return this._direction
+  }
   set x(value) {
     this._x = value
-    this.renderable.prop.x = value * 32
+    //this.renderable.prop.x = value * 32
   }
   set y(value) {
     this._y = value
-    this.renderable.prop.y = value * 32
+    //this.renderable.prop.y = value * 32
+  }
+  set direction(value) {
+    this._direction = value
+    switch (this._direction) {
+      case 'down':
+        this._tileId = this.renderable.prop.tileId = 1
+        break
+      case 'left':
+        this._tileId = this.renderable.prop.tileId = 4
+        break
+      case 'right':
+        this._tileId = this.renderable.prop.tileId = 7
+        break
+      case 'up':
+        this._tileId = this.renderable.prop.tileId = 10
+        break
+    }
   }
   set tileId(value) {
     this._tileId = value
     this.renderable.prop.tileId = value
+  }
+  move(x, y) {
+    this._x = x
+    this._y = y
+    this.renderable.prop.x = this._x * 32
+    this.renderable.prop.y = this._y * 32
   }
   fix() {
     this.renderable.prop.x = this.x * 32
@@ -110,17 +137,18 @@ class Item extends GameObject {
 }
 
 class CharaStatus {
-  constructor(name, maxhp, str, dex, luk, isEnemy=false) {
+  constructor(name, maxhp, atk, def, luk, isEnemy=false) {
     this.name = name
     this.maxhp = maxhp
     this.hp = maxhp
-    this.str = str
-    this.dex = dex
+    this.atk = atk
+    this.def = def
     this.luk = luk
     this.itemList = []
     this.money = 0
     this.holding = null
     this.isEnemy = isEnemy
+    this.isDead = false
   }
 }
 
@@ -169,17 +197,29 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(8, 0, 8, 50),
       new AnimationState(8, 0, 7, 50),
     ],
+    "left-attack": [
+      new AnimationState(-32, 0, 4, 150),
+      new AnimationState(32, 0, 4, 150),
+    ],
     "left": [
       new AnimationState(-8, 0, 3, 50),
       new AnimationState(-8, 0, 4, 50),
       new AnimationState(-8, 0, 5, 50),
       new AnimationState(-8, 0, 4, 50),
     ],
+    "up-attack": [
+      new AnimationState(0, -32, 10, 150),
+      new AnimationState(0, 32, 10, 150),
+    ],
     "up": [
       new AnimationState(0, -8, 9, 50),
       new AnimationState(0, -8, 10, 50),
       new AnimationState(0, -8, 11, 50),
       new AnimationState(0, -8, 10, 50),
+    ],
+    "down-attack": [
+      new AnimationState(0, 32, 1, 150),
+      new AnimationState(0, -32, 1, 150),
     ],
     "down": [
       new AnimationState(0, 8, 0, 50),
@@ -258,7 +298,7 @@ export default class MarsZero {
     this.lifecycle = this.genLifeCycle()
   }
   collision(x, y) {
-    return this.field[y][x] == 1
+    return this.field[y][x] == 1 || this.detectEnemy(x, y) || (this.player.x == x && this.player.y == y)
   }
   detectEnemy(x, y) {
     console.log(this.npcList)
@@ -269,98 +309,115 @@ export default class MarsZero {
     }
     return null
   }
+  damageEnemy(enemy, damage) {
+    this.messageWindow.push(`${enemy.stat.name}に${damage}のダメージを与えた！`)
+    enemy.stat.hp -= damage
+    if (enemy.stat.hp <= 0) {
+      enemy.stat.isDead = true
+    }
+  }
+  playerAttack() {
+    let enemy = null
+    switch (this.player.direction) {
+      case 'down':
+        enemy = this.detectEnemy(this.player.x, this.player.y+1)
+        break
+      case 'left':
+        enemy = this.detectEnemy(this.player.x-1, this.player.y)
+        break
+      case 'right':
+        enemy = this.detectEnemy(this.player.x+1, this.player.y)
+        break
+      case 'up':
+        enemy = this.detectEnemy(this.player.x, this.player.y-1)
+        break
+    }
+    this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
+      if (enemy) {
+        let damage = Math.max(0, this.player.stat.atk-enemy.stat.def)
+        this.damageEnemy(enemy, damage)
+      } else {
+        this.messageWindow.push("そこには誰もいない。")
+      }
+    }))
+    return 2
+  }
   playerAction() {
     if (new Date() - this.keyStore.lastGet < 1000/10) {
       return 0
     }
     let keys = this.keyStore.get()
     if (keys["ArrowDown"]) {
-      this.player.tileId = 1
-      if (this.collision(this.player.x, this.player.y+1)) {
+      this.player.direction = 'down'
+      if (this.collision(this.player.x, this.player.y+1) || this.detectEnemy(this.player.x, this.player.y+1)) {
         return 0
       }
       if (keys["ArrowRight"]) {
-        if (this.collision(this.player.x+1, this.player.y+1) || this.collision(this.player.x+1, this.player.y)) {
+        if (this.collision(this.player.x+1, this.player.y+1) || this.collision(this.player.x+1, this.player.y) || this.detectEnemy(this.player.x+1, this.player.y)) {
           return 0
         }
-        this.syncAM.push(new Animation(this.player.renderable, "down-right", () => {
-          this.player.x += 1
-          this.player.y += 1
-        }))
+        this.syncAM.push(new Animation(this.player.renderable, "down-right"))
+        this.player.x += 1
+        this.player.y += 1
       } else if (keys["ArrowLeft"]) {
-        if (this.collision(this.player.x-1, this.player.y+1)) {
+        if (this.collision(this.player.x-1, this.player.y+1) || this.detectEnemy(this.player.x-1, this.player.y+1)) {
           return 0
         }
-        this.syncAM.push(new Animation(this.player.renderable, "down-left", () => {
-          this.player.x -= 1
-          this.player.y += 1
-        }))
+        this.syncAM.push(new Animation(this.player.renderable, "down-left"))
+        this.player.x -= 1
+        this.player.y += 1
       } else {
-        this.syncAM.push(new Animation(this.player.renderable, "down", () => {
-          this.player.y += 1
-        }))
+        this.syncAM.push(new Animation(this.player.renderable, "down"))
+        this.player.y += 1
       }
       return 1
     } else if (keys["ArrowUp"]) {
-      this.player.tileId = 10
-      if (this.collision(this.player.x, this.player.y-1)) {
+      this.player.direction = 'up'
+      if (this.collision(this.player.x, this.player.y-1) || this.detectEnemy(this.player.x, this.player.y-1)) {
         return 0
       }
       if (keys["ArrowRight"]) {
-        if (this.collision(this.player.x+1, this.player.y-1) || this.collision(this.player.x+1, this.player.y)) {
+        if (this.collision(this.player.x+1, this.player.y-1) || this.collision(this.player.x+1, this.player.y) || this.detectEnemy(this.player.x+1, this.player.y)) {
           return 0
         }
-        this.syncAM.push(new Animation(this.player.renderable, "up-right", () => {
-          this.player.x += 1
-          this.player.y -= 1
-        }))
+        this.syncAM.push(new Animation(this.player.renderable, "up-right"))
+        this.player.x += 1
+        this.player.y -= 1
       } else if (keys["ArrowLeft"]) {
-        if (this.collision(this.player.x-1, this.player.y-1) || this.collision(this.player.x-1, this.player.y)) {
+        if (this.collision(this.player.x-1, this.player.y-1) || this.collision(this.player.x-1, this.player.y) || this.detectEnemy(this.player.x-1, this.player.y)) {
           return 0
         }
-        this.syncAM.push(new Animation(this.player.renderable, "up-left", () => {
-          this.player.x -= 1
-          this.player.y -= 1
-        }))
+        this.syncAM.push(new Animation(this.player.renderable, "up-left"))
+        this.player.x -= 1
+        this.player.y -= 1
       } else {
-        this.syncAM.push(new Animation(this.player.renderable, "up", () => {
-          this.player.y -= 1
-        }))
+        this.syncAM.push(new Animation(this.player.renderable, "up"))
+        this.player.y -= 1
       }
       return 1
     } else if (keys["ArrowLeft"]) {
-      this.player.tileId = 4
-      if (this.collision(this.player.x-1, this.player.y)) {
+      this.player.direction = 'left'
+      if (this.collision(this.player.x-1, this.player.y) || this.detectEnemy(this.player.x-1, this.player.y)) {
         return 0
       }
-      this.syncAM.push(new Animation(this.player.renderable, "left", () => {
-        this.player.x -= 1
-      }))
+      this.syncAM.push(new Animation(this.player.renderable, "left"))
+      this.player.x -= 1
       return 1
     } else if (keys["ArrowRight"]) {
-      this.player.tileId = 7
-      if (this.collision(this.player.x+1, this.player.y)) {
+      this.player.direction = 'right'
+      if (this.collision(this.player.x+1, this.player.y) || this.detectEnemy(this.player.x+1, this.player.y)) {
         return 0
-      } else {
-        let enemy = this.detectEnemy(this.player.x+1, this.player.y)
-        console.log(enemy)
-        if (enemy) {
-          this.syncAM.push(new Animation(this.player.renderable, "right-attack", () => {
-            let damage = Math.max(0, this.player.stat.str-enemy.stat.dex)
-            this.messageWindow.push(`${enemy.stat.name} got damage ${damage}`)
-            enemy.stat.hp -= damage
-          }))
-          return 2
-        }
       }
-      this.syncAM.push(new Animation(this.player.renderable, "right", () => {
-        this.player.x += 1
-      }))
+      this.syncAM.push(new Animation(this.player.renderable, "right"))
+      this.player.x += 1
       return 1
     } else if (keys["Shift"]) {
       this.playerPickUp()
       //return true
       return 0
+    } else if (keys[" "]) {
+      console.log(this.player.direction)
+      return this.playerAttack()
     }
     return 0
   }
@@ -375,26 +432,24 @@ export default class MarsZero {
     if (target) {
       if (this.player.stat.holding) {
         let holding = this.player.stat.holding
-        holding.x = this.player.x
-        holding.y = this.player.y
+        holding.move(this.player.x, this.player.y)
         this.player.stat.holding = target
         this.dropList.splice(j, 1, holding)
-        this.messageWindow.push(`You picked ${target.stat.name} up, dropped ${holding.stat.name}`)
+        this.messageWindow.push(`${target.stat.name}と床に落ちている${holding.stat.name}を交換した。`)
       } else {
         this.player.stat.holding = target
         this.dropList.splice(j, 1)
-        this.messageWindow.push(`You picked up ${target.stat.name}`)
+        this.messageWindow.push(`${target.stat.name}を拾った。`)
       }
     } else {
       if (this.player.stat.holding) {
         let holding = this.player.stat.holding
-        holding.x = this.player.x
-        holding.y = this.player.y
+        holding.move(this.player.x, this.player.y)
         this.dropList.push(holding)
         this.player.stat.holding = null
-        this.messageWindow.push(`You dropped ${holding.stat.name}`)
+        this.messageWindow.push(`${holding.stat.name}を足元に置いた。`)
       } else {
-        this.messageWindow.push("There is no item")
+        this.messageWindow.push("そこには何もない。")
       }
     }
   }
@@ -451,9 +506,20 @@ export default class MarsZero {
   checkPlayerFloor() {
     for (let item of this.dropList) {
       if (this.player.x == item.x && this.player.y == item.y) {
-        this.messageWindow.push(`Found ${item.stat.name} at your floor.`)
+        this.messageWindow.push(`${item.stat.name}が床に落ちている。`)
       }
     }
+  }
+  removeDeadCharas() {
+    console.log(this.renderableList)
+    console.log(this.npcList)
+    this.npcList = this.renderableList[3] = this.npcList.filter(x => {
+      if (x.stat.isDead) {
+        this.messageWindow.push(`${x.stat.name}を倒した。`)
+        return false
+      }
+      return true
+    })
   }
   *genLifeCycle() {
     while(true) {
@@ -473,19 +539,17 @@ export default class MarsZero {
             break PlayerTurn
         }
       }
+      this.removeDeadCharas()
       this.npcAction()
-      yield 4
-      //this.player.fix()
-      this.enemy.fix()
       this.checkPlayerFloor()
       checkNpcFloor()
       //yield 5
     }
   }
   renderFieldTile(id, x, y) {
+    this.tm1.render(this.ctx, 8*162, x, y, 32, 32)
     switch (id) {
       case 0:
-        this.tm1.render(this.ctx, 8*162, x, y, 32, 32)
         //this.ctx.fillStyle = "#efefef"
         break
       case 1:
