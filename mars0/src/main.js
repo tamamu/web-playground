@@ -131,6 +131,32 @@ class Character extends GameObject {
   }
 }
 
+class MessageWindow {
+  constructor(maxlen, fontsize) {
+    this.messages = []
+    this.maxlen = maxlen
+    this.fontSize = fontsize
+    this.height = (this.fontSize+4)*this.maxlen
+    this.width = 800
+  }
+  push(mes) {
+    this.messages.push(mes)
+    while (this.messages.length > this.maxlen) {
+      this.messages.shift()
+    }
+  }
+  render(ctx, x, y) {
+    ctx.textBaseline = 'top'
+    ctx.font = `${this.fontSize}px sans`
+    ctx.fillStyle = 'rgba(50, 50, 50, 0.7)';
+    ctx.fillRect(x, y, x+800, y+this.height)
+    for (let j=0; j < this.messages.length; ++j) {
+      ctx.fillStyle = 'white'
+      ctx.fillText(this.messages[j], 0, y+this.fontSize*j+4*j)
+    }
+  }
+}
+
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
     "right-attack": [
@@ -200,6 +226,7 @@ export default class MarsZero {
     this.playerList = this.renderableList[2] = []
     this.npcList = this.renderableList[3] = []
     this.keyStore = new KeyboardStore()
+    this.messageWindow = new MessageWindow(5, 18)
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -320,7 +347,7 @@ export default class MarsZero {
         if (enemy) {
           this.syncAM.push(new Animation(this.player.renderable, "right-attack", () => {
             let damage = Math.max(0, this.player.stat.str-enemy.stat.dex)
-            console.log(`${enemy.stat.name} got damage ${damage}`)
+            this.messageWindow.push(`${enemy.stat.name} got damage ${damage}`)
             enemy.stat.hp -= damage
           }))
           return 2
@@ -352,11 +379,11 @@ export default class MarsZero {
         holding.y = this.player.y
         this.player.stat.holding = target
         this.dropList.splice(j, 1, holding)
-        console.log(`You picked ${target.stat.name} up, dropped ${holding.stat.name}`)
+        this.messageWindow.push(`You picked ${target.stat.name} up, dropped ${holding.stat.name}`)
       } else {
         this.player.stat.holding = target
         this.dropList.splice(j, 1)
-        console.log(`You picked up ${target.stat.name}`)
+        this.messageWindow.push(`You picked up ${target.stat.name}`)
       }
     } else {
       if (this.player.stat.holding) {
@@ -365,9 +392,9 @@ export default class MarsZero {
         holding.y = this.player.y
         this.dropList.push(holding)
         this.player.stat.holding = null
-        console.log(`You dropped ${holding}`)
+        this.messageWindow.push(`You dropped ${holding.stat.name}`)
       } else {
-        console.log("There is no item")
+        this.messageWindow.push("There is no item")
       }
     }
   }
@@ -424,7 +451,7 @@ export default class MarsZero {
   checkPlayerFloor() {
     for (let item of this.dropList) {
       if (this.player.x == item.x && this.player.y == item.y) {
-        console.log(`Found ${item.stat.name} at your floor.`)
+        this.messageWindow.push(`Found ${item.stat.name} at your floor.`)
       }
     }
   }
@@ -500,7 +527,6 @@ export default class MarsZero {
       let holding = this.player.stat.holding.renderable
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x, this.player.renderable.prop.y-20, 32, 32)
     }
+    this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
   }
 }
-
-
