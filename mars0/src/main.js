@@ -32,14 +32,20 @@ function checkNpcFloor() {
 }
 
 const testMap = [
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1],
-  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-  [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
 class TileManager {
@@ -177,7 +183,7 @@ class MessageWindow {
     ctx.textBaseline = 'top'
     ctx.font = `${this.fontSize}px sans`
     ctx.fillStyle = 'rgba(50, 50, 50, 0.7)';
-    ctx.fillRect(x, y, x+800, y+this.height)
+    ctx.fillRect(x, y, 800, this.height)
     for (let j=0; j < this.messages.length; ++j) {
       ctx.fillStyle = 'white'
       ctx.fillText(this.messages[j], 0, y+this.fontSize*j+4*j)
@@ -481,7 +487,7 @@ export default class MarsZero {
   }
   npcAction() {
     console.log("npcAction")
-    if (Math.random() < 0.1) {
+    if (Math.random() < 0.3) {
       return this.npcAttack(this.enemy)
     }
     let x = Math.floor(Math.random() * 3 - 1)
@@ -575,6 +581,15 @@ export default class MarsZero {
       //yield 5
     }
   }
+  renderNpcHpGage(npc) {
+    this.npcList.map(x => {
+      const npc = x.renderable
+      this.ctx.fillStyle = 'red'
+      this.ctx.fillRect(npc.prop.x, npc.prop.y-4, 32, 4)
+      this.ctx.fillStyle = 'green'
+      this.ctx.fillRect(npc.prop.x, npc.prop.y-4, 32*(x.stat.hp/x.stat.maxhp), 4)
+    })
+  }
   renderFieldTile(id, x, y) {
     this.tm1.render(this.ctx, 8*162, x, y, 32, 32)
     switch (id) {
@@ -620,6 +635,7 @@ export default class MarsZero {
       let holding = this.player.stat.holding.renderable
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x, this.player.renderable.prop.y-20, 32, 32)
     }
+    this.renderNpcHpGage()
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
   }
 }
