@@ -21,7 +21,12 @@ export class AnimationState {
 
 export class Animation {
   constructor(target, type, animated = null) {
-    this.prevProp = Object.assign({}, target.prop)
+    //this.prevProp = Object.assign({}, target.prop)
+    this.prevProp = {
+      x: target.prop.x,
+      y: target.prop.y,
+      tileId: target.prop.tileId,
+    }
     this.prop = target.prop
     let states = []
     for (const s of target.animations[type]) {
@@ -48,12 +53,15 @@ export class AnimationManager {
     this.animationList = this.animationList.filter(target => {
       let head = target.queue.head()
       if (!head) {
+        target.prop.x = target.prevProp.x
+        target.prop.y = target.prevProp.y
+        target.prop.tileId = target.prevProp.tileId
         target.animated ? target.animated() : null
         return false
       }
 
       head.elapsed += delta
-      while (head.elapsed > head.time) {
+      while (head.elapsed >= head.time) {
         target.prevProp.x += head.x
         target.prevProp.y += head.y
         target.prop.tileId = head.tileId
@@ -61,13 +69,16 @@ export class AnimationManager {
         target.queue.pop()
         head = target.queue.head()
         if (!head) {
+          target.prop.x = target.prevProp.x
+          target.prop.y = target.prevProp.y
+          target.prop.tileId = target.prevProp.tileId
           target.animated ? target.animated() : null
           return false
         }
         head.elapsed += delta
       }
 
-      let calculatedX = target.prevProp.x + head.x * head.elapsed / head.time
+      let calculatedX = target.prevProp.x + head.x * (head.elapsed / head.time)
       let calculatedY = target.prevProp.y + head.y * head.elapsed / head.time
       target.prop.tileId = head.tileId
       target.prop.x = calculatedX
