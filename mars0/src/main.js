@@ -309,12 +309,15 @@ export default class MarsZero {
     }
     return null
   }
-  damageEnemy(enemy, damage) {
-    this.messageWindow.push(`${enemy.stat.name}に${damage}のダメージを与えた！`)
-    enemy.stat.hp -= damage
-    if (enemy.stat.hp <= 0) {
-      enemy.stat.isDead = true
+  damage(from, to, damage) {
+    this.messageWindow.push(`${from.stat.name}は${to.stat.name}に${damage}のダメージを与えた！`)
+    to.stat.hp -= damage
+    if (to.stat.hp <= 0) {
+      to.stat.isDead = true
     }
+  }
+  calcDamage(atk, def) {
+    return Math.floor(atk*Math.pow(15/16, def)*(Math.random()*0.4+0.8))
   }
   playerAttack() {
     let enemy = null
@@ -334,13 +337,36 @@ export default class MarsZero {
     }
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
       if (enemy) {
-        let damage = Math.max(0, this.player.stat.atk-enemy.stat.def)
-        this.damageEnemy(enemy, damage)
+        let damage = Math.max(0, this.calcDamage(this.player.stat.atk, enemy.stat.def))
+        this.damage(this.player, enemy, damage)
       } else {
         this.messageWindow.push("そこには誰もいない。")
       }
     }))
     return 2
+  }
+  npcAttack(npc) {
+    let enemy = null
+    switch (npc.direction) {
+      case 'down':
+        enemy = (npc.x==this.player.x && npc.y+1==this.player.y) ? this.player : this.detectEnemy(npc.x, npc.y+1)
+        break
+      case 'left':
+        enemy = (npc.x-1==this.player.x && npc.y==this.player.y) ? this.player : this.detectEnemy(npc.x-1, npc.y)
+        break
+      case 'right':
+        enemy = (npc.x+1==this.player.x && npc.y==this.player.y) ? this.player : this.detectEnemy(npc.x+1, npc.y)
+        break
+      case 'down':
+        enemy = (npc.x==this.player.x && npc.y-1==this.player.y) ? this.player : this.detectEnemy(npc.x, npc.y-1)
+        break
+    }
+    this.syncAM.push(new Animation(npc.renderable, `${npc.direction}-attack`, () => {
+      if (enemy) {
+        let damage = Math.max(0, this.calcDamage(npc.stat.atk, enemy.stat.def))
+        this.damage(npc, enemy, damage)
+      }
+    }))
   }
   playerAction() {
     if (new Date() - this.keyStore.lastGet < 1000/10) {
@@ -455,10 +481,13 @@ export default class MarsZero {
   }
   npcAction() {
     console.log("npcAction")
+    if (Math.random() < 0.1) {
+      return this.npcAttack(this.enemy)
+    }
     let x = Math.floor(Math.random() * 3 - 1)
     let y = Math.floor(Math.random() * 3 - 1)
     if (y < 0 && !this.collision(this.enemy.x, this.enemy.y+y)) {
-      this.enemy.tileId = 10
+      this.enemy.direction = 'up'
       if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
         this.syncAM.push(new Animation(this.enemy.renderable, "up-left", () => {
           this.enemy.x -= 1
@@ -475,7 +504,7 @@ export default class MarsZero {
         }))
       }
     } else if (y > 0 && !this.collision(this.enemy.x, this.enemy.y+y)) {
-      this.enemy.tileId = 1
+      this.enemy.direction = 'down'
       if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
         this.syncAM.push(new Animation(this.enemy.renderable, "down-left", () => {
           this.enemy.x -= 1
@@ -492,12 +521,12 @@ export default class MarsZero {
         }))
       }
     } else if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y)) {
-      this.enemy.tileId = 4
+      this.enemy.direction = 'left'
       this.syncAM.push(new Animation(this.enemy.renderable, "left", () => {
         this.enemy.x -= 1
       }))
     } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y)) {
-      this.enemy.tileId = 7
+      this.enemy.direction = 'right'
       this.syncAM.push(new Animation(this.enemy.renderable, "right", () => {
         this.enemy.x += 1
       }))
