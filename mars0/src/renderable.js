@@ -4,6 +4,9 @@ export class Renderable {
     this.prop = new RenderableProperty(x, y, tileId)
     this.tiles = tiles
   }
+  static copy(renderable) {
+    return new Renderable(renderable.prop.x, renderable.prop.y, renderable.tiles, renderable.prop.tileId)
+  }
 }
 
 export class RenderableProperty {
