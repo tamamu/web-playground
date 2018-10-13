@@ -132,6 +132,17 @@ class GameObject {
 class ItemState {
   constructor(name) {
     this.name = name
+    this.type = 'none'
+  }
+}
+
+class SeedState extends ItemState {
+  constructor(name, item, growthPeriods, minimumNutrition) {
+    super(name)
+    this.type = 'seed'
+    this.species = item
+    this.growthPeriods = growthPeriods
+    this.minimumNutrition = minimumNutrition
   }
 }
 
@@ -161,6 +172,30 @@ class CharaStatus {
 class Character extends GameObject {
   constructor(stat, renderable, x, y, tileId) {
     super(renderable, x, y, tileId)
+    this.stat = stat
+  }
+}
+
+class Seedling {
+  constructor(seed) {
+    this.seed = seed
+    this.nutrition = 0
+    this.period = 0
+    this.elapsed = 0
+  }
+}
+
+class FarmState {
+  constructor(seedling, nutrition, water) {
+    this.seedling = seedling
+    this.nutrition = nutrition
+    this.water = water
+  }
+}
+
+class Farm extends GameObject {
+  constructor(stat, renderable, x, y) {
+    super(renderable, x, y, 100)
     this.stat = stat
   }
 }
@@ -267,10 +302,11 @@ export default class MarsZero {
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
     this.renderableList = []
-    this.holdingList = this.renderableList[0] = []
+    this.farmList = this.renderableList[0] = []
     this.dropList = this.renderableList[1] = []
     this.playerList = this.renderableList[2] = []
     this.npcList = this.renderableList[3] = []
+    this.holdingList = this.renderableList[4] = []
     this.keyStore = new KeyboardStore()
     this.messageWindow = new MessageWindow(5, 18)
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
@@ -287,13 +323,17 @@ export default class MarsZero {
       let p = createWalkAnimatable(this.tm3, 1*32, 1*32, 1)
       let e = createWalkAnimatable(this.tm4, 9*32, 1*32, 5)
       let c = new Renderable(1*32, 4*32, this.tm_coin, 0)
+      let s = new Renderable(10*32, 10*32, this.tm_seed, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
       this.player = new Character(pStat, p, 1, 1, 1)
       this.enemy = new Character(eStat, e, 9, 1, 5)
       this.coin = new Item(cStat, c, 1, 4, 0)
+      let sStat = new SeedState("CoinSeed", this.coin, [5], 3)
+      this.seed = new Item(sStat, s, 10, 10, 0)
       this.dropList.push(this.coin)
+      this.dropList.push(this.seed)
       //this.renderableList.push(p)
       //this.renderableList.push(e)
       //this.renderableList.push(c)
@@ -449,15 +489,67 @@ export default class MarsZero {
       return 0
     } else if (keys[" "]) {
       console.log(this.player.direction)
-      return this.playerAttack()
+      if (this.player.stat.holding && this.player.stat.holding.stat.type != 'weapon') {
+        return this.playerUseHolding()
+      } else {
+        return this.playerAttack()
+      }
     }
     return 0
   }
+  playerUseHolding() {
+    const holding = this.player.stat.holding
+    switch (holding.stat.type) {
+      case 'seed':
+        this.playerPlant()
+        break
+      default:
+        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を使おうとしたが、使い方が分からない！`)
+        break
+    }
+    return 2
+  }
+  playerPlant() {
+    const holding = this.player.stat.holding
+    let farm = new Farm(
+      new FarmState(new Seedling(holding.stat), 5, 5),
+      new Renderable(this.player.x*32, this.player.y*32, this.tm1, 100),
+      this.player.x,
+      this.player.y
+    )
+    this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を地面に植えた。`)
+    this.farmList.push(farm)
+    this.player.stat.holding = null
+    return 2
+  }
+  harvest(farm) {
+    const seedling = farm.stat.seedling
+    const seed = seedling.seed
+    const finalPeriod = seed.growthPeriods.length-1
+    if (seedling.period >= finalPeriod && seedling.elapsed >= seed.growthPeriods[finalPeriod]) {
+      console.log(seed)
+      let renderable = Renderable.copy(seed.species.renderable)
+      let item = new Item(seed.species.stat, renderable, farm.x, farm.y, renderable.prop.tileId)
+      console.log(item)
+      return item
+    }
+    return null
+  }
   playerPickUp() {
-    let j, target = null
-    for (j = 0; j < this.dropList.length; ++j) {
+    let target = null
+    for (let j = 0; j < this.farmList.length; ++j) {
+      if (this.player.x == this.farmList[j].x && this.player.y == this.farmList[j].y) {
+        target = this.harvest(this.farmList[j])
+        if (target) {
+          this.farmList.splice(j, 1)
+          break
+        }
+      }
+    }
+    for (let j = 0; j < this.dropList.length; ++j) {
       if (this.player.x == this.dropList[j].x && this.player.y == this.dropList[j].y) {
         target = this.dropList[j]
+        this.dropList.splice(j, 1)
         break
       }
     }
@@ -466,11 +558,10 @@ export default class MarsZero {
         let holding = this.player.stat.holding
         holding.move(this.player.x, this.player.y)
         this.player.stat.holding = target
-        this.dropList.splice(j, 1, holding)
+        this.dropList.push(holding)
         this.messageWindow.push(`${target.stat.name}と床に落ちている${holding.stat.name}を交換した。`)
       } else {
         this.player.stat.holding = target
-        this.dropList.splice(j, 1)
         this.messageWindow.push(`${target.stat.name}を拾った。`)
       }
     } else {
@@ -544,6 +635,11 @@ export default class MarsZero {
         this.messageWindow.push(`${item.stat.name}が床に落ちている。`)
       }
     }
+    for (let farm of this.farmList) {
+      if (this.player.x == farm.x && this.player.y == farm.y) {
+        this.messageWindow.push(`${farm.stat.seedling.seed.name}の畑がある。`)
+      }
+    }
   }
   removeDeadCharas() {
     console.log(this.renderableList)
@@ -556,11 +652,25 @@ export default class MarsZero {
       return true
     })
   }
+  checkGrowth() {
+    for (let farm of this.farmList) {
+      console.log(farm)
+      let seedling = farm.stat.seedling
+      const seed = seedling.seed
+      seedling.nutrition = farm.stat.water <= 0 ? 0 : farm.stat.nutrition
+      seedling.elapsed += seedling.nutrition >= seed.minimumNutrition ? 1 : 0
+      if (seedling.elapsed < seed.growthPeriods[seedling.period] && seed.growthPeriods.length <= seedling.period) {
+        seedling.period += 1
+        seedling.elapsed = 0
+      }
+      farm.stat.water = Math.max(0, farm.stat.water-1)
+    }
+  }
   *genLifeCycle() {
     while(true) {
       checkEvent()
       //yield 1
-      checkGrowth()
+      this.checkGrowth()
       //yield 2
       PlayerTurn: while (true) {
         switch (this.playerAction()) {
