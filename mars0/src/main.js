@@ -33,7 +33,7 @@ function checkNpcFloor() {
 
 const testMap = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
@@ -226,71 +226,96 @@ class MessageWindow {
   }
 }
 
+class Camera {
+  constructor(x, y) {
+    this.x = x
+    this.y = y
+    this.isFixed = false
+    this.fixedX = x
+    this.fixedY = y
+  }
+  getPosition() {
+    if (this.isFixed) {
+      return {x: this.fixedX, y: this.fixedY}
+    } else {
+      return {x: this.x, y: this.y}
+    }
+  }
+  fix() {
+    this.isFixed = true
+    this.fixedX = this.x
+    this.fixedY = this.y
+  }
+  unfix() {
+    this.isFixed = false
+  }
+}
+
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
     "right-attack": [
-      new AnimationState(32, 0, 7, 150),
-      new AnimationState(-32, 0, 7, 150),
+      new AnimationState(32, 0, 7, 100),
+      new AnimationState(-32, 0, 7, 100),
     ],
     "right": [
-      new AnimationState(8, 0, 6, 50),
-      new AnimationState(8, 0, 7, 50),
-      new AnimationState(8, 0, 8, 50),
-      new AnimationState(8, 0, 7, 50),
+      new AnimationState(8, 0, 6, 48),
+      new AnimationState(8, 0, 7, 48),
+      new AnimationState(8, 0, 8, 48),
+      new AnimationState(8, 0, 7, 48),
     ],
     "left-attack": [
-      new AnimationState(-32, 0, 4, 150),
-      new AnimationState(32, 0, 4, 150),
+      new AnimationState(-32, 0, 4, 100),
+      new AnimationState(32, 0, 4, 100),
     ],
     "left": [
-      new AnimationState(-8, 0, 3, 50),
-      new AnimationState(-8, 0, 4, 50),
-      new AnimationState(-8, 0, 5, 50),
-      new AnimationState(-8, 0, 4, 50),
+      new AnimationState(-8, 0, 3, 48),
+      new AnimationState(-8, 0, 4, 48),
+      new AnimationState(-8, 0, 5, 48),
+      new AnimationState(-8, 0, 4, 48),
     ],
     "up-attack": [
-      new AnimationState(0, -32, 10, 150),
-      new AnimationState(0, 32, 10, 150),
+      new AnimationState(0, -32, 10, 100),
+      new AnimationState(0, 32, 10, 100),
     ],
     "up": [
-      new AnimationState(0, -8, 9, 50),
-      new AnimationState(0, -8, 10, 50),
-      new AnimationState(0, -8, 11, 50),
-      new AnimationState(0, -8, 10, 50),
+      new AnimationState(0, -8, 9, 48),
+      new AnimationState(0, -8, 10, 48),
+      new AnimationState(0, -8, 11, 48),
+      new AnimationState(0, -8, 10, 48),
     ],
     "down-attack": [
-      new AnimationState(0, 32, 1, 150),
-      new AnimationState(0, -32, 1, 150),
+      new AnimationState(0, 32, 1, 100),
+      new AnimationState(0, -32, 1, 100),
     ],
     "down": [
-      new AnimationState(0, 8, 0, 50),
-      new AnimationState(0, 8, 1, 50),
-      new AnimationState(0, 8, 2, 50),
-      new AnimationState(0, 8, 1, 50),
+      new AnimationState(0, 8, 0, 48),
+      new AnimationState(0, 8, 1, 48),
+      new AnimationState(0, 8, 2, 48),
+      new AnimationState(0, 8, 1, 48),
     ],
     "down-right": [
-      new AnimationState(8, 8, 0, 50),
-      new AnimationState(8, 8, 1, 50),
-      new AnimationState(8, 8, 2, 50),
-      new AnimationState(8, 8, 1, 50),
+      new AnimationState(8, 8, 0, 48),
+      new AnimationState(8, 8, 1, 48),
+      new AnimationState(8, 8, 2, 48),
+      new AnimationState(8, 8, 1, 48),
     ],
     "down-left": [
-      new AnimationState(-8, 8, 0, 50),
-      new AnimationState(-8, 8, 1, 50),
-      new AnimationState(-8, 8, 2, 50),
-      new AnimationState(-8, 8, 1, 50),
+      new AnimationState(-8, 8, 0, 48),
+      new AnimationState(-8, 8, 1, 48),
+      new AnimationState(-8, 8, 2, 48),
+      new AnimationState(-8, 8, 1, 48),
     ],
     "up-right": [
-      new AnimationState(8, -8, 9, 50),
-      new AnimationState(8, -8, 10, 50),
-      new AnimationState(8, -8, 11, 50),
-      new AnimationState(8, -8, 10, 50),
+      new AnimationState(8, -8, 9, 48),
+      new AnimationState(8, -8, 10, 48),
+      new AnimationState(8, -8, 11, 48),
+      new AnimationState(8, -8, 10, 48),
     ],
     "up-left": [
-      new AnimationState(-8, -8, 9, 50),
-      new AnimationState(-8, -8, 10, 50),
-      new AnimationState(-8, -8, 11, 50),
-      new AnimationState(-8, -8, 10, 50),
+      new AnimationState(-8, -8, 9, 48),
+      new AnimationState(-8, -8, 10, 48),
+      new AnimationState(-8, -8, 11, 48),
+      new AnimationState(-8, -8, 10, 48),
     ],
   })
 }
@@ -309,6 +334,7 @@ export default class MarsZero {
     this.holdingList = this.renderableList[4] = []
     this.keyStore = new KeyboardStore()
     this.messageWindow = new MessageWindow(5, 18)
+    this.camera = new Camera()
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -381,6 +407,8 @@ export default class MarsZero {
         enemy = this.detectEnemy(this.player.x, this.player.y-1)
         break
     }
+    let cameraFixed = this.camera.isFixed
+    if (!cameraFixed) this.camera.fix()
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
       if (enemy) {
         let damage = Math.max(0, this.calcDamage(this.player.stat.atk, enemy.stat.def))
@@ -388,6 +416,7 @@ export default class MarsZero {
       } else {
         this.messageWindow.push("そこには誰もいない。")
       }
+      if (!cameraFixed) this.camera.unfix()
     }))
     return 2
   }
@@ -708,13 +737,13 @@ export default class MarsZero {
       //yield 5
     }
   }
-  renderNpcHpGage(npc) {
+  renderNpcHpGage(mx, my, gx, gy) {
     this.npcList.map(x => {
       const npc = x.renderable
       this.ctx.fillStyle = 'red'
-      this.ctx.fillRect(npc.prop.x, npc.prop.y-4, 32, 4)
+      this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, 32, 4)
       this.ctx.fillStyle = 'green'
-      this.ctx.fillRect(npc.prop.x, npc.prop.y-4, 32*(x.stat.hp/x.stat.maxhp), 4)
+      this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, 32*(x.stat.hp/x.stat.maxhp), 4)
     })
   }
   renderFieldTile(id, x, y) {
@@ -732,37 +761,46 @@ export default class MarsZero {
     }
     //this.ctx.fillRect(x, y, x+32, y+32)
   }
-  renderField() {
-    for (let y = 0; y < this.field.length; ++y) {
-      for (let x = 0; x < this.field[y].length; ++x) {
-        this.renderFieldTile(this.field[y][x], x*32, y*32)
+  renderField(mx, my, gx, gy) {
+    for (let y = Math.max(my, 0); y < this.field.length; ++y) {
+      for (let x = Math.max(mx, 0); x < this.field[y].length; ++x) {
+        this.renderFieldTile(this.field[y][x], x*32+gx, y*32+gy)
       }
     }
   }
-  renderObjects() {
+  renderObjects(mx, my, gx, gy) {
     for (let priority of this.renderableList) {
       for (let r of priority) {
-        r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x, r.renderable.prop.y, 32, 32)
+        r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, 32, 32)
       }
     }
   }
   update() {
+    this.syncAM.process()
     if (this.syncAM.empty()) {
       this.syncAM.wait()
       this.lifecycle.next()
-    } else {
-      this.syncAM.process()
     }
     this.asyncAM.process()
+
+    this.camera.x = -this.player.renderable.prop.x + 300
+    this.camera.y = -this.player.renderable.prop.y + 200
   }
   render() {
-    this.renderField()
-    this.renderObjects()
+    let camera = this.camera.getPosition()
+    let mx = Math.floor(-camera.x / 32)
+    let my = Math.floor(-camera.y / 32)
+    let gx = camera.x
+    let gy = camera.y
+    this.ctx.fillStyle = 'black'
+    this.ctx.fillRect(0, 0, 800, 600)
+    this.renderField(mx, my, gx, gy)
+    this.renderObjects(mx, my, gx, gy)
     if (this.player.stat.holding) {
       let holding = this.player.stat.holding.renderable
-      holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x, this.player.renderable.prop.y-20, 32, 32)
+      holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx, this.player.renderable.prop.y+gy-20, 32, 32)
     }
-    this.renderNpcHpGage()
+    this.renderNpcHpGage(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
   }
 }
