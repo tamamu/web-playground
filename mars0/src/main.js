@@ -161,7 +161,7 @@ class CharaStatus {
     this.atk = atk
     this.def = def
     this.luk = luk
-    this.itemList = []
+    this.itemList = [null, null, null, null, null]
     this.money = 0
     this.holding = null
     this.isEnemy = isEnemy
@@ -494,8 +494,25 @@ export default class MarsZero {
       } else {
         return this.playerAttack()
       }
+    } else if (keys["j"]) {
+      this.playerInventorySpin()
+      return 0
+    } else if (keys["k"]) {
+      this.playerInventorySpin(true)
     }
     return 0
+  }
+  playerInventorySpin(backward) {
+    let holding = this.player.stat.holding
+    if (backward) {
+      let head = this.player.stat.itemList.shift()
+      this.player.stat.itemList.unshift(holding)
+      this.player.stat.holding = head
+    } else {
+      let head = this.player.stat.itemList.pop()
+      this.player.stat.itemList.push(holding)
+      this.player.stat.holding = head
+    }
   }
   playerUseHolding() {
     const holding = this.player.stat.holding
