@@ -3,6 +3,8 @@ import {KeyboardStore} from "./keyboard"
 import {Renderable} from "./renderable"
 import {Animatable, Animation, AnimationState, AnimationManager} from "./animation"
 
+const TILESIZE = 32
+
 function checkEvent() {
   //console.log("checkEvent")
 }
@@ -119,12 +121,12 @@ class GameObject {
   move(x, y) {
     this._x = x
     this._y = y
-    this.renderable.prop.x = this._x * 32
-    this.renderable.prop.y = this._y * 32
+    this.renderable.prop.x = this._x * TILESIZE
+    this.renderable.prop.y = this._y * TILESIZE
   }
   fix() {
-    this.renderable.prop.x = this.x * 32
-    this.renderable.prop.y = this.y * 32
+    this.renderable.prop.x = this.x * TILESIZE
+    this.renderable.prop.y = this.y * TILESIZE
     this.renderable.prop.tileId = this.tileId
   }
 }
@@ -254,68 +256,68 @@ class Camera {
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
     "right-attack": [
-      new AnimationState(32, 0, 7, 100),
-      new AnimationState(-32, 0, 7, 100),
+      new AnimationState(TILESIZE, 0, 7, 100),
+      new AnimationState(-TILESIZE, 0, 7, 100),
     ],
     "right": [
-      new AnimationState(8, 0, 6, 48),
-      new AnimationState(8, 0, 7, 48),
-      new AnimationState(8, 0, 8, 48),
-      new AnimationState(8, 0, 7, 48),
+      new AnimationState(TILESIZE/4, 0, 6, 48),
+      new AnimationState(TILESIZE/4, 0, 7, 48),
+      new AnimationState(TILESIZE/4, 0, 8, 48),
+      new AnimationState(TILESIZE/4, 0, 7, 48),
     ],
     "left-attack": [
-      new AnimationState(-32, 0, 4, 100),
-      new AnimationState(32, 0, 4, 100),
+      new AnimationState(-TILESIZE, 0, 4, 100),
+      new AnimationState(TILESIZE, 0, 4, 100),
     ],
     "left": [
-      new AnimationState(-8, 0, 3, 48),
-      new AnimationState(-8, 0, 4, 48),
-      new AnimationState(-8, 0, 5, 48),
-      new AnimationState(-8, 0, 4, 48),
+      new AnimationState(-TILESIZE/4, 0, 3, 48),
+      new AnimationState(-TILESIZE/4, 0, 4, 48),
+      new AnimationState(-TILESIZE/4, 0, 5, 48),
+      new AnimationState(-TILESIZE/4, 0, 4, 48),
     ],
     "up-attack": [
-      new AnimationState(0, -32, 10, 100),
-      new AnimationState(0, 32, 10, 100),
+      new AnimationState(0, -TILESIZE, 10, 100),
+      new AnimationState(0, TILESIZE, 10, 100),
     ],
     "up": [
-      new AnimationState(0, -8, 9, 48),
-      new AnimationState(0, -8, 10, 48),
-      new AnimationState(0, -8, 11, 48),
-      new AnimationState(0, -8, 10, 48),
+      new AnimationState(0, -TILESIZE/4, 9, 48),
+      new AnimationState(0, -TILESIZE/4, 10, 48),
+      new AnimationState(0, -TILESIZE/4, 11, 48),
+      new AnimationState(0, -TILESIZE/4, 10, 48),
     ],
     "down-attack": [
-      new AnimationState(0, 32, 1, 100),
-      new AnimationState(0, -32, 1, 100),
+      new AnimationState(0, TILESIZE, 1, 100),
+      new AnimationState(0, -TILESIZE, 1, 100),
     ],
     "down": [
-      new AnimationState(0, 8, 0, 48),
-      new AnimationState(0, 8, 1, 48),
-      new AnimationState(0, 8, 2, 48),
-      new AnimationState(0, 8, 1, 48),
+      new AnimationState(0, TILESIZE/4, 0, 48),
+      new AnimationState(0, TILESIZE/4, 1, 48),
+      new AnimationState(0, TILESIZE/4, 2, 48),
+      new AnimationState(0, TILESIZE/4, 1, 48),
     ],
     "down-right": [
-      new AnimationState(8, 8, 0, 48),
-      new AnimationState(8, 8, 1, 48),
-      new AnimationState(8, 8, 2, 48),
-      new AnimationState(8, 8, 1, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 0, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 1, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 2, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 1, 48),
     ],
     "down-left": [
-      new AnimationState(-8, 8, 0, 48),
-      new AnimationState(-8, 8, 1, 48),
-      new AnimationState(-8, 8, 2, 48),
-      new AnimationState(-8, 8, 1, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 0, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 1, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 2, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 1, 48),
     ],
     "up-right": [
-      new AnimationState(8, -8, 9, 48),
-      new AnimationState(8, -8, 10, 48),
-      new AnimationState(8, -8, 11, 48),
-      new AnimationState(8, -8, 10, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 9, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 10, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 11, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 10, 48),
     ],
     "up-left": [
-      new AnimationState(-8, -8, 9, 48),
-      new AnimationState(-8, -8, 10, 48),
-      new AnimationState(-8, -8, 11, 48),
-      new AnimationState(-8, -8, 10, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 9, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 10, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 11, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 10, 48),
     ],
   })
 }
@@ -346,10 +348,10 @@ export default class MarsZero {
       this.tm_seed = new TileManager("./resources/icon021.png", 24, 24)
     // } End Tile Manage Test
     // Animation Test {
-      let p = createWalkAnimatable(this.tm3, 1*32, 1*32, 1)
-      let e = createWalkAnimatable(this.tm4, 9*32, 1*32, 5)
-      let c = new Renderable(1*32, 4*32, this.tm_coin, 0)
-      let s = new Renderable(10*32, 10*32, this.tm_seed, 0)
+      let p = createWalkAnimatable(this.tm3, 1*TILESIZE, 1*TILESIZE, 1)
+      let e = createWalkAnimatable(this.tm4, 9*TILESIZE, 1*TILESIZE, 5)
+      let c = new Renderable(1*TILESIZE, 4*TILESIZE, this.tm_coin, 0)
+      let s = new Renderable(10*TILESIZE, 10*TILESIZE, this.tm_seed, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
@@ -559,7 +561,7 @@ export default class MarsZero {
     const holding = this.player.stat.holding
     let farm = new Farm(
       new FarmState(new Seedling(holding.stat), 5, 5),
-      new Renderable(this.player.x*32, this.player.y*32, this.tm1, 100),
+      new Renderable(this.player.x*TILESIZE, this.player.y*TILESIZE, this.tm1, 100),
       this.player.x,
       this.player.y
     )
@@ -741,46 +743,46 @@ export default class MarsZero {
     this.npcList.map(x => {
       const npc = x.renderable
       this.ctx.fillStyle = 'red'
-      this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, 32, 4)
+      this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, TILESIZE, 4)
       this.ctx.fillStyle = 'green'
-      this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, 32*(x.stat.hp/x.stat.maxhp), 4)
+      this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, TILESIZE*(x.stat.hp/x.stat.maxhp), 4)
     })
   }
   renderFieldTile(id, x, y) {
-    this.tm1.render(this.ctx, 8*162, x, y, 32, 32)
+    this.tm1.render(this.ctx, 8*162, x, y, TILESIZE, TILESIZE)
     switch (id) {
       case 0:
         //this.ctx.fillStyle = "#efefef"
         break
       case 1:
-        this.tm2.render(this.ctx, 2, x, y, 32, 32)
+        this.tm2.render(this.ctx, 2, x, y, TILESIZE, TILESIZE)
         break
       default:
         this.ctx.fillStyle = "red"
         break
     }
-    //this.ctx.fillRect(x, y, x+32, y+32)
+    //this.ctx.fillRect(x, y, x+TILESIZE, y+TILESIZE)
   }
   renderField(mx, my, gx, gy) {
     for (let y = Math.max(my, 0); y < this.field.length; ++y) {
       for (let x = Math.max(mx, 0); x < this.field[y].length; ++x) {
-        this.renderFieldTile(this.field[y][x], x*32+gx, y*32+gy)
+        this.renderFieldTile(this.field[y][x], x*TILESIZE+gx, y*TILESIZE+gy)
       }
     }
   }
   renderObjects(mx, my, gx, gy) {
     for (let priority of this.renderableList) {
       for (let r of priority) {
-        r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, 32, 32)
+        r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
       }
     }
   }
   update() {
-    this.syncAM.process()
+    //this.syncAM.process()
     if (this.syncAM.empty()) {
       this.syncAM.wait()
       this.lifecycle.next()
-    }
+    } else this.syncAM.process()
     this.asyncAM.process()
 
     this.camera.x = -this.player.renderable.prop.x + 300
@@ -788,8 +790,8 @@ export default class MarsZero {
   }
   render() {
     let camera = this.camera.getPosition()
-    let mx = Math.floor(-camera.x / 32)
-    let my = Math.floor(-camera.y / 32)
+    let mx = Math.floor(-camera.x / TILESIZE)
+    let my = Math.floor(-camera.y / TILESIZE)
     let gx = camera.x
     let gy = camera.y
     this.ctx.fillStyle = 'black'
@@ -798,7 +800,7 @@ export default class MarsZero {
     this.renderObjects(mx, my, gx, gy)
     if (this.player.stat.holding) {
       let holding = this.player.stat.holding.renderable
-      holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx, this.player.renderable.prop.y+gy-20, 32, 32)
+      holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx, this.player.renderable.prop.y+gy-20, TILESIZE, TILESIZE)
     }
     this.renderNpcHpGage(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
