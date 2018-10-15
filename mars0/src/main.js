@@ -143,6 +143,7 @@ class SeedState extends ItemState {
     super(name)
     this.type = 'seed'
     this.species = item
+    this.requireTime = growthPeriods[growthPeriods.length-1]
     this.growthPeriods = growthPeriods
     this.minimumNutrition = minimumNutrition
   }
@@ -345,13 +346,12 @@ export default class MarsZero {
       this.tm3 = new TileManager("./resources/pipo-charachip002a.png", 32, 32)
       this.tm4 = new TileManager("./resources/pipo-charachip019c.png", 32, 32)
       this.tm_coin = new TileManager("./resources/icon020.png", 24, 24)
-      this.tm_seed = new TileManager("./resources/icon021.png", 24, 24)
+      let tm_seed = new TileManager("./resources/icon021.png", 24, 24)
     // } End Tile Manage Test
     // Animation Test {
       let p = createWalkAnimatable(this.tm3, 1*TILESIZE, 1*TILESIZE, 1)
       let e = createWalkAnimatable(this.tm4, 9*TILESIZE, 1*TILESIZE, 5)
       let c = new Renderable(1*TILESIZE, 4*TILESIZE, this.tm_coin, 0)
-      let s = new Renderable(10*TILESIZE, 10*TILESIZE, this.tm_seed, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
@@ -359,9 +359,16 @@ export default class MarsZero {
       this.enemy = new Character(eStat, e, 9, 1, 5)
       this.coin = new Item(cStat, c, 1, 4, 0)
       let sStat = new SeedState("CoinSeed", this.coin, [5], 3)
-      this.seed = new Item(sStat, s, 10, 10, 0)
+      function makeCoinSeed(x, y) {
+        let s = new Renderable(x*TILESIZE, y*TILESIZE, tm_seed, 0)
+        return new Item(sStat, s, x, y, 0)
+      }
       this.dropList.push(this.coin)
-      this.dropList.push(this.seed)
+      this.dropList.push(makeCoinSeed(10, 10))
+      this.dropList.push(makeCoinSeed(8, 7))
+      this.dropList.push(makeCoinSeed(12, 5))
+      this.dropList.push(makeCoinSeed(16, 1))
+      this.dropList.push(makeCoinSeed(1, 5))
       //this.renderableList.push(p)
       //this.renderableList.push(e)
       //this.renderableList.push(c)
@@ -535,15 +542,26 @@ export default class MarsZero {
   }
   playerInventorySpin(backward) {
     let holding = this.player.stat.holding
+    let head = null
     if (backward) {
-      let head = this.player.stat.itemList.shift()
+      head = this.player.stat.itemList.pop()
       this.player.stat.itemList.unshift(holding)
-      this.player.stat.holding = head
     } else {
-      let head = this.player.stat.itemList.pop()
+      head = this.player.stat.itemList.shift()
       this.player.stat.itemList.push(holding)
-      this.player.stat.holding = head
     }
+    if (holding) {
+      if (head) {
+        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}をカバンにしまい、${head.stat.name}を取り出した。`)
+      } else {
+        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}をカバンにしまった。`)
+      }
+    } else {
+      if (head) {
+        this.messageWindow.push(`${this.player.stat.name}は${head.stat.name}を取り出した。`)
+      }
+    }
+    this.player.stat.holding = head
   }
   playerUseHolding() {
     const holding = this.player.stat.holding
@@ -709,7 +727,6 @@ export default class MarsZero {
       seedling.elapsed += seedling.nutrition >= seed.minimumNutrition ? 1 : 0
       if (seedling.elapsed < seed.growthPeriods[seedling.period] && seed.growthPeriods.length <= seedling.period) {
         seedling.period += 1
-        seedling.elapsed = 0
       }
       farm.stat.water = Math.max(0, farm.stat.water-1)
     }
@@ -737,6 +754,50 @@ export default class MarsZero {
       this.checkPlayerFloor()
       checkNpcFloor()
       //yield 5
+    }
+  }
+  renderFarmStat(mx, my, gx, gy) {
+    this.farmList.map(x => {
+      console.log(x)
+      const farm = x.renderable
+      const stat = x.stat
+      const seedling = stat.seedling
+      const remain = seedling.seed.requireTime - seedling.elapsed
+      const requireWater = seedling.nutrition == 0 && stat.water == 0
+      if (remain == 0) {
+        this.ctx.fillStyle = 'yellow'
+        this.ctx.font = '10px sans'
+        this.ctx.fillText("収穫可能", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
+      } else if (requireWater) {
+        this.ctx.fillStyle = 'lightblue'
+        this.ctx.font = '10px sans'
+        this.ctx.fillText("水必要", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
+      } else {
+        this.ctx.fillStyle = 'lightgreen'
+        this.ctx.font = '10px sans'
+        this.ctx.fillText(`あと${remain}歩`, farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
+      }
+    })
+  }
+  renderFarmDetail(mx, my, gx, gy) {
+    for (const farm of this.farmList) {
+      if (this.player.x == farm.x && this.player.y == farm.y) {
+        const stat = farm.stat
+        const seedling = stat.seedling
+        const seedName = seedling.seed.name
+        const remain = seedling.seed.requireTime - seedling.elapsed
+        const water = stat.water
+        const nutrition = stat.nutrition
+        this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
+        this.ctx.fillRect(600, 50, 150, 80)
+        this.ctx.fillStyle = 'white'
+        this.ctx.font = '18px sans'
+        this.ctx.fillText(`名前: ${seedName}`, 600, 50)
+        this.ctx.fillText(`栄養: ${nutrition}`, 600, 70)
+        this.ctx.fillText(`水: ${water}`, 600, 90)
+        this.ctx.fillText(`残り${remain}歩`, 600, 110)
+        break
+      }
     }
   }
   renderNpcHpGage(mx, my, gx, gy) {
@@ -785,8 +846,8 @@ export default class MarsZero {
     } else this.syncAM.process()
     this.asyncAM.process()
 
-    this.camera.x = -this.player.renderable.prop.x + 300
-    this.camera.y = -this.player.renderable.prop.y + 200
+    this.camera.x = -this.player.renderable.prop.x + 400-16
+    this.camera.y = -this.player.renderable.prop.y + 300-16
   }
   render() {
     let camera = this.camera.getPosition()
@@ -802,7 +863,9 @@ export default class MarsZero {
       let holding = this.player.stat.holding.renderable
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx, this.player.renderable.prop.y+gy-20, TILESIZE, TILESIZE)
     }
+    this.renderFarmStat(mx, my, gx, gy)
     this.renderNpcHpGage(mx, my, gx, gy)
+    this.renderFarmDetail(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
   }
 }
