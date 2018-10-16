@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor</title>
+  <script src="dist/editor.js"></script>
+</head>
+<body style="display: flex; flex-direction: row; margin: 0; padding: 0;">
+  <canvas id="tiles"></canvas>
+  <div id="tools" style="overflow: scroll; width: 128px; height: 480px;">
+    <div style="position: relative;width: 0; height:0;">
+      <div id="cursor" style="position: relative; width: 8px; height: 8px; z-index: 100; border: 4px solid blue; margin: 0;"></div>
+    </div>
+    <img src="./resources/base.png" alt="">
+  </div>
+</body>
+</html>
