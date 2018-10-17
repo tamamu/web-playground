@@ -34,8 +34,8 @@ class MouseManager {
     this.y = 0
   }
   onMouseMove(e) {
-    this.x = e.clientX
-    this.y = e.clientY
+    this.x = e.layerX
+    this.y = e.layerY
   }
   onMouseDown(e) {
     this.clicked = true
@@ -43,37 +43,65 @@ class MouseManager {
   onMouseUp(e) {
     this.clicked = false
   }
+  onMouseClick(e) {
+    this.clicked = true
+    this.x = e.layerX
+    this.y = e.layerY
+  }
   setEvent(target) {
     target.onmousemove = this.onMouseMove.bind(this)
-    target.onmousedown = this.onMouseDown.bind(this)
-    target.onmouseup = this.onMouseUp.bind(this)
   }
 }
 
 class Main {
-  constructor(canvas, tools, tileCursor) {
+  constructor(canvas, base, tileCursor) {
     this.tiles = new Array(20)
     for (let y=0; y < 20; ++y) {
-      this.tiles[y] = new Array(30).fill(0)
+      this.tiles[y] = new Array(30).fill(129)
     }
     this.tm = new TileManager("./resources/base.png", 16, 16)
     this.canvas = canvas
-    this.tools = tools
+    this.base = base
     this.tileCursor = tileCursor
     this.ctx = this.canvas.getContext('2d')
     this.tilesMouse = new MouseManager()
-    this.tilesMouse.setEvent(window)
+    this.baseMouse = new MouseManager()
     this.selectedTile = 0
+    canvas.onmousemove = this.tilesMouse.onMouseMove.bind(this.tilesMouse)
+    canvas.onmousedown = this.tilesMouse.onMouseDown.bind(this.tilesMouse)
+    canvas.onmouseup = this.tilesMouse.onMouseUp.bind(this.tilesMouse)
+    base.onclick = this.updateSelectedTile.bind(this)
+    //this.tilesMouse.setEvent(window)
     this.mx = 0
     this.my = 0
+    document.onkeydown = this.showTilesArray.bind(this)
+  }
+  showTilesArray() {
+    let s = '['
+    for (let row of this.tiles) {
+      s+='['
+      for (let t of row) {
+        s+=t+','
+      }
+      s+=']'
+    }
+    s+=']'
+    console.log(s)
+  }
+  updateSelectedTile(e) {
+    console.log(e)
+    let x = Math.floor(e.offsetX / 16)
+    let y = Math.floor(e.offsetY / 16)
+    this.selectedTile = x + y * 8
+    console.log(this.selectedTile)
   }
   update() {
-    if (this.tilesMouse.x < 24*30) {
+    if (this.tilesMouse.x > 0 && this.tilesMouse.x < 32*30 && this.tilesMouse.y > 0 && this.tilesMouse.y < 24*20) {
       this.mx = Math.floor(this.tilesMouse.x / 24)
       this.my = Math.floor(this.tilesMouse.y / 24)
-      if (this.tilesMouse.clicked) this.tiles[this.my][this.mx] = this.selectedTile
-    } else if (this.tilesMouse.clicked){
-      this.selectedTile = Math.floor((this.tilesMouse.x-24*30) / 16) + Math.floor(this.tilesMouse.y / 16) * 8
+      if (this.tilesMouse.clicked) {
+        this.tiles[this.my][this.mx] = this.selectedTile
+      }
     }
   }
   render() {
@@ -95,10 +123,10 @@ class Main {
 
 window.onload = () => {
   let canvas = document.getElementById('tiles')
-  let tools = document.getElementById('tools')
+  let base = document.getElementById('base')
   let tileCursor = document.getElementById('cursor')
   canvas.width = 24*30;
   canvas.height = 24*20;
-  let main = new Main(canvas, tools, tileCursor)
+  let main = new Main(canvas, base, tileCursor)
   requestAnimationFrame(main.mainLoop.bind(main))
 }
