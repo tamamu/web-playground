@@ -3,7 +3,7 @@ import {KeyboardStore} from "./keyboard"
 import {Renderable} from "./renderable"
 import {Animatable, Animation, AnimationState, AnimationManager} from "./animation"
 
-const TILESIZE = 32
+const TILESIZE = 48
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -336,8 +336,11 @@ export default class MarsZero {
     this.npcList = this.renderableList[3] = []
     this.holdingList = this.renderableList[4] = []
     this.keyStore = new KeyboardStore()
-    this.messageWindow = new MessageWindow(5, 18)
+    this.messageWindow = new MessageWindow(5, 20)
     this.camera = new Camera()
+    this.inventoryTimer = new Date()
+    this.showInventory = false
+    this.inventoryOpacity = 0
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -533,25 +536,30 @@ export default class MarsZero {
         return this.playerAttack()
       }
     } else if (keys["j"]) {
-      this.playerInventorySpin()
+      this.playerInventorySpin(true)
       return 0
     } else if (keys["k"]) {
-      this.playerInventorySpin(true)
+      this.playerInventorySpin()
     }
     return 0
   }
   playerInventorySpin(backward) {
+    this.showInventory = true
+    this.inventoryTimer = new Date()
     let holding = this.player.stat.holding
     let head = null
+    console.log(this.player.stat.itemList)
     if (backward) {
-      head = this.player.stat.itemList.pop()
-      this.player.stat.itemList.unshift(holding)
-    } else {
-      head = this.player.stat.itemList.shift()
       this.player.stat.itemList.push(holding)
+      head = this.player.stat.itemList.shift()
+    } else {
+      this.player.stat.itemList.unshift(holding)
+      head = this.player.stat.itemList.pop()
     }
-    if (holding) {
-      if (head) {
+    console.log(holding)
+    console.log(head)
+    if (holding != null) {
+      if (head != null) {
         this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}をカバンにしまい、${head.stat.name}を取り出した。`)
       } else {
         this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}をカバンにしまった。`)
@@ -602,6 +610,8 @@ export default class MarsZero {
     return null
   }
   playerPickUp() {
+    this.showInventory = true
+    this.inventoryTimer = new Date()
     let target = null
     for (let j = 0; j < this.farmList.length; ++j) {
       if (this.player.x == this.farmList[j].x && this.player.y == this.farmList[j].y) {
@@ -756,6 +766,55 @@ export default class MarsZero {
       //yield 5
     }
   }
+  renderInfo(mx, my, gx, gy) {
+    this.ctx.font = '40px sans'
+    this.ctx.fillStyle = 'white'
+    const stat = this.player.stat
+    const hp = stat.hp
+    const maxhp = stat.maxhp
+    const money = stat.money
+    this.ctx.fillText('1F', 32, 12)
+    this.ctx.fillText(`Lv 1`, 120, 12)
+    this.ctx.fillText(`HP  ${hp}/${maxhp}`, 300, 12)
+    this.ctx.textAlign = 'right'
+    this.ctx.fillText(`${money}G`, 768, 12)
+    this.ctx.textAlign = 'start'
+  }
+  renderPlayerInventory(mx, my, gx, gy) {
+    const inventory = this.player.stat.itemList
+    const x = 460, y = 412
+    this.ctx.globalAlpha = this.inventoryOpacity
+    this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
+    this.ctx.fillRect(x, y, TILESIZE*inventory.length, TILESIZE)
+    this.ctx.beginPath()
+    this.ctx.moveTo(x+TILESIZE*(inventory.length+1)+8, y)
+    this.ctx.lineTo(x+TILESIZE*(inventory.length+1)+32, y+TILESIZE/2)
+    this.ctx.lineTo(x+TILESIZE*(inventory.length+1)+8, y+TILESIZE)
+    this.ctx.moveTo(x-8, y)
+    this.ctx.lineTo(x-32, y+TILESIZE/2)
+    this.ctx.lineTo(x-8, y+TILESIZE)
+    this.ctx.closePath()
+    this.ctx.fill()
+    this.ctx.fillStyle = 'white'
+    this.ctx.fillText('J', x-18, y+6)
+    this.ctx.fillText('K', x+TILESIZE*(inventory.length+1)+10, y+6)
+    for (let j=0; j < inventory.length; ++j) {
+      let item = inventory[j]
+      if (item) {
+        item.renderable.tiles.render(this.ctx, item.renderable.prop.tileId, x+TILESIZE*j, y, TILESIZE, TILESIZE)
+      }
+    }
+    this.ctx.globalAlpha = 1
+    this.ctx.font = '12px sans'
+    this.ctx.fillText('HOLD', x+TILESIZE*inventory.length, y-14)
+    this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
+    this.ctx.fillRect(x+TILESIZE*inventory.length, y, TILESIZE, TILESIZE)
+    if (this.player.stat.holding) {
+      this.player.stat.holding.renderable.tiles.render(this.ctx, this.player.stat.holding.renderable.prop.tileId, x+TILESIZE*inventory.length, y, TILESIZE, TILESIZE)
+    }
+    this.ctx.strokeStyle = 'white'
+    this.ctx.strokeRect(x+TILESIZE*inventory.length, y, TILESIZE, TILESIZE)
+  }
   renderFarmStat(mx, my, gx, gy) {
     this.farmList.map(x => {
       console.log(x)
@@ -764,22 +823,21 @@ export default class MarsZero {
       const seedling = stat.seedling
       const remain = seedling.seed.requireTime - seedling.elapsed
       const requireWater = seedling.nutrition == 0 && stat.water == 0
+      this.ctx.font = `${TILESIZE/4}px sans`
       if (remain == 0) {
         this.ctx.fillStyle = 'yellow'
-        this.ctx.font = '10px sans'
         this.ctx.fillText("収穫可能", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       } else if (requireWater) {
         this.ctx.fillStyle = 'lightblue'
-        this.ctx.font = '10px sans'
         this.ctx.fillText("水必要", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       } else {
         this.ctx.fillStyle = 'lightgreen'
-        this.ctx.font = '10px sans'
         this.ctx.fillText(`あと${remain}歩`, farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       }
     })
   }
   renderFarmDetail(mx, my, gx, gy) {
+    const x = 540, y = 50
     for (const farm of this.farmList) {
       if (this.player.x == farm.x && this.player.y == farm.y) {
         const stat = farm.stat
@@ -789,13 +847,13 @@ export default class MarsZero {
         const water = stat.water
         const nutrition = stat.nutrition
         this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
-        this.ctx.fillRect(600, 50, 150, 80)
+        this.ctx.fillRect(x, y, 240, 120)
         this.ctx.fillStyle = 'white'
-        this.ctx.font = '18px sans'
-        this.ctx.fillText(`名前: ${seedName}`, 600, 50)
-        this.ctx.fillText(`栄養: ${nutrition}`, 600, 70)
-        this.ctx.fillText(`水: ${water}`, 600, 90)
-        this.ctx.fillText(`残り${remain}歩`, 600, 110)
+        this.ctx.font = '24px sans'
+        this.ctx.fillText(`名前: ${seedName}`, x, y)
+        this.ctx.fillText(`栄養: ${nutrition}`, x, y+24+5)
+        this.ctx.fillText(`水: ${water}`, x, y+(24+5)*2)
+        this.ctx.fillText(`残り${remain}歩`, x, y+(24+5)*3)
         break
       }
     }
@@ -845,6 +903,15 @@ export default class MarsZero {
       this.lifecycle.next()
     } else this.syncAM.process()
     this.asyncAM.process()
+    if (new Date() - this.inventoryTimer > 4000) {
+      this.showInventory = false
+      this.inventoryTimer = new Date()
+    }
+    if (this.showInventory && this.inventoryOpacity < 1) {
+      this.inventoryOpacity = Math.min(1, this.inventoryOpacity + 0.05)
+    } else if (!this.showInventory && this.inventoryOpacity > 0) {
+      this.inventoryOpacity = Math.max(0, this.inventoryOpacity - 0.05)
+    }
 
     this.camera.x = -this.player.renderable.prop.x + 400-16
     this.camera.y = -this.player.renderable.prop.y + 300-16
@@ -866,6 +933,8 @@ export default class MarsZero {
     this.renderFarmStat(mx, my, gx, gy)
     this.renderNpcHpGage(mx, my, gx, gy)
     this.renderFarmDetail(mx, my, gx, gy)
+    this.renderPlayerInventory(mx, my, gx, gy)
+    this.renderInfo(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
   }
 }
