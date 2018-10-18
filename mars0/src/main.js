@@ -138,6 +138,25 @@ class ItemState {
   }
 }
 
+class WeaponState extends ItemState {
+  constructor(name, type, atk) {
+    super(name)
+    this.type = 'weapon'
+    this.weaponType = type
+    this.atk = atk
+    this.isSoiled = false
+    this.isStable = false
+  }
+}
+
+class FoodState extends ItemState {
+  constructor(name, satiety) {
+    super(name)
+    this.type = 'food'
+    this.satiety = satiety
+  }
+}
+
 class SeedState extends ItemState {
   constructor(name, item, growthPeriods, minimumNutrition) {
     super(name)
@@ -164,6 +183,8 @@ class CharaStatus {
     this.atk = atk
     this.def = def
     this.luk = luk
+    this.satiety = 3000
+    this.maxSatiety = 3000
     this.itemList = [null, null, null, null, null]
     this.money = 0
     this.holding = null
@@ -349,24 +370,39 @@ export default class MarsZero {
       this.tm3 = new TileManager("./resources/pipo-charachip002a.png", 32, 32)
       this.tm4 = new TileManager("./resources/pipo-charachip019c.png", 32, 32)
       this.tm_coin = new TileManager("./resources/icon020.png", 24, 24)
+      this.tm_apple = new TileManager("./resources/icon028.png", 24, 24)
+      this.tm_sword = new TileManager("./resources/icon002.png", 24, 24)
+      this.tm_spear = new TileManager("./resources/icon004.png", 24, 24)
       let tm_seed = new TileManager("./resources/icon021.png", 24, 24)
     // } End Tile Manage Test
     // Animation Test {
       let p = createWalkAnimatable(this.tm3, 1*TILESIZE, 1*TILESIZE, 1)
       let e = createWalkAnimatable(this.tm4, 9*TILESIZE, 1*TILESIZE, 5)
       let c = new Renderable(1*TILESIZE, 4*TILESIZE, this.tm_coin, 0)
+      let a = new Renderable(8*TILESIZE, 8*TILESIZE, this.tm_apple, 0)
+      let sw = new Renderable(10*TILESIZE, 4*TILESIZE, this.tm_sword, 0)
+      let sp = new Renderable(10*TILESIZE, 5*TILESIZE, this.tm_spear, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
+      let aStat = new FoodState("Apple", 300)
+      let swStat = new WeaponState("Sword", 'sword', 20)
+      let spStat = new WeaponState("Spear", 'spear', 20)
       this.player = new Character(pStat, p, 1, 1, 1)
       this.enemy = new Character(eStat, e, 9, 1, 5)
       this.coin = new Item(cStat, c, 1, 4, 0)
+      this.apple = new Item(aStat, a, 8, 8, 0)
+      this.sword = new Item(swStat, sw, 10, 4, 0)
+      this.spear = new Item(spStat, sp, 10, 5, 0)
       let sStat = new SeedState("CoinSeed", this.coin, [5], 3)
       function makeCoinSeed(x, y) {
         let s = new Renderable(x*TILESIZE, y*TILESIZE, tm_seed, 0)
         return new Item(sStat, s, x, y, 0)
       }
       this.dropList.push(this.coin)
+      this.dropList.push(this.apple)
+      this.dropList.push(this.sword)
+      this.dropList.push(this.spear)
       this.dropList.push(makeCoinSeed(10, 10))
       this.dropList.push(makeCoinSeed(8, 7))
       this.dropList.push(makeCoinSeed(12, 5))
@@ -404,27 +440,63 @@ export default class MarsZero {
     return Math.floor(atk*Math.pow(15/16, def)*(Math.random()*0.4+0.8))
   }
   playerAttack() {
-    let enemy = null
+    let enemies = []
+    let holding = this.player.stat.holding
+    let weapon = null
+    if (holding && holding.stat.type == 'weapon') {
+      weapon = holding
+    }
+    let attackRange = []
     switch (this.player.direction) {
       case 'down':
-        enemy = this.detectEnemy(this.player.x, this.player.y+1)
+        attackRange.push([this.player.x, this.player.y+1])
         break
       case 'left':
-        enemy = this.detectEnemy(this.player.x-1, this.player.y)
+        attackRange.push([this.player.x-1, this.player.y])
         break
       case 'right':
-        enemy = this.detectEnemy(this.player.x+1, this.player.y)
+        attackRange.push([this.player.x+1, this.player.y])
         break
       case 'up':
-        enemy = this.detectEnemy(this.player.x, this.player.y-1)
+        attackRange.push([this.player.x, this.player.y-1])
         break
     }
+    if (weapon) {
+      switch (weapon.stat.weaponType) {
+        case 'spear':
+          switch (this.player.direction) {
+            case 'down':
+              attackRange.push([this.player.x, this.player.y+1])
+              attackRange.push([this.player.x, this.player.y+2])
+              break
+            case 'left':
+              attackRange.push([this.player.x-1, this.player.y])
+              attackRange.push([this.player.x-2, this.player.y])
+              break
+            case 'right':
+              attackRange.push([this.player.x+1, this.player.y])
+              attackRange.push([this.player.x+2, this.player.y])
+              break
+            case 'up':
+              attackRange.push([this.player.x, this.player.y-1])
+              attackRange.push([this.player.x, this.player.y-2])
+              break
+          }
+        default:
+      }
+    }
+    attackRange.map(p => {
+      let e = this.detectEnemy(p[0], p[1])
+      if (e) enemies.push(e)
+    })
     let cameraFixed = this.camera.isFixed
     if (!cameraFixed) this.camera.fix()
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
-      if (enemy) {
-        let damage = Math.max(0, this.calcDamage(this.player.stat.atk, enemy.stat.def))
-        this.damage(this.player, enemy, damage)
+      if (enemies.length > 0) {
+        enemies.map(e => {
+          let damage = Math.max(0, this.calcDamage(this.player.stat.atk + (weapon ? weapon.stat.atk : 0), e.stat.def))
+          this.damage(this.player, e, damage)
+        })
       } else {
         this.messageWindow.push("そこには誰もいない。")
       }
@@ -577,11 +649,24 @@ export default class MarsZero {
       case 'seed':
         this.playerPlant()
         break
+      case 'food':
+        this.playerEat()
+        break
+      case 'weapon':
+        this.playerAttack()
+        break
       default:
         this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を使おうとしたが、使い方が分からない！`)
         break
     }
     return 2
+  }
+  playerEat() {
+    const holding = this.player.stat.holding
+    this.player.stat.satiety += holding.stat.satiety
+    this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を食べた。`)
+    this.messageWindow.push(`お腹が膨れた。`)
+    this.player.stat.holding = null
   }
   playerPlant() {
     const holding = this.player.stat.holding
@@ -741,6 +826,21 @@ export default class MarsZero {
       farm.stat.water = Math.max(0, farm.stat.water-1)
     }
   }
+  updatePlayerStatus() {
+    this.player.stat.satiety -= 1
+    if (this.player.stat.satiety == Math.ceil(this.player.stat.maxSatiety*0.5)) {
+      this.messageWindow.push(`${this.player.stat.name}はお腹がすいた。`)
+    }
+    if (this.player.stat.satiety == Math.ceil(this.player.stat.maxSatiety*0.3)) {
+      this.messageWindow.push(`${this.player.stat.name}はとてもお腹がすいている。`)
+    }
+    if (this.player.stat.satiety == 0) {
+      this.messageWindow.push(`${this.player.stat.name}はお腹がすいて死にそうだ。`)
+    }
+    if (this.player.stat.satiety < 0) {
+      this.player.stat.hp += this.player.stat.satiety
+    }
+  }
   *genLifeCycle() {
     while(true) {
       checkEvent()
@@ -759,6 +859,7 @@ export default class MarsZero {
             break PlayerTurn
         }
       }
+      this.updatePlayerStatus()
       this.removeDeadCharas()
       this.npcAction()
       this.checkPlayerFloor()
@@ -773,9 +874,11 @@ export default class MarsZero {
     const hp = stat.hp
     const maxhp = stat.maxhp
     const money = stat.money
+    const satiety = Math.ceil((stat.satiety / stat.maxSatiety) * 100)
     this.ctx.fillText('1F', 32, 12)
     this.ctx.fillText(`Lv 1`, 120, 12)
     this.ctx.fillText(`HP  ${hp}/${maxhp}`, 300, 12)
+    this.ctx.fillText(`${satiety}%`, 560, 12)
     this.ctx.textAlign = 'right'
     this.ctx.fillText(`${money}G`, 768, 12)
     this.ctx.textAlign = 'start'
