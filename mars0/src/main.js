@@ -373,6 +373,7 @@ export default class MarsZero {
       this.tm_apple = new TileManager("./resources/icon028.png", 24, 24)
       this.tm_sword = new TileManager("./resources/icon002.png", 24, 24)
       this.tm_spear = new TileManager("./resources/icon004.png", 24, 24)
+      this.tm_hammer = new TileManager("./resources/icon003.png", 24, 24)
       let tm_seed = new TileManager("./resources/icon021.png", 24, 24)
     // } End Tile Manage Test
     // Animation Test {
@@ -382,18 +383,21 @@ export default class MarsZero {
       let a = new Renderable(8*TILESIZE, 8*TILESIZE, this.tm_apple, 0)
       let sw = new Renderable(10*TILESIZE, 4*TILESIZE, this.tm_sword, 0)
       let sp = new Renderable(10*TILESIZE, 5*TILESIZE, this.tm_spear, 0)
+      let ha = new Renderable(10*TILESIZE, 6*TILESIZE, this.tm_hammer, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
       let aStat = new FoodState("Apple", 300)
       let swStat = new WeaponState("Sword", 'sword', 20)
       let spStat = new WeaponState("Spear", 'spear', 20)
+      let haStat = new WeaponState("Hammer", 'hammer', 20)
       this.player = new Character(pStat, p, 1, 1, 1)
       this.enemy = new Character(eStat, e, 9, 1, 5)
       this.coin = new Item(cStat, c, 1, 4, 0)
       this.apple = new Item(aStat, a, 8, 8, 0)
       this.sword = new Item(swStat, sw, 10, 4, 0)
       this.spear = new Item(spStat, sp, 10, 5, 0)
+      this.hammer = new Item(haStat, ha, 10, 6, 0)
       let sStat = new SeedState("CoinSeed", this.coin, [5], 3)
       function makeCoinSeed(x, y) {
         let s = new Renderable(x*TILESIZE, y*TILESIZE, tm_seed, 0)
@@ -403,6 +407,7 @@ export default class MarsZero {
       this.dropList.push(this.apple)
       this.dropList.push(this.sword)
       this.dropList.push(this.spear)
+      this.dropList.push(this.hammer)
       this.dropList.push(makeCoinSeed(10, 10))
       this.dropList.push(makeCoinSeed(8, 7))
       this.dropList.push(makeCoinSeed(12, 5))
@@ -416,6 +421,9 @@ export default class MarsZero {
     // } End Animation Test
 
     this.lifecycle = this.genLifeCycle()
+  }
+  colWall(x, y) {
+    return this.field[y][x] == 1
   }
   collision(x, y) {
     return this.field[y][x] == 1 || this.detectEnemy(x, y) || (this.player.x == x && this.player.y == y)
@@ -449,16 +457,16 @@ export default class MarsZero {
     let attackRange = []
     switch (this.player.direction) {
       case 'down':
-        attackRange.push([this.player.x, this.player.y+1])
+        attackRange.push([this.player.x, this.player.y+1, 1])
         break
       case 'left':
-        attackRange.push([this.player.x-1, this.player.y])
+        attackRange.push([this.player.x-1, this.player.y, 1])
         break
       case 'right':
-        attackRange.push([this.player.x+1, this.player.y])
+        attackRange.push([this.player.x+1, this.player.y, 1])
         break
       case 'up':
-        attackRange.push([this.player.x, this.player.y-1])
+        attackRange.push([this.player.x, this.player.y-1, 1])
         break
     }
     if (weapon) {
@@ -466,36 +474,75 @@ export default class MarsZero {
         case 'spear':
           switch (this.player.direction) {
             case 'down':
-              attackRange.push([this.player.x, this.player.y+1])
-              attackRange.push([this.player.x, this.player.y+2])
+              if (!this.colWall(this.player.x, this.player.y+1)) {
+                attackRange.push([this.player.x, this.player.y+2, 0.6])
+              }
               break
             case 'left':
-              attackRange.push([this.player.x-1, this.player.y])
-              attackRange.push([this.player.x-2, this.player.y])
+              if (!this.colWall(this.player.x-1, this.player.y)) {
+                attackRange.push([this.player.x-2, this.player.y, 0.6])
+              }
               break
             case 'right':
-              attackRange.push([this.player.x+1, this.player.y])
-              attackRange.push([this.player.x+2, this.player.y])
+              if (!this.colWall(this.player.x+1, this.player.y)) {
+                attackRange.push([this.player.x+2, this.player.y, 0.6])
+              }
               break
             case 'up':
-              attackRange.push([this.player.x, this.player.y-1])
-              attackRange.push([this.player.x, this.player.y-2])
+              if (!this.colWall(this.player.x, this.player.y-1)) {
+                attackRange.push([this.player.x, this.player.y-2, 0.6])
+              }
               break
+            default:
+          }
+          break
+        case 'hammer':
+          switch (this.player.direction) {
+            case 'down':
+              if (!this.colWall(this.player.x, this.player.y+1)) {
+                attackRange.push([this.player.x, this.player.y+2, 0.2])
+                attackRange.push([this.player.x-1, this.player.y+1, 0.2])
+                attackRange.push([this.player.x+1, this.player.y+1, 0.2])
+              }
+              break
+            case 'left':
+              if (!this.colWall(this.player.x-1, this.player.y)) {
+                attackRange.push([this.player.x-2, this.player.y, 0.2])
+                attackRange.push([this.player.x-1, this.player.y+1, 0.2])
+                attackRange.push([this.player.x-1, this.player.y-1, 0.2])
+              }
+              break
+            case 'right':
+              if (!this.colWall(this.player.x+1, this.player.y)) {
+                attackRange.push([this.player.x+2, this.player.y, 0.2])
+                attackRange.push([this.player.x+1, this.player.y+1, 0.2])
+                attackRange.push([this.player.x+1, this.player.y-1, 0.2])
+              }
+              break
+            case 'up':
+              if (!this.colWall(this.player.x, this.player.y-1)) {
+                attackRange.push([this.player.x, this.player.y-2, 0.2])
+                attackRange.push([this.player.x+1, this.player.y-1, 0.2])
+                attackRange.push([this.player.x-1, this.player.y-1, 0.2])
+              }
+              break
+            default:
           }
         default:
       }
     }
     attackRange.map(p => {
       let e = this.detectEnemy(p[0], p[1])
-      if (e) enemies.push(e)
+      if (e) enemies.push({target: e, mag: p[2]})
     })
     let cameraFixed = this.camera.isFixed
     if (!cameraFixed) this.camera.fix()
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
       if (enemies.length > 0) {
+        console.log(`${enemies.length} enemies`)
         enemies.map(e => {
-          let damage = Math.max(0, this.calcDamage(this.player.stat.atk + (weapon ? weapon.stat.atk : 0), e.stat.def))
-          this.damage(this.player, e, damage)
+          let damage = Math.max(0, this.calcDamage((this.player.stat.atk + (weapon ? weapon.stat.atk : 0))*e.mag, e.target.stat.def))
+          this.damage(this.player, e.target, damage)
         })
       } else {
         this.messageWindow.push("そこには誰もいない。")
@@ -920,7 +967,6 @@ export default class MarsZero {
   }
   renderFarmStat(mx, my, gx, gy) {
     this.farmList.map(x => {
-      console.log(x)
       const farm = x.renderable
       const stat = x.stat
       const seedling = stat.seedling
