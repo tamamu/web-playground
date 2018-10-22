@@ -2,8 +2,17 @@
 import {KeyboardStore} from "./keyboard"
 import {Renderable} from "./renderable"
 import {Animatable, Animation, AnimationState, AnimationManager} from "./animation"
-
-const TILESIZE = 48
+import GameObject from './GameObject'
+import TileManager from './TileManager'
+import {TILESIZE} from './constants'
+import MessageWindow from './MessageWindow'
+import Camera from './Camera'
+import {CharaStatus, Character} from './Character'
+import {Seedling, FarmState, Farm} from './Farm'
+import FoodState from './Food'
+import {ItemState, Item} from './Item'
+import SeedState from './Seed'
+import WeaponState from './Weapon'
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -50,230 +59,8 @@ const testMap = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-class TileManager {
-  constructor(path, width, height) {
-    this.base = new Image();
-    this.base.src = path;
-    this.width = width
-    this.height = height
-    this.base.onload = () => {
-      this.numx = this.base.width / this.width
-      this.numy = this.base.height / this.height
-      console.log(this.numx, this.numy)
-    }
-  }
-  render(ctx, id, x, y, width, height) {
-    const ix = id % this.numx
-    const iy = (id - ix) / this.numx
-    ctx.drawImage(this.base, ix*this.width, iy*this.height, this.width, this.height, x, y, width, height)
-  }
-}
 
-class GameObject {
-  constructor(renderable, x, y, tileId) {
-    this.renderable = renderable
-    this._x = x
-    this._y = y
-    this._tileId = tileId
-    this._direction = 'down'
-  }
-  get x() {
-    return this._x
-  }
-  get y() {
-    return this._y
-  }
-  get tileId() {
-    return this._tileId
-  }
-  get direction() {
-    return this._direction
-  }
-  set x(value) {
-    this._x = value
-    //this.renderable.prop.x = value * 32
-  }
-  set y(value) {
-    this._y = value
-    //this.renderable.prop.y = value * 32
-  }
-  set direction(value) {
-    this._direction = value
-    switch (this._direction) {
-      case 'down':
-        this._tileId = this.renderable.prop.tileId = 1
-        break
-      case 'left':
-        this._tileId = this.renderable.prop.tileId = 4
-        break
-      case 'right':
-        this._tileId = this.renderable.prop.tileId = 7
-        break
-      case 'up':
-        this._tileId = this.renderable.prop.tileId = 10
-        break
-    }
-  }
-  set tileId(value) {
-    this._tileId = value
-    this.renderable.prop.tileId = value
-  }
-  move(x, y) {
-    this._x = x
-    this._y = y
-    this.renderable.prop.x = this._x * TILESIZE
-    this.renderable.prop.y = this._y * TILESIZE
-  }
-  fix() {
-    this.renderable.prop.x = this.x * TILESIZE
-    this.renderable.prop.y = this.y * TILESIZE
-    this.renderable.prop.tileId = this.tileId
-  }
-}
 
-class ItemState {
-  constructor(name) {
-    this.name = name
-    this.type = 'none'
-  }
-}
-
-class WeaponState extends ItemState {
-  constructor(name, type, atk) {
-    super(name)
-    this.type = 'weapon'
-    this.weaponType = type
-    this.atk = atk
-    this.isSoiled = false
-    this.isStable = false
-  }
-}
-
-class FoodState extends ItemState {
-  constructor(name, satiety) {
-    super(name)
-    this.type = 'food'
-    this.satiety = satiety
-  }
-}
-
-class SeedState extends ItemState {
-  constructor(name, item, growthPeriods, minimumNutrition) {
-    super(name)
-    this.type = 'seed'
-    this.species = item
-    this.requireTime = growthPeriods[growthPeriods.length-1]
-    this.growthPeriods = growthPeriods
-    this.minimumNutrition = minimumNutrition
-  }
-}
-
-class Item extends GameObject {
-  constructor(stat, renderable, x, y, tileId) {
-    super(renderable, x, y, tileId)
-    this.stat = stat
-  }
-}
-
-class CharaStatus {
-  constructor(name, maxhp, atk, def, luk, isEnemy=false) {
-    this.name = name
-    this.maxhp = maxhp
-    this.hp = maxhp
-    this.atk = atk
-    this.def = def
-    this.luk = luk
-    this.satiety = 3000
-    this.maxSatiety = 3000
-    this.itemList = [null, null, null, null, null]
-    this.money = 0
-    this.holding = null
-    this.isEnemy = isEnemy
-    this.isDead = false
-  }
-}
-
-class Character extends GameObject {
-  constructor(stat, renderable, x, y, tileId) {
-    super(renderable, x, y, tileId)
-    this.stat = stat
-  }
-}
-
-class Seedling {
-  constructor(seed) {
-    this.seed = seed
-    this.nutrition = 0
-    this.period = 0
-    this.elapsed = 0
-  }
-}
-
-class FarmState {
-  constructor(seedling, nutrition, water) {
-    this.seedling = seedling
-    this.nutrition = nutrition
-    this.water = water
-  }
-}
-
-class Farm extends GameObject {
-  constructor(stat, renderable, x, y) {
-    super(renderable, x, y, 100)
-    this.stat = stat
-  }
-}
-
-class MessageWindow {
-  constructor(maxlen, fontsize) {
-    this.messages = []
-    this.maxlen = maxlen
-    this.fontSize = fontsize
-    this.height = (this.fontSize+4)*this.maxlen
-    this.width = 800
-  }
-  push(mes) {
-    this.messages.push(mes)
-    while (this.messages.length > this.maxlen) {
-      this.messages.shift()
-    }
-  }
-  render(ctx, x, y) {
-    ctx.textBaseline = 'top'
-    ctx.font = `${this.fontSize}px sans`
-    ctx.fillStyle = 'rgba(50, 50, 50, 0.7)';
-    ctx.fillRect(x, y, 800, this.height)
-    for (let j=0; j < this.messages.length; ++j) {
-      ctx.fillStyle = 'white'
-      ctx.fillText(this.messages[j], 0, y+this.fontSize*j+4*j)
-    }
-  }
-}
-
-class Camera {
-  constructor(x, y) {
-    this.x = x
-    this.y = y
-    this.isFixed = false
-    this.fixedX = x
-    this.fixedY = y
-  }
-  getPosition() {
-    if (this.isFixed) {
-      return {x: this.fixedX, y: this.fixedY}
-    } else {
-      return {x: this.x, y: this.y}
-    }
-  }
-  fix() {
-    this.isFixed = true
-    this.fixedX = this.x
-    this.fixedY = this.y
-  }
-  unfix() {
-    this.isFixed = false
-  }
-}
 
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
