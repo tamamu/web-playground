@@ -46,6 +46,9 @@ const renderText = (ctx, props) => {
       if (chars[i].isNewline) {
         x = 0;
         y += fontSize;
+        if (y > height) {
+          console.error('テキストがレイヤーをはみ出しています。')
+        }
       } else {
         x += renderChar(ctx, chars[i], x, y);
       }

@@ -11,6 +11,7 @@ import Stage from './atoms/Stage'
 import Text from './atoms/Text'
 import createFinalState from './store'
 import * as TextAction from './actions/Text'
+import * as ScriptAction from './actions/Script'
 import logo from './logo.svg';
 import tamamu from './image.jpg';
 import './App.css';
@@ -22,12 +23,12 @@ const timeout = ms => new Promise(r => setTimeout(r, ms))
 
 const rawCommands = Parser.parse(`
 *start
+クリックでスタート[l][cm]
 Hello, world![r]
 テストです
 次へ進むにはクリックしてください[l]
-クリックされました[cm]
-
-テキストレイヤーに指定した行数を越えると自動で改ページされます
+クリックされました[l]
+テキストレイヤーに指定した行数を越えるとエラーメッセージ[cm]
 クリックしてください[l][cm]
 以上です
 `);
@@ -65,17 +66,17 @@ function stringToChars(str) {
 function commandToAction(com) {
   switch (com.name) {
     case 'l':
-      break;
+      return ScriptAction.stop()
     case 'cm':
       return TextAction.clear()
-      break;
+    default:
+      return null
   }
 }
 
 class App extends Component {
   constructor() {
     super()
-    this.forwarding = false
     this.actions = [];
     this.actionIndex = 0;
     for (let com of rawCommands) {
@@ -83,9 +84,10 @@ class App extends Component {
         case 'text':
           let content = com.content
           this.actions.push(TextAction.push(stringToChars(content)))
-          for (let i = 0; i < content.length; i++) {
+          for (let i = 0; i <= content.length; i++) {
             this.actions.push(TextAction.forward())
           }
+          break
         case 'command':
           let act = commandToAction(com)
           if (act) {
@@ -97,58 +99,42 @@ class App extends Component {
       }
     }
     console.log(this.actions)
-  }
-  changeText() {
-    const _chars = [
-      {string:'H', color: 'red'},
-      {string:'e', color: 'orange'},
-      {string:'l', color: 'yellow'},
-      {string:'l', color: 'lightgreen'},
-      {string:'o', color: 'green'},
-      {string:',', color: 'lightblue'},
-      {string:' '},
-      {string:'w', color: 'blue'},
-      {string:'o', color: 'purple'},
-      {string:'r', color: 'black'},
-      {string:'l', color: 'rgba(0,0,0,0.9)'},
-      {string:'d', color: 'rgba(0,0,0,0.8)'},
-      {string:'!', color: 'rgba(0,0,0,0.7)'},
-      {isNewline:true},
-      {string:'あ', color: 'rgba(0,0,0,0.6)'},
-      {string:'い', color: 'rgba(0,0,0,0.5)'},
-      {string:'ろ', color: 'rgba(0,0,0,0.4)'},
-      {string:'あ', color: 'rgba(0,0,0,0.3)'}
-    ]
-    store.dispatch(TextAction.change(_chars));
+    store.dispatch(ScriptAction.click())
+    this.processAction.bind(this)()
   }
   async processAction() {
-    store.dispatch(this.actions[this.actionIndex])
-    this.actionIndex += 1
+    const script = store.getState().script
+    if (script.forwarding) {
+      store.dispatch(this.actions[this.actionIndex])
+      this.actionIndex += 1
+    }
     await timeout(50)
     if (this.actionIndex < this.actions.length) {
       this.processAction()
     }
   }
   toggleForwarding() {
-    this.forwarding = !this.forwarding
-    if (this.forwarding) this.forwardText.bind(this)()
-  }
-  pushed() {
-    console.log("pushed Button component")
-  }
-  async forwardText() {
-    if (this.forwarding) {
-      store.dispatch(TextAction.forward());
-      await timeout(50)
-      this.forwardText()
+    const script = store.getState().script
+    if (script.forwarding) {
+      store.dispatch(ScriptAction.stop())
+    } else {
+      store.dispatch(ScriptAction.click())
     }
+  }
+  defaultClickAction(e) {
+    console.log(e)
+    store.dispatch(ScriptAction.click())
+  }
+  pushed(e) {
+    console.log("pushed Button component")
+    e.stopPropagation()
   }
   render() {
     return (
       <Provider store={store}>
         <div className="App">
           <div>
-            <Stage width={640} height={480}>
+            <Stage width={640} height={480} onClick={this.defaultClickAction}>
               <Layer width={320} height={240} x={32} y={48}>
                 <Rect color="red" x={12} y={120} width={60} height={60} />
                 <Rect color="green" x={42} y={20} width={160} height={90} />
@@ -158,9 +144,7 @@ class App extends Component {
               <TextLayer width={640} height={100} y={380} />
             </Stage>
           </div>
-          <button onClick={this.changeText}>Change Text</button>
           <button onClick={this.toggleForwarding.bind(this)}>Forward On/Off</button>
-          <button onClick={this.processAction.bind(this)}>Start</button>
         </div>
       </Provider>
     );
