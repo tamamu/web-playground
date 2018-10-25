@@ -24,3 +24,16 @@ export function hide() {
     type: Text.HIDE_TEXT
   }
 }
+
+export function push(chars) {
+  return {
+    type: Text.PUSH_TEXT,
+    chars
+  }
+}
+
+export function clear() {
+  return {
+    type: Text.CLEAR,
+  }
+}

@@ -33,6 +33,17 @@ export default function text(state = initialState, action) {
         ...state,
         show: false
       };
+    case Text.PUSH_TEXT:
+      return {
+        ...state,
+        chars: state.chars.concat(action.chars),
+      };
+    case Text.CLEAR:
+      return {
+        ...state,
+        chars: [],
+        renderedIndex: 0,
+      };
     default:
       return state;
   }

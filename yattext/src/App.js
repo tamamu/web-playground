@@ -12,13 +12,29 @@ import Text from './atoms/Text'
 import createFinalState from './store'
 import * as TextAction from './actions/Text'
 import logo from './logo.svg';
-import tamamu from './tamamu.png';
+import tamamu from './image.jpg';
 import './App.css';
+import Parser from 'script-parser'
 
 const store = createFinalState();
 
 const timeout = ms => new Promise(r => setTimeout(r, ms))
 
+const rawCommands = Parser.parse(`
+*start
+Hello, world![r]
+テストです
+次へ進むにはクリックしてください[l]
+クリックされました[cm]
+
+テキストレイヤーに指定した行数を越えると自動で改ページされます
+クリックしてください[l][cm]
+以上です
+`);
+
+console.log(rawCommands)
+
+/*
 const rawCommands = [
   {type: 'text', content: 'Hello, world!'},
   {type: 'text', content: 'テストです'},
@@ -31,6 +47,7 @@ const rawCommands = [
   {type: 'command', name: 'cm', args: {}},
   {type: 'text', content: '以上です'}
 ]
+*/
 
 function stringToChars(str) {
   let chars = []
@@ -41,6 +58,7 @@ function stringToChars(str) {
       chars.push({string: ch})
     }
   }
+  chars.push({isNewline: true})
   return chars
 }
 
@@ -49,6 +67,7 @@ function commandToAction(com) {
     case 'l':
       break;
     case 'cm':
+      return TextAction.clear()
       break;
   }
 }
@@ -63,12 +82,15 @@ class App extends Component {
       switch (com.type) {
         case 'text':
           let content = com.content
-          this.actions.push(TextAction.change(stringToChars(content)))
+          this.actions.push(TextAction.push(stringToChars(content)))
           for (let i = 0; i < content.length; i++) {
             this.actions.push(TextAction.forward())
           }
         case 'command':
-          //this.actions.push(commandToAction(com))
+          let act = commandToAction(com)
+          if (act) {
+            this.actions.push(act)
+          }
           break
         default:
           break
