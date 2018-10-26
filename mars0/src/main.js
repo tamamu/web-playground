@@ -43,6 +43,53 @@ function checkNpcFloor() {
 }
 
 const testMap = [
+  [
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
+  ],[
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,86,87,-1,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,80,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,104,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,80,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,104,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,89,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,88,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,208,209,210,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,48,49,48,49,48,49,48,49,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,216,217,218,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,224,225,226,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,85,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,93,93,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,95,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,65,56,57,56,57,56,57,-1,-1,-1,],
+    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,56,57,-1,-1,-1,-1,-1,92,-1,-1,-1,]
+  ]
+]
+
+/*
+const testMap = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
@@ -58,7 +105,7 @@ const testMap = [
   [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
-
+*/
 
 
 
@@ -155,7 +202,7 @@ export default class MarsZero {
       this.tm1 = new TileManager("./resources/base.png", 16, 16)
       this.tm2 = new TileManager("./resources/kabe-ue_doukutu1.png", 16, 16)
       this.tm3 = new TileManager("./resources/pipo-charachip002a.png", 32, 32)
-      this.tm4 = new TileManager("./resources/pipo-charachip019c.png", 32, 32)
+      let tm4 = new TileManager("./resources/pipo-charachip019c.png", 32, 32)
       this.tm_coin = new TileManager("./resources/icon020.png", 24, 24)
       this.tm_apple = new TileManager("./resources/icon028.png", 24, 24)
       this.tm_sword = new TileManager("./resources/icon002.png", 24, 24)
@@ -165,21 +212,22 @@ export default class MarsZero {
     // } End Tile Manage Test
     // Animation Test {
       let p = createWalkAnimatable(this.tm3, 1*TILESIZE, 1*TILESIZE, 1)
-      let e = createWalkAnimatable(this.tm4, 9*TILESIZE, 1*TILESIZE, 5)
       let c = new Renderable(1*TILESIZE, 4*TILESIZE, this.tm_coin, 0)
       let a = new Renderable(8*TILESIZE, 8*TILESIZE, this.tm_apple, 0)
       let sw = new Renderable(10*TILESIZE, 4*TILESIZE, this.tm_sword, 0)
       let sp = new Renderable(10*TILESIZE, 5*TILESIZE, this.tm_spear, 0)
       let ha = new Renderable(10*TILESIZE, 6*TILESIZE, this.tm_hammer, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
-      let eStat = new CharaStatus("Enemy", 10, 5, 4, 3, true)
       let cStat = new ItemState("Coin")
       let aStat = new FoodState("Apple", 300)
       let swStat = new WeaponState("Sword", 'sword', 20)
       let spStat = new WeaponState("Spear", 'spear', 20)
       let haStat = new WeaponState("Hammer", 'hammer', 20)
+      function makeEnemy(x, y) {
+        let e = createWalkAnimatable(tm4, x*TILESIZE, y*TILESIZE, 5)
+        return new Character(new CharaStatus("Enemy", 30, 10, 10, 10, true), e, x, y)
+      }
       this.player = new Character(pStat, p, 1, 1, 1)
-      this.enemy = new Character(eStat, e, 9, 1, 5)
       this.coin = new Item(cStat, c, 1, 4, 0)
       this.apple = new Item(aStat, a, 8, 8, 0)
       this.sword = new Item(swStat, sw, 10, 4, 0)
@@ -204,16 +252,27 @@ export default class MarsZero {
       //this.renderableList.push(e)
       //this.renderableList.push(c)
       this.playerList.push(this.player)
-      this.npcList.push(this.enemy)
+      this.npcList.push(makeEnemy(3, 3))
+      this.npcList.push(makeEnemy(3, 4))
+      this.npcList.push(makeEnemy(4, 3))
+      this.npcList.push(makeEnemy(4, 4))
+      this.npcList.push(makeEnemy(4, 5))
+      this.npcList.push(makeEnemy(5, 4))
     // } End Animation Test
 
     this.lifecycle = this.genLifeCycle()
   }
   colWall(x, y) {
-    return this.field[y][x] == 1
+    if (y >= this.field[0].length || y < 0 || x >= this.field[0][y].length || x < 0) {
+      return true
+    }
+    return this.field[0][y][x] == 1
   }
   collision(x, y) {
-    return this.field[y][x] == 1 || this.detectEnemy(x, y) || (this.player.x == x && this.player.y == y)
+    if (y >= this.field[0].length || y < 0 || x >= this.field[0][y].length || x < 0) {
+      return true
+    }
+    return this.field[0][y][x] == 1 || this.detectEnemy(x, y) || (this.player.x == x && this.player.y == y)
   }
   detectEnemy(x, y) {
     console.log(this.npcList)
@@ -572,56 +631,57 @@ export default class MarsZero {
     }
   }
   npcAction() {
-    console.log("npcAction")
-    if (Math.random() < 0.3) {
-      return this.npcAttack(this.enemy)
-    }
-    let x = Math.floor(Math.random() * 3 - 1)
-    let y = Math.floor(Math.random() * 3 - 1)
-    if (y < 0 && !this.collision(this.enemy.x, this.enemy.y+y)) {
-      this.enemy.direction = 'up'
-      if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
-        this.syncAM.push(new Animation(this.enemy.renderable, "up-left", () => {
-          this.enemy.x -= 1
-          this.enemy.y -= 1
+    for (let npc of this.npcList) {
+      if (Math.random() < 0.3) {
+        return this.npcAttack(npc)
+      }
+      let x = Math.floor(Math.random() * 3 - 1)
+      let y = Math.floor(Math.random() * 3 - 1)
+      if (y < 0 && !this.collision(npc.x, npc.y+y)) {
+        npc.direction = 'up'
+        if (x < 0 && !this.collision(npc.x+x, npc.y+y)) {
+          this.syncAM.push(new Animation(npc.renderable, "up-left", () => {
+            npc.x -= 1
+            npc.y -= 1
+          }))
+        } else if (x > 0 && !this.collision(npc.x+x, npc.y+y)) {
+          this.syncAM.push(new Animation(npc.renderable, "up-right", () => {
+            npc.x += 1
+            npc.y -= 1
+          }))
+        } else {
+          this.syncAM.push(new Animation(npc.renderable, "up", () => {
+            npc.y -= 1
+          }))
+        }
+      } else if (y > 0 && !this.collision(npc.x, npc.y+y)) {
+        npc.direction = 'down'
+        if (x < 0 && !this.collision(npc.x+x, npc.y+y)) {
+          this.syncAM.push(new Animation(npc.renderable, "down-left", () => {
+            npc.x -= 1
+            npc.y += 1
+          }))
+        } else if (x > 0 && !this.collision(npc.x+x, npc.y+y)) {
+          this.syncAM.push(new Animation(npc.renderable, "down-right", () => {
+            npc.x += 1
+            npc.y += 1
+          }))
+        } else {
+          this.syncAM.push(new Animation(npc.renderable, "down", () => {
+            npc.y += 1
+          }))
+        }
+      } else if (x < 0 && !this.collision(npc.x+x, npc.y)) {
+        npc.direction = 'left'
+        this.syncAM.push(new Animation(npc.renderable, "left", () => {
+          npc.x -= 1
         }))
-      } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
-        this.syncAM.push(new Animation(this.enemy.renderable, "up-right", () => {
-          this.enemy.x += 1
-          this.enemy.y -= 1
-        }))
-      } else {
-        this.syncAM.push(new Animation(this.enemy.renderable, "up", () => {
-          this.enemy.y -= 1
+      } else if (x > 0 && !this.collision(npc.x+x, npc.y)) {
+        npc.direction = 'right'
+        this.syncAM.push(new Animation(npc.renderable, "right", () => {
+          npc.x += 1
         }))
       }
-    } else if (y > 0 && !this.collision(this.enemy.x, this.enemy.y+y)) {
-      this.enemy.direction = 'down'
-      if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
-        this.syncAM.push(new Animation(this.enemy.renderable, "down-left", () => {
-          this.enemy.x -= 1
-          this.enemy.y += 1
-        }))
-      } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y+y)) {
-        this.syncAM.push(new Animation(this.enemy.renderable, "down-right", () => {
-          this.enemy.x += 1
-          this.enemy.y += 1
-        }))
-      } else {
-        this.syncAM.push(new Animation(this.enemy.renderable, "down", () => {
-          this.enemy.y += 1
-        }))
-      }
-    } else if (x < 0 && !this.collision(this.enemy.x+x, this.enemy.y)) {
-      this.enemy.direction = 'left'
-      this.syncAM.push(new Animation(this.enemy.renderable, "left", () => {
-        this.enemy.x -= 1
-      }))
-    } else if (x > 0 && !this.collision(this.enemy.x+x, this.enemy.y)) {
-      this.enemy.direction = 'right'
-      this.syncAM.push(new Animation(this.enemy.renderable, "right", () => {
-        this.enemy.x += 1
-      }))
     }
   }
   checkPlayerFloor() {
@@ -804,7 +864,8 @@ export default class MarsZero {
     })
   }
   renderFieldTile(id, x, y) {
-    this.tm1.render(this.ctx, 8*162, x, y, TILESIZE, TILESIZE)
+    //this.tm1.render(this.ctx, 8*162, x, y, TILESIZE, TILESIZE)
+    /*
     switch (id) {
       case 0:
         //this.ctx.fillStyle = "#efefef"
@@ -816,12 +877,18 @@ export default class MarsZero {
         this.ctx.fillStyle = "red"
         break
     }
+    */
+    if (id > 0) {
+      this.tm1.render(this.ctx, id, x, y, TILESIZE, TILESIZE)
+    }
     //this.ctx.fillRect(x, y, x+TILESIZE, y+TILESIZE)
   }
   renderField(mx, my, gx, gy) {
-    for (let y = Math.max(my, 0); y < this.field.length; ++y) {
-      for (let x = Math.max(mx, 0); x < this.field[y].length; ++x) {
-        this.renderFieldTile(this.field[y][x], x*TILESIZE+gx, y*TILESIZE+gy)
+    for (let h = 0; h < this.field.length; ++h) {
+      for (let y = Math.max(my, 0); y < this.field[h].length; ++y) {
+        for (let x = Math.max(mx, 0); x < this.field[h][y].length; ++x) {
+          this.renderFieldTile(this.field[h][y][x], x*TILESIZE+gx, y*TILESIZE+gy)
+        }
       }
     }
   }
