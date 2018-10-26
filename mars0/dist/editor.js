@@ -19,10 +19,15 @@ class TileManager {
   }
 }
 
-function renderTiles(ctx, tiles, tm) {
-  for (let j=0; j < tiles.length; ++j) {
-    for (let k=0; k < tiles[j].length; ++k) {
-      tm.render(ctx, tiles[j][k], k*24, j*24, 24, 24)
+function renderTiles(ctx, tiles, tm, selectedLayer) {
+  for (let h=0; h < tiles.length; ++h) {
+    ctx.globalAlpha = h == selectedLayer ? 1 : 0.3
+    for (let j=0; j < tiles[h].length; ++j) {
+      for (let k=0; k < tiles[h][j].length; ++k) {
+        if (tiles[h][j][k] >= 0) {
+          tm.render(ctx, tiles[h][j][k], k*24, j*24, 24, 24)
+        }
+      }
     }
   }
 }
@@ -32,21 +37,26 @@ class MouseManager {
     this.clicked = false
     this.x = 0
     this.y = 0
+    this.shift = false
   }
   onMouseMove(e) {
     this.x = e.layerX
     this.y = e.layerY
+    this.shift = e.shiftKey
   }
   onMouseDown(e) {
     this.clicked = true
+    this.shift = e.shiftKey
   }
   onMouseUp(e) {
     this.clicked = false
+    this.shift = e.shiftKey
   }
   onMouseClick(e) {
     this.clicked = true
     this.x = e.layerX
     this.y = e.layerY
+    this.shift = e.shiftKey
   }
   setEvent(target) {
     target.onmousemove = this.onMouseMove.bind(this)
@@ -54,10 +64,17 @@ class MouseManager {
 }
 
 class Main {
-  constructor(canvas, base, tileCursor) {
-    this.tiles = new Array(20)
-    for (let y=0; y < 20; ++y) {
-      this.tiles[y] = new Array(30).fill(129)
+  constructor(canvas, base, tileCursor, changer) {
+    this.tiles = new Array(2)
+    for (let h=0; h < 2; ++h) {
+      this.tiles[h] = new Array(20)
+      for (let y=0; y < 20; ++y) {
+        if (h==0) {
+          this.tiles[h][y] = new Array(30).fill(129)
+        } else {
+          this.tiles[h][y] = new Array(30).fill(-1)
+        }
+      }
     }
     this.tm = new TileManager("./resources/base.png", 16, 16)
     this.canvas = canvas
@@ -67,6 +84,11 @@ class Main {
     this.tilesMouse = new MouseManager()
     this.baseMouse = new MouseManager()
     this.selectedTile = 0
+    this.selectedLayer = 0
+    this.changer = changer
+    this.changer.onclick = (e) => {
+      this.selectedLayer = this.selectedLayer == 0 ? 1 : 0
+    }
     canvas.onmousemove = this.tilesMouse.onMouseMove.bind(this.tilesMouse)
     canvas.onmousedown = this.tilesMouse.onMouseDown.bind(this.tilesMouse)
     canvas.onmouseup = this.tilesMouse.onMouseUp.bind(this.tilesMouse)
@@ -78,12 +100,16 @@ class Main {
   }
   showTilesArray() {
     let s = '['
-    for (let row of this.tiles) {
+    for (let h of this.tiles) {
       s+='['
-      for (let t of row) {
-        s+=t+','
+      for (let row of h) {
+        s+='['
+        for (let t of row) {
+          s+=t+','
+        }
+        s+='],'
       }
-      s+=']'
+      s+='],'
     }
     s+=']'
     console.log(s)
@@ -100,7 +126,7 @@ class Main {
       this.mx = Math.floor(this.tilesMouse.x / 24)
       this.my = Math.floor(this.tilesMouse.y / 24)
       if (this.tilesMouse.clicked) {
-        this.tiles[this.my][this.mx] = this.selectedTile
+        this.tiles[this.selectedLayer][this.my][this.mx] = this.tilesMouse.shift ? -1 : this.selectedTile
       }
     }
   }
@@ -110,7 +136,7 @@ class Main {
     this.tileCursor.style.transform = `translateX(${16*this.selX}px) translateY(${16*this.selY}px)`
     this.ctx.fillStyle = 'black'
     this.ctx.fillRect(0, 0, 24*30, 24*20)
-    renderTiles(this.ctx, this.tiles, this.tm)
+    renderTiles(this.ctx, this.tiles, this.tm, this.selectedLayer)
     this.ctx.fillStyle = 'red'
     this.ctx.fillRect(this.mx * 24, this.my * 24, 24, 24)
   }
@@ -125,8 +151,9 @@ window.onload = () => {
   let canvas = document.getElementById('tiles')
   let base = document.getElementById('base')
   let tileCursor = document.getElementById('cursor')
+  let changer = document.getElementById('changer')
   canvas.width = 24*30;
   canvas.height = 24*20;
-  let main = new Main(canvas, base, tileCursor)
+  let main = new Main(canvas, base, tileCursor, changer)
   requestAnimationFrame(main.mainLoop.bind(main))
 }
