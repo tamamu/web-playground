@@ -178,6 +178,95 @@ function createWalkAnimatable(tm, x, y, tileId) {
   })
 }
 
+class GameDate {
+  constructor() {
+    this.year = 0
+    this.month = 0
+    this.day = 1
+    this.hour = 0
+    this.minute = 0
+  }
+  elapse() {
+    while (this.minute >= 60) {
+      this.minute -= 60
+      this.hour += 1
+    }
+    while (this.hour >= 24) {
+      this.hour -= 24
+      this.day += 1
+    }
+    while (this.month >= 4) {
+      this.month -= 4
+      this.year += 1
+    }
+  }
+  elapseMinute(n) {
+    this.minute += n
+    this.elapse()
+  }
+  elapseDay(h) {
+    this.day += 1
+    this.hour = h
+    this.elapse()
+  }
+  getPeriod() {
+    if (0 <= this.hour && this.hour <= 4) {
+      return 'midnight'
+    } else if (5 <= this.hour && this.hour <= 10) {
+      return 'morning'
+    } else if (11 <= this.hour && this.hour <= 13) {
+      return 'noon'
+    } else if (14 <= this.hour && this.hour <= 17) {
+      return 'evening'
+    } else if (18 <= this.hour && this.hour <= 21) {
+      return 'night'
+    } else {
+      return 'midnight'
+    }
+  }
+  getSeason() {
+    return ['春','夏','秋','冬'][this.month]
+  }
+  getTime() {
+    return `${this.hour}:${('0' + this.minute).slice(-2)}`
+  }
+  render(ctx, x, y) {
+    ctx.fillStyle = 'rgba(50,50,50,0.7)'
+    ctx.fillRect(x, y, 200, 40)
+    ctx.fillStyle = 'white'
+    ctx.font = '18px sans'
+    ctx.fillText(`DATE: ${this.year+1}年 ${this.getSeason()}の月 ${this.day}日`, x, y)
+    ctx.fillText(`TIME: ${this.getTime()}`, x, y+18)
+  }
+  renderPeriodFilter(ctx, w, h) {
+    const period = this.getPeriod()
+    const m = this.hour * 60 + this.minute
+    const r = Math.abs(Math.max(0, Math.min(255, -301 + 1.01*m + -4.7e-4*m*m)))
+    const g = Math.abs(Math.max(0, Math.min(255, -129 + 0.59*m + -2.9e-4*m*m)))
+    const b = Math.abs(Math.max(0, Math.min(255, -62 + 0.34*m +  -1.4e-4*m*m)))
+    const a = 0.6-Math.sin(((m/8)/180)*Math.PI)*0.6
+    switch (period) {
+      case 'midnight':
+        ctx.fillStyle = 'rgba(20, 20, 60, 0.8)'
+        break
+      case 'morning':
+        ctx.fillStyle = 'rgba(60, 60, 80, 0.4)'
+        break
+      case 'noon':
+        ctx.fillStyle = 'rgba(255, 255, 200, 0.1)'
+        break
+      case 'evening':
+        ctx.fillStyle = 'rgba(255, 100, 100, 0.3)'
+        break
+      case 'night':
+        ctx.fillStyle = 'rgba(0, 0, 120, 0.5)'
+        break
+    }
+    //ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
+    ctx.fillRect(0, 0, w, h)
+  }
+}
+
 export default class MarsZero {
   constructor(ctx) {
     this.ctx = ctx
@@ -196,6 +285,7 @@ export default class MarsZero {
     this.inventoryTimer = new Date()
     this.showInventory = false
     this.inventoryOpacity = 0
+    this.date = new GameDate()
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -737,6 +827,7 @@ export default class MarsZero {
   }
   *genLifeCycle() {
     while(true) {
+      this.date.elapseMinute(60)
       checkEvent()
       //yield 1
       this.checkGrowth()
@@ -933,11 +1024,13 @@ export default class MarsZero {
       let holding = this.player.stat.holding.renderable
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx, this.player.renderable.prop.y+gy-20, TILESIZE, TILESIZE)
     }
-    this.renderFarmStat(mx, my, gx, gy)
     this.renderNpcHpGage(mx, my, gx, gy)
+    this.date.renderPeriodFilter(this.ctx, 800, 600)
+    this.renderFarmStat(mx, my, gx, gy)
     this.renderFarmDetail(mx, my, gx, gy)
     this.renderPlayerInventory(mx, my, gx, gy)
     this.renderInfo(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
+    this.date.render(this.ctx, 20, 120)
   }
 }
