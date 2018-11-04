@@ -5,6 +5,14 @@ export class ItemState {
   constructor(name) {
     this.name = name
     this.type = 'none'
+    this.isSoiled = false
+  }
+  get screenName() {
+    let n = this.name
+    if (this.isSoiled) {
+      n = '土を被った' + n
+    }
+    return n
   }
 }
 
