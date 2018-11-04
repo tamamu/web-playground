@@ -16,4 +16,9 @@ export default class TileManager {
     const iy = (id - ix) / this.numx
     ctx.drawImage(this.base, ix*this.width, iy*this.height, this.width, this.height, x, y, width, height)
   }
+  copy(ctx, id, x, y, w, h, rx, ry, rw, rh) {
+    const ix = id % this.numx
+    const iy = (id - ix) / this.numx
+    ctx.drawImage(this.base, ix*this.width+x, iy*this.height+y, w, h, rx, ry, rw, rh)
+  }
 }
