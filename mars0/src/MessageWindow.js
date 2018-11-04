@@ -4,7 +4,7 @@ export default class MessageWindow {
     this.messages = []
     this.maxlen = maxlen
     this.fontSize = fontsize
-    this.height = (this.fontSize+4)*this.maxlen
+    this.height = 32+(this.fontSize+6)*this.maxlen
     this.width = 800
   }
   push(mes) {
@@ -15,12 +15,15 @@ export default class MessageWindow {
   }
   render(ctx, x, y) {
     ctx.textBaseline = 'top'
-    ctx.font = `${this.fontSize}px sans`
-    ctx.fillStyle = 'rgba(50, 50, 50, 0.7)';
-    ctx.fillRect(x, y, 800, this.height)
+    ctx.font = `400 ${this.fontSize}px 'M PLUS Rounded 1c'`
+    ctx.lineJoin = 'round'
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(x+12, y+12, 800-24, this.height-24)
+    ctx.strokeStyle = 'white'
+    ctx.strokeRect(x+12, y+12, 800-24, this.height-24)
     for (let j=0; j < this.messages.length; ++j) {
       ctx.fillStyle = 'white'
-      ctx.fillText(this.messages[j], 0, y+this.fontSize*j+4*j)
+      ctx.fillText(this.messages[j], 18, y+18+this.fontSize*j+6*j)
     }
   }
 }
