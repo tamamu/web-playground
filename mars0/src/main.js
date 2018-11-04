@@ -241,10 +241,44 @@ class GameDate {
   renderPeriodFilter(ctx, w, h) {
     const period = this.getPeriod()
     const m = this.hour * 60 + this.minute
-    const r = Math.abs(Math.max(0, Math.min(255, -301 + 1.01*m + -4.7e-4*m*m)))
-    const g = Math.abs(Math.max(0, Math.min(255, -129 + 0.59*m + -2.9e-4*m*m)))
-    const b = Math.abs(Math.max(0, Math.min(255, -62 + 0.34*m +  -1.4e-4*m*m)))
-    const a = 0.6-Math.sin(((m/8)/180)*Math.PI)*0.6
+    let r, g, b, a
+    if (-270 <= m && m < 120) {
+      const t = (m+270)/(120+270)
+      r = t * 20
+      g = t * 20
+      b = 120 - t * 60
+      a = 0.5 + t * 0.3
+    } else if (120 <= m && m <= 450) {
+      const t = (m-120)/(450-120)
+      r = 20 + t * 40
+      g = 20 + t * 40
+      b = 60 + t * 20
+      a = 0.8 - t * 0.4
+    } else if (450 < m && m <= 720) {
+      const t = (m-450)/(720-450)
+      r = 60 + t * 195
+      g = 60 + t * 195
+      b = 80 + t * 120
+      a = 0.4 - t * 0.3
+    } else if (720 < m && m <= 930) {
+      const t = (m-720)/(930-720)
+      r = 255
+      g = 255 - t * 155
+      b = 200 - t * 100
+      a = 0.1 + t * 0.2
+    } else if (930 < m && m <= 1170) {
+      const t = (m-930)/(1170-930)
+      r = 255 - t * 255
+      g = 100 - t * 100
+      b = 100 + t * 20
+      a = 0.3 + t * 0.2
+    } else if (1170 < m <= 1500) {
+      const t = (m-1170)/(1500-1170)
+      r = t * 20
+      g = t * 20
+      b = 120 - t * 60
+      a = 0.5 + t * 0.3
+    }
     switch (period) {
       case 'midnight':
         ctx.fillStyle = 'rgba(20, 20, 60, 0.8)'
@@ -262,7 +296,7 @@ class GameDate {
         ctx.fillStyle = 'rgba(0, 0, 120, 0.5)'
         break
     }
-    //ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
     ctx.fillRect(0, 0, w, h)
   }
 }
@@ -286,6 +320,7 @@ export default class MarsZero {
     this.showInventory = false
     this.inventoryOpacity = 0
     this.date = new GameDate()
+    this.date.elapseMinute(720)
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -298,6 +333,7 @@ export default class MarsZero {
       this.tm_sword = new TileManager("./resources/icon002.png", 24, 24)
       this.tm_spear = new TileManager("./resources/icon004.png", 24, 24)
       this.tm_hammer = new TileManager("./resources/icon003.png", 24, 24)
+      this.tm_pot = new TileManager("./resources/icon030.png", 24, 24)
       let tm_seed = new TileManager("./resources/icon021.png", 24, 24)
     // } End Tile Manage Test
     // Animation Test {
@@ -307,15 +343,19 @@ export default class MarsZero {
       let sw = new Renderable(10*TILESIZE, 4*TILESIZE, this.tm_sword, 0)
       let sp = new Renderable(10*TILESIZE, 5*TILESIZE, this.tm_spear, 0)
       let ha = new Renderable(10*TILESIZE, 6*TILESIZE, this.tm_hammer, 0)
+      let po = new Renderable(3*TILESIZE, 2*TILESIZE, this.tm_pot, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
-      let cStat = new ItemState("Coin")
-      let aStat = new FoodState("Apple", 300)
-      let swStat = new WeaponState("Sword", 'sword', 20)
-      let spStat = new WeaponState("Spear", 'spear', 20)
-      let haStat = new WeaponState("Hammer", 'hammer', 20)
+      let cStat = new ItemState("コイン")
+      let aStat = new FoodState("りんご", 300)
+      let swStat = new WeaponState("テストソード", 'sword', 20, 0.1)
+      let spStat = new WeaponState("テストスピア", 'spear', 20, 0.1)
+      let haStat = new WeaponState("テストハンマー", 'hammer', 20, 0.1)
+      let poStat = new WeaponState("テストじょうろ", 'watering', 5, 0.1)
+      poStat.isStable = true
+      poStat.water = 720*3
       function makeEnemy(x, y) {
         let e = createWalkAnimatable(tm4, x*TILESIZE, y*TILESIZE, 5)
-        return new Character(new CharaStatus("Enemy", 30, 10, 10, 10, true), e, x, y)
+        return new Character(new CharaStatus("テストくん", 30, 10, 10, 10, true), e, x, y)
       }
       this.player = new Character(pStat, p, 1, 1, 1)
       this.coin = new Item(cStat, c, 1, 4, 0)
@@ -323,21 +363,25 @@ export default class MarsZero {
       this.sword = new Item(swStat, sw, 10, 4, 0)
       this.spear = new Item(spStat, sp, 10, 5, 0)
       this.hammer = new Item(haStat, ha, 10, 6, 0)
-      let sStat = new SeedState("CoinSeed", this.coin, [5], 3)
-      function makeCoinSeed(x, y) {
+      this.pot = new Item(poStat, po, 3, 2, 0)
+      let sStat = new SeedState("コインの種", this.coin, [5], 3)
+      let swsStat = new SeedState("テストソードの種", this.sword, [10], 3)
+      function makeSeed(stat, x, y) {
         let s = new Renderable(x*TILESIZE, y*TILESIZE, tm_seed, 0)
-        return new Item(sStat, s, x, y, 0)
+        return new Item(stat, s, x, y, 0)
       }
       this.dropList.push(this.coin)
       this.dropList.push(this.apple)
       this.dropList.push(this.sword)
       this.dropList.push(this.spear)
       this.dropList.push(this.hammer)
-      this.dropList.push(makeCoinSeed(10, 10))
-      this.dropList.push(makeCoinSeed(8, 7))
-      this.dropList.push(makeCoinSeed(12, 5))
-      this.dropList.push(makeCoinSeed(16, 1))
-      this.dropList.push(makeCoinSeed(1, 5))
+      this.dropList.push(this.pot)
+      this.dropList.push(makeSeed(sStat, 10, 10))
+      this.dropList.push(makeSeed(sStat, 8, 7))
+      this.dropList.push(makeSeed(sStat, 12, 5))
+      this.dropList.push(makeSeed(sStat, 16, 1))
+      this.dropList.push(makeSeed(sStat, 1, 5))
+      this.dropList.push(makeSeed(swsStat, 5, 5))
       //this.renderableList.push(p)
       //this.renderableList.push(e)
       //this.renderableList.push(c)
@@ -369,6 +413,14 @@ export default class MarsZero {
     for (const npc of this.npcList) {
       if (npc.x == x && npc.y == y && npc.stat.isEnemy) {
         return npc
+      }
+    }
+    return null
+  }
+  detectFarm(x, y) {
+    for (const farm of this.farmList) {
+      if (farm.x == x && farm.y == y) {
+        return farm
       }
     }
     return null
@@ -477,9 +529,23 @@ export default class MarsZero {
       if (enemies.length > 0) {
         console.log(`${enemies.length} enemies`)
         enemies.map(e => {
-          let damage = Math.max(0, this.calcDamage((this.player.stat.atk + (weapon ? weapon.stat.atk : 0))*e.mag, e.target.stat.def))
+          let w = 0
+          if (weapon) {
+            w = weapon.stat.atk
+            if (weapon.stat.isSoiled) {
+              w /= 2
+            }
+            if (!weapon.stat.isStable) {
+              w -= Math.random() * w
+            }
+          }
+          let damage = Math.max(0, this.calcDamage((this.player.stat.atk + w)*e.mag, e.target.stat.def))
           this.damage(this.player, e.target, damage)
         })
+        if (weapon && Math.random() < weapon.stat.stableRate) {
+          weapon.stat.isStable = true
+          this.messageWindow.push(`${weapon.stat.screenName}は安定した。`)
+        }
       } else {
         this.messageWindow.push("そこには誰もいない。")
       }
@@ -499,7 +565,7 @@ export default class MarsZero {
       case 'right':
         enemy = (npc.x+1==this.player.x && npc.y==this.player.y) ? this.player : this.detectEnemy(npc.x+1, npc.y)
         break
-      case 'down':
+      case 'up':
         enemy = (npc.x==this.player.x && npc.y-1==this.player.y) ? this.player : this.detectEnemy(npc.x, npc.y-1)
         break
     }
@@ -588,7 +654,26 @@ export default class MarsZero {
       if (this.player.stat.holding && this.player.stat.holding.stat.type != 'weapon') {
         return this.playerUseHolding()
       } else {
-        return this.playerAttack()
+        let enemy = null
+        switch (this.player.direction) {
+          case 'down':
+            enemy = this.detectEnemy(this.player.x, this.player.y+1)
+            break
+          case 'left':
+            enemy = this.detectEnemy(this.player.x-1, this.player.y)
+            break
+          case 'right':
+            enemy = this.detectEnemy(this.player.x+1, this.player.y)
+            break
+          case 'up':
+            enemy = this.detectEnemy(this.player.x, this.player.y-1)
+            break
+        }
+        if (this.player.stat.holding && this.player.stat.holding.stat.type == 'weapon' && this.player.stat.holding.stat.weaponType == 'watering' && !enemy) {
+          return this.playerUseHolding()
+        } else {
+          return this.playerAttack()
+        }
       }
     } else if (keys["j"]) {
       this.playerInventorySpin(true)
@@ -615,13 +700,13 @@ export default class MarsZero {
     console.log(head)
     if (holding != null) {
       if (head != null) {
-        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}をカバンにしまい、${head.stat.name}を取り出した。`)
+        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}をカバンにしまい、${head.stat.name}を取り出した。`)
       } else {
-        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}をカバンにしまった。`)
+        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}をカバンにしまった。`)
       }
     } else {
       if (head) {
-        this.messageWindow.push(`${this.player.stat.name}は${head.stat.name}を取り出した。`)
+        this.messageWindow.push(`${this.player.stat.name}は${head.stat.screenName}を取り出した。`)
       }
     }
     this.player.stat.holding = head
@@ -636,30 +721,64 @@ export default class MarsZero {
         this.playerEat()
         break
       case 'weapon':
-        this.playerAttack()
+        if (holding.stat.weaponType == 'watering') {
+          this.playerWater()
+        } else {
+          this.playerAttack()
+        }
         break
       default:
-        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を使おうとしたが、使い方が分からない！`)
+        this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}を使おうとしたが、使い方が分からない！`)
         break
     }
     return 2
   }
+  playerWater() {
+    const pot = this.player.stat.holding
+    if (pot.stat.water <= 0) {
+      this.messageWindow.push(`${pot.stat.screenName}に水が入っていない！`)
+      return
+    }
+    let target = null
+    switch (this.player.direction) {
+      case 'down':
+        target = this.detectFarm(this.player.x, this.player.y+1)
+        break
+      case 'left':
+        target = this.detectFarm(this.player.x-1, this.player.y)
+        break
+      case 'right':
+        target = this.detectFarm(this.player.x+1, this.player.y)
+        break
+      case 'up':
+        target = this.detectFarm(this.player.x, this.player.y-1)
+        break
+    }
+    if (!target) {
+      this.messageWindow.push('そこには何もない。')
+      return
+    }
+    let w = Math.min(pot.stat.water, 720)
+    target.stat.water += w
+    pot.stat.water -= w
+    this.messageWindow.push(`畑に水をやった。`)
+  }
   playerEat() {
     const holding = this.player.stat.holding
     this.player.stat.satiety += holding.stat.satiety
-    this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を食べた。`)
+    this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}を食べた。`)
     this.messageWindow.push(`お腹が膨れた。`)
     this.player.stat.holding = null
   }
   playerPlant() {
     const holding = this.player.stat.holding
     let farm = new Farm(
-      new FarmState(new Seedling(holding.stat), 5, 5),
+      new FarmState(new Seedling(holding.stat), 5, 0),
       new Renderable(this.player.x*TILESIZE, this.player.y*TILESIZE, this.tm1, 100),
       this.player.x,
       this.player.y
     )
-    this.messageWindow.push(`${this.player.stat.name}は${holding.stat.name}を地面に植えた。`)
+    this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}を地面に植えた。`)
     this.farmList.push(farm)
     this.player.stat.holding = null
     return 2
@@ -671,7 +790,25 @@ export default class MarsZero {
     if (seedling.period >= finalPeriod && seedling.elapsed >= seed.growthPeriods[finalPeriod]) {
       console.log(seed)
       let renderable = Renderable.copy(seed.species.renderable)
-      let item = new Item(seed.species.stat, renderable, farm.x, farm.y, renderable.prop.tileId)
+      let stat
+      switch (seed.species.stat.type) {
+        case 'none':
+          stat = new ItemState(seed.species.stat.name)
+          break
+        case 'food':
+          stat = new FoodState(seed.species.stat.name, seed.species.stat.satiety)
+          break
+        case 'weapon':
+          stat = new WeaponState(seed.species.stat.name, seed.species.stat.weaponType, seed.species.stat.atk)
+          break
+        case 'seed':
+          stat = new SeedState(seed.species.stat.name, seed.species.stat.species, seed.species.stat.growthPeriods, seed.species.stat.minimumNutrition)
+          break
+        default:
+          break
+      }
+      let item = new Item(stat, renderable, farm.x, farm.y, renderable.prop.tileId)
+      item.stat.isSoiled = true
       console.log(item)
       return item
     }
@@ -703,10 +840,10 @@ export default class MarsZero {
         holding.move(this.player.x, this.player.y)
         this.player.stat.holding = target
         this.dropList.push(holding)
-        this.messageWindow.push(`${target.stat.name}と床に落ちている${holding.stat.name}を交換した。`)
+        this.messageWindow.push(`${target.stat.screenName}と床に落ちている${holding.stat.screenName}を交換した。`)
       } else {
         this.player.stat.holding = target
-        this.messageWindow.push(`${target.stat.name}を拾った。`)
+        this.messageWindow.push(`${target.stat.screenName}を拾った。`)
       }
     } else {
       if (this.player.stat.holding) {
@@ -714,7 +851,7 @@ export default class MarsZero {
         holding.move(this.player.x, this.player.y)
         this.dropList.push(holding)
         this.player.stat.holding = null
-        this.messageWindow.push(`${holding.stat.name}を足元に置いた。`)
+        this.messageWindow.push(`${holding.stat.screenName}を足元に置いた。`)
       } else {
         this.messageWindow.push("そこには何もない。")
       }
@@ -777,7 +914,7 @@ export default class MarsZero {
   checkPlayerFloor() {
     for (let item of this.dropList) {
       if (this.player.x == item.x && this.player.y == item.y) {
-        this.messageWindow.push(`${item.stat.name}が床に落ちている。`)
+        this.messageWindow.push(`${item.stat.screenName}が床に落ちている。`)
       }
     }
     for (let farm of this.farmList) {
@@ -811,7 +948,7 @@ export default class MarsZero {
     }
   }
   updatePlayerStatus() {
-    this.player.stat.satiety -= 1
+    this.player.stat.satiety -= 10
     if (this.player.stat.satiety == Math.ceil(this.player.stat.maxSatiety*0.5)) {
       this.messageWindow.push(`${this.player.stat.name}はお腹がすいた。`)
     }
@@ -827,7 +964,7 @@ export default class MarsZero {
   }
   *genLifeCycle() {
     while(true) {
-      this.date.elapseMinute(60)
+      this.date.elapseMinute(5)
       checkEvent()
       //yield 1
       this.checkGrowth()
@@ -911,7 +1048,7 @@ export default class MarsZero {
       const remain = seedling.seed.requireTime - seedling.elapsed
       const requireWater = seedling.nutrition == 0 && stat.water == 0
       this.ctx.font = `${TILESIZE/4}px sans`
-      if (remain == 0) {
+      if (remain <= 0) {
         this.ctx.fillStyle = 'yellow'
         this.ctx.fillText("収穫可能", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       } else if (requireWater) {
@@ -919,7 +1056,7 @@ export default class MarsZero {
         this.ctx.fillText("水必要", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       } else {
         this.ctx.fillStyle = 'lightgreen'
-        this.ctx.fillText(`あと${remain}歩`, farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
+        this.ctx.fillText(`あと${remain}分`, farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       }
     })
   }
@@ -940,7 +1077,7 @@ export default class MarsZero {
         this.ctx.fillText(`名前: ${seedName}`, x, y)
         this.ctx.fillText(`栄養: ${nutrition}`, x, y+24+5)
         this.ctx.fillText(`水: ${water}`, x, y+(24+5)*2)
-        this.ctx.fillText(`残り${remain}歩`, x, y+(24+5)*3)
+        this.ctx.fillText(remain > 0 ? `残り${remain}分` : '収穫可能', x, y+(24+5)*3)
         break
       }
     }
