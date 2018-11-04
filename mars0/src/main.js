@@ -231,12 +231,10 @@ class GameDate {
     return `${this.hour}:${('0' + this.minute).slice(-2)}`
   }
   render(ctx, x, y) {
-    ctx.fillStyle = 'rgba(50,50,50,0.7)'
-    ctx.fillRect(x, y, 200, 40)
     ctx.fillStyle = 'white'
-    ctx.font = '18px sans'
+    ctx.font = "400 12px 'M PLUS Rounded 1c'"
     ctx.fillText(`DATE: ${this.year+1}年 ${this.getSeason()}の月 ${this.day}日`, x, y)
-    ctx.fillText(`TIME: ${this.getTime()}`, x, y+18)
+    ctx.fillText(`TIME: ${this.getTime()}`, x, y+12)
   }
   renderPeriodFilter(ctx, w, h) {
     const period = this.getPeriod()
@@ -314,9 +312,10 @@ export default class MarsZero {
     this.npcList = this.renderableList[3] = []
     this.holdingList = this.renderableList[4] = []
     this.keyStore = new KeyboardStore()
-    this.messageWindow = new MessageWindow(5, 20)
+    this.messageWindow = new MessageWindow(4, 20)
     this.camera = new Camera()
     this.inventoryTimer = new Date()
+    this.blinkTimer = new Date()
     this.showInventory = false
     this.inventoryOpacity = 0
     this.date = new GameDate()
@@ -990,26 +989,51 @@ export default class MarsZero {
     }
   }
   renderInfo(mx, my, gx, gy) {
-    this.ctx.font = '40px sans'
-    this.ctx.fillStyle = 'white'
     const stat = this.player.stat
     const hp = stat.hp
     const maxhp = stat.maxhp
     const money = stat.money
     const satiety = Math.ceil((stat.satiety / stat.maxSatiety) * 100)
-    this.ctx.fillText('1F', 32, 12)
-    this.ctx.fillText(`Lv 1`, 120, 12)
-    this.ctx.fillText(`HP  ${hp}/${maxhp}`, 300, 12)
-    this.ctx.fillText(`${satiety}%`, 560, 12)
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+    this.ctx.fillRect(12, 12, 232, 72)
+    this.ctx.strokeStyle = 'white'
+    this.ctx.strokeRect(12, 12, 232, 72)
+    this.ctx.globalAlpha = 0.3
+    this.player.renderable.tiles.render(this.ctx, 1, 12, 12, 64, 64)
+    const satietyCh = Math.max(0, Math.ceil(32 * (stat.satiety / stat.maxSatiety)))
+    const satietyRh = Math.max(0, Math.ceil(64 * (stat.satiety / stat.maxSatiety)))
+    this.ctx.globalAlpha = 1
+    this.player.renderable.tiles.copy(this.ctx, 1, 0, 32-satietyCh, 32, satietyCh, 12, 12+64-satietyRh, 64, satietyRh)
+    this.ctx.fillStyle = 'green'
+    this.ctx.fillRect(80, 32, (hp/maxhp) * 150, 12)
+    this.ctx.fillStyle = 'orange'
+    this.ctx.fillRect(80, 46, 150, 2)
+    this.ctx.font = "400 20px 'M PLUS Rounded 1c'"
+    //this.ctx.font = "400 20px 'Sawarabi Gothic'"
+    this.ctx.fillStyle = 'white'
+    this.ctx.strokeStyle = 'rgba(0, 0, 0, 1)'
+    this.ctx.lineJoin = 'round'
+    this.ctx.lineWidth = 1
+    //this.ctx.fillText(`Lv 1`, 120, 12)
+    this.ctx.fillText('HP', 80, 20)
+    //this.ctx.strokeText('HP', 80, 32)
+    //this.ctx.fillText(`${satiety}%`, 560, 12)
     this.ctx.textAlign = 'right'
-    this.ctx.fillText(`${money}G`, 768, 12)
+    //this.ctx.strokeText(`${satiety}%`, 66, 54)
+    this.ctx.fillText(`${hp}/${maxhp}`, 230, 20)
+    //this.ctx.strokeText(`${hp}/${maxhp}`, 230, 32)
+    this.ctx.fillText('1F / テスト広場', 780, 20)
+    this.ctx.font = "400 18px 'M PLUS Rounded 1c'"
+    this.ctx.fillText(`${satiety}%`, 66, 54)
+    //this.ctx.strokeText('1F / テスト広場', 780, 32)
+    //this.ctx.fillText(`${money}G`, 768, 12)
     this.ctx.textAlign = 'start'
   }
   renderPlayerInventory(mx, my, gx, gy) {
     const inventory = this.player.stat.itemList
     const x = 460, y = 412
     this.ctx.globalAlpha = this.inventoryOpacity
-    this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
     this.ctx.fillRect(x, y, TILESIZE*inventory.length, TILESIZE)
     this.ctx.beginPath()
     this.ctx.moveTo(x+TILESIZE*(inventory.length+1)+8, y)
@@ -1030,9 +1054,9 @@ export default class MarsZero {
       }
     }
     this.ctx.globalAlpha = 1
-    this.ctx.font = '12px sans'
+    this.ctx.font = "400 12px 'M PLUS Rounded 1c'"
     this.ctx.fillText('HOLD', x+TILESIZE*inventory.length, y-14)
-    this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
     this.ctx.fillRect(x+TILESIZE*inventory.length, y, TILESIZE, TILESIZE)
     if (this.player.stat.holding) {
       this.player.stat.holding.renderable.tiles.render(this.ctx, this.player.stat.holding.renderable.prop.tileId, x+TILESIZE*inventory.length, y, TILESIZE, TILESIZE)
@@ -1061,7 +1085,7 @@ export default class MarsZero {
     })
   }
   renderFarmDetail(mx, my, gx, gy) {
-    const x = 540, y = 50
+    const x = 12, y = 360
     for (const farm of this.farmList) {
       if (this.player.x == farm.x && this.player.y == farm.y) {
         const stat = farm.stat
@@ -1070,14 +1094,16 @@ export default class MarsZero {
         const remain = seedling.seed.requireTime - seedling.elapsed
         const water = stat.water
         const nutrition = stat.nutrition
-        this.ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'
-        this.ctx.fillRect(x, y, 240, 120)
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+        this.ctx.fillRect(x, y, 240, 84)
+        this.ctx.strokeStyle = 'white'
+        this.ctx.strokeRect(x, y, 240, 84)
         this.ctx.fillStyle = 'white'
-        this.ctx.font = '24px sans'
+        this.ctx.font = "400 16px 'M PLUS Rounded 1c'"
         this.ctx.fillText(`名前: ${seedName}`, x, y)
-        this.ctx.fillText(`栄養: ${nutrition}`, x, y+24+5)
-        this.ctx.fillText(`水: ${water}`, x, y+(24+5)*2)
-        this.ctx.fillText(remain > 0 ? `残り${remain}分` : '収穫可能', x, y+(24+5)*3)
+        this.ctx.fillText(`栄養: ${nutrition}`, x, y+16+4)
+        this.ctx.fillText(`水: ${water}`, x, y+(16+4)*2)
+        this.ctx.fillText(remain > 0 ? `残り${remain}分` : '収穫可能', x, y+(16+4)*3)
         break
       }
     }
@@ -1121,11 +1147,23 @@ export default class MarsZero {
     }
   }
   renderObjects(mx, my, gx, gy) {
+    const now = new Date()
+    const d = Math.min(8, (now - this.blinkTimer) / 200)
     for (let priority of this.renderableList) {
       for (let r of priority) {
-        r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
+        if (r.stat.type) {
+          this.ctx.globalAlpha = 0.8 - (d/10)
+          this.ctx.globalCompositeOperation = 'source-atop'
+          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx-d, r.renderable.prop.y+gy-d, TILESIZE+d*2, TILESIZE+d*2)
+          this.ctx.globalAlpha = 1
+          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
+          this.ctx.globalCompositeOperation = 'source-over'
+        } else {
+          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
+        }
       }
     }
+    if (d >= 8) this.blinkTimer = now
   }
   update() {
     //this.syncAM.process()
@@ -1168,6 +1206,6 @@ export default class MarsZero {
     this.renderPlayerInventory(mx, my, gx, gy)
     this.renderInfo(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
-    this.date.render(this.ctx, 20, 120)
+    this.date.render(this.ctx, 78, 50)
   }
 }
