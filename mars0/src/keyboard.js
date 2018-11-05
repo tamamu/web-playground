@@ -2,7 +2,7 @@
 export class KeyboardStore {
   constructor() {
     this.states = {}
-    this.lastGet = new Date()
+    this.lastOmit = new Date()
   }
   onKeyDown(e) {
     this.states[e.key] = true
@@ -18,8 +18,11 @@ export class KeyboardStore {
     }
     return result
     */
-    this.lastGet = new Date()
+    //this.lastGet = new Date()
     return this.states
+  }
+  omit() {
+    this.lastOmit = new Date()
   }
 }
 

@@ -112,38 +112,38 @@ const testMap = [
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
     "right-attack": [
-      new AnimationState(TILESIZE, 0, 7, 100),
-      new AnimationState(-TILESIZE, 0, 7, 100),
+      new AnimationState(TILESIZE, 0, 13, 90),
+      new AnimationState(-TILESIZE, 0, 13, 90),
     ],
     "right": [
-      new AnimationState(TILESIZE/4, 0, 6, 48),
-      new AnimationState(TILESIZE/4, 0, 7, 48),
-      new AnimationState(TILESIZE/4, 0, 8, 48),
-      new AnimationState(TILESIZE/4, 0, 7, 48),
+      new AnimationState(TILESIZE/4, 0, 12, 48),
+      new AnimationState(TILESIZE/4, 0, 13, 48),
+      new AnimationState(TILESIZE/4, 0, 14, 48),
+      new AnimationState(TILESIZE/4, 0, 13, 48),
     ],
     "left-attack": [
-      new AnimationState(-TILESIZE, 0, 4, 100),
-      new AnimationState(TILESIZE, 0, 4, 100),
+      new AnimationState(-TILESIZE, 0, 7, 90),
+      new AnimationState(TILESIZE, 0, 7, 90),
     ],
     "left": [
-      new AnimationState(-TILESIZE/4, 0, 3, 48),
-      new AnimationState(-TILESIZE/4, 0, 4, 48),
-      new AnimationState(-TILESIZE/4, 0, 5, 48),
-      new AnimationState(-TILESIZE/4, 0, 4, 48),
+      new AnimationState(-TILESIZE/4, 0, 6, 48),
+      new AnimationState(-TILESIZE/4, 0, 7, 48),
+      new AnimationState(-TILESIZE/4, 0, 8, 48),
+      new AnimationState(-TILESIZE/4, 0, 7, 48),
     ],
     "up-attack": [
-      new AnimationState(0, -TILESIZE, 10, 100),
-      new AnimationState(0, TILESIZE, 10, 100),
+      new AnimationState(0, -TILESIZE, 19, 90),
+      new AnimationState(0, TILESIZE, 19, 90),
     ],
     "up": [
-      new AnimationState(0, -TILESIZE/4, 9, 48),
-      new AnimationState(0, -TILESIZE/4, 10, 48),
-      new AnimationState(0, -TILESIZE/4, 11, 48),
-      new AnimationState(0, -TILESIZE/4, 10, 48),
+      new AnimationState(0, -TILESIZE/4, 18, 48),
+      new AnimationState(0, -TILESIZE/4, 19, 48),
+      new AnimationState(0, -TILESIZE/4, 20, 48),
+      new AnimationState(0, -TILESIZE/4, 19, 48),
     ],
     "down-attack": [
-      new AnimationState(0, TILESIZE, 1, 100),
-      new AnimationState(0, -TILESIZE, 1, 100),
+      new AnimationState(0, TILESIZE, 1, 90),
+      new AnimationState(0, -TILESIZE, 1, 90),
     ],
     "down": [
       new AnimationState(0, TILESIZE/4, 0, 48),
@@ -151,29 +151,45 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(0, TILESIZE/4, 2, 48),
       new AnimationState(0, TILESIZE/4, 1, 48),
     ],
+    "down-right-attack": [
+      new AnimationState(TILESIZE, TILESIZE, 10, 90),
+      new AnimationState(-TILESIZE, -TILESIZE, 10, 90),
+    ],
     "down-right": [
-      new AnimationState(TILESIZE/4, TILESIZE/4, 0, 48),
-      new AnimationState(TILESIZE/4, TILESIZE/4, 1, 48),
-      new AnimationState(TILESIZE/4, TILESIZE/4, 2, 48),
-      new AnimationState(TILESIZE/4, TILESIZE/4, 1, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 9, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 10, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 11, 48),
+      new AnimationState(TILESIZE/4, TILESIZE/4, 10, 48),
+    ],
+    "down-left-attack": [
+      new AnimationState(-TILESIZE, TILESIZE, 4, 90),
+      new AnimationState(TILESIZE, -TILESIZE, 4, 90),
     ],
     "down-left": [
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 0, 48),
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 1, 48),
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 2, 48),
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 1, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 3, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 4, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 5, 48),
+      new AnimationState(-TILESIZE/4, TILESIZE/4, 4, 48),
+    ],
+    "up-right-attack": [
+      new AnimationState(TILESIZE, -TILESIZE, 22, 90),
+      new AnimationState(-TILESIZE, TILESIZE, 22, 90),
     ],
     "up-right": [
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 9, 48),
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 10, 48),
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 11, 48),
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 10, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 21, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 22, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 23, 48),
+      new AnimationState(TILESIZE/4, -TILESIZE/4, 22, 48),
+    ],
+    "up-left-attack": [
+      new AnimationState(-TILESIZE, -TILESIZE, 16, 90),
+      new AnimationState(TILESIZE, TILESIZE, 16, 90),
     ],
     "up-left": [
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 9, 48),
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 10, 48),
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 11, 48),
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 10, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 15, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 16, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 17, 48),
+      new AnimationState(-TILESIZE/4, -TILESIZE/4, 16, 48),
     ],
   })
 }
@@ -325,8 +341,8 @@ export default class MarsZero {
     // Tile Manage Test {
       this.tm1 = new TileManager("./resources/base.png", 16, 16)
       this.tm2 = new TileManager("./resources/kabe-ue_doukutu1.png", 16, 16)
-      this.tm3 = new TileManager("./resources/pipo-charachip002a.png", 32, 32)
-      let tm4 = new TileManager("./resources/pipo-charachip019c.png", 32, 32)
+      this.tm3 = new TileManager("./resources/02_town2.png", 24, 40)
+      let tm4 = new TileManager("./resources/10_village5.png", 24, 40)
       this.tm_coin = new TileManager("./resources/icon020.png", 24, 24)
       this.tm_apple = new TileManager("./resources/icon028.png", 24, 24)
       this.tm_sword = new TileManager("./resources/icon002.png", 24, 24)
@@ -354,7 +370,7 @@ export default class MarsZero {
       poStat.water = 720*3
       function makeEnemy(x, y) {
         let e = createWalkAnimatable(tm4, x*TILESIZE, y*TILESIZE, 5)
-        return new Character(new CharaStatus("テストくん", 30, 10, 10, 10, true), e, x, y)
+        return new Character(new CharaStatus("テストさん", 30, 10, 10, 10, 3, true), e, x, y)
       }
       this.player = new Character(pStat, p, 1, 1, 1)
       this.coin = new Item(cStat, c, 1, 4, 0)
@@ -442,79 +458,40 @@ export default class MarsZero {
       weapon = holding
     }
     let attackRange = []
+    let x = 0, y = 0
     switch (this.player.direction) {
-      case 'down':
-        attackRange.push([this.player.x, this.player.y+1, 1])
-        break
-      case 'left':
-        attackRange.push([this.player.x-1, this.player.y, 1])
-        break
-      case 'right':
-        attackRange.push([this.player.x+1, this.player.y, 1])
-        break
-      case 'up':
-        attackRange.push([this.player.x, this.player.y-1, 1])
-        break
+      case 'down': x = 0, y = 1; break
+      case 'down-left': x = -1, y = 1; break
+      case 'down-right': x = 1, y = 1; break
+      case 'left': x = -1, y = 0; break
+      case 'right': x = 1, y = 0; break
+      case 'up': x = 0, y = -1; break
+      case 'up-left': x = -1, y = -1; break
+      case 'up-right': x = 1, y = -1; break
     }
+    attackRange.push([this.player.x+x, this.player.y+y, 1])
+
     if (weapon) {
       switch (weapon.stat.weaponType) {
         case 'spear':
-          switch (this.player.direction) {
-            case 'down':
-              if (!this.colWall(this.player.x, this.player.y+1)) {
-                attackRange.push([this.player.x, this.player.y+2, 0.6])
-              }
-              break
-            case 'left':
-              if (!this.colWall(this.player.x-1, this.player.y)) {
-                attackRange.push([this.player.x-2, this.player.y, 0.6])
-              }
-              break
-            case 'right':
-              if (!this.colWall(this.player.x+1, this.player.y)) {
-                attackRange.push([this.player.x+2, this.player.y, 0.6])
-              }
-              break
-            case 'up':
-              if (!this.colWall(this.player.x, this.player.y-1)) {
-                attackRange.push([this.player.x, this.player.y-2, 0.6])
-              }
-              break
-            default:
+          if (!this.colWall(this.player.x+x*2, this.player.y+y*2)) {
+            attackRange.push([this.player.x+x*2, this.player.y+y*2, 0.6])
           }
           break
         case 'hammer':
-          switch (this.player.direction) {
-            case 'down':
-              if (!this.colWall(this.player.x, this.player.y+1)) {
-                attackRange.push([this.player.x, this.player.y+2, 0.2])
-                attackRange.push([this.player.x-1, this.player.y+1, 0.2])
-                attackRange.push([this.player.x+1, this.player.y+1, 0.2])
-              }
-              break
-            case 'left':
-              if (!this.colWall(this.player.x-1, this.player.y)) {
-                attackRange.push([this.player.x-2, this.player.y, 0.2])
-                attackRange.push([this.player.x-1, this.player.y+1, 0.2])
-                attackRange.push([this.player.x-1, this.player.y-1, 0.2])
-              }
-              break
-            case 'right':
-              if (!this.colWall(this.player.x+1, this.player.y)) {
-                attackRange.push([this.player.x+2, this.player.y, 0.2])
-                attackRange.push([this.player.x+1, this.player.y+1, 0.2])
-                attackRange.push([this.player.x+1, this.player.y-1, 0.2])
-              }
-              break
-            case 'up':
-              if (!this.colWall(this.player.x, this.player.y-1)) {
-                attackRange.push([this.player.x, this.player.y-2, 0.2])
-                attackRange.push([this.player.x+1, this.player.y-1, 0.2])
-                attackRange.push([this.player.x-1, this.player.y-1, 0.2])
-              }
-              break
-            default:
+          if (!this.colWall(this.player.x+x-1, this.player.y+y)) {
+            attackRange.push([this.player.x+x-1, this.player.y+y, 0.2])
           }
+          if (!this.colWall(this.player.x+x+1, this.player.y+y)) {
+            attackRange.push([this.player.x+x+1, this.player.y+y, 0.2])
+          }
+          if (!this.colWall(this.player.x+x, this.player.y+y-1)) {
+            attackRange.push([this.player.x+x, this.player.y+y-1, 0.2])
+          }
+          if (!this.colWall(this.player.x+x, this.player.y+y+1)) {
+            attackRange.push([this.player.x+x, this.player.y+y+1, 0.2])
+          }
+          break
         default:
       }
     }
@@ -540,8 +517,11 @@ export default class MarsZero {
           }
           let damage = Math.max(0, this.calcDamage((this.player.stat.atk + w)*e.mag, e.target.stat.def))
           this.damage(this.player, e.target, damage)
+          if (e.target.stat.isDead) {
+            this.player.stat.exp += e.target.stat.exp
+          }
         })
-        if (weapon && Math.random() < weapon.stat.stableRate) {
+        if (weapon && !weapon.isStable && Math.random() < weapon.stat.stableRate) {
           weapon.stat.isStable = true
           this.messageWindow.push(`${weapon.stat.screenName}は安定した。`)
         }
@@ -575,11 +555,40 @@ export default class MarsZero {
       }
     }))
   }
+  toDirection(x, y) {
+    if (x == -1 && y == -1) return 'up-left'
+    if (x == -1 && y ==  0) return 'left'
+    if (x == -1 && y ==  1) return 'down-left'
+    if (x ==  0 && y == -1) return 'up'
+    if (x ==  0 && y ==  1) return 'down'
+    if (x ==  1 && y == -1) return 'up-right'
+    if (x ==  1 && y ==  0) return 'right'
+    if (x ==  1 && y ==  1) return 'down-right'
+    return 'down'
+  }
   playerAction() {
-    if (new Date() - this.keyStore.lastGet < 1000/10) {
+    let keys = this.keyStore.get()
+    let x = keys["ArrowLeft"] ? -1 : keys["ArrowRight"] ? 1 : 0
+    let y = keys["ArrowUp"] ? -1 : keys["ArrowDown"] ? 1 : 0
+    let direction = this.toDirection(x, y)
+    if (new Date() - this.keyStore.lastOmit < 1000/10) {
+      if (x != 0 || y != 0)this.player.direction = direction
       return 0
     }
-    let keys = this.keyStore.get()
+    this.keyStore.omit()
+    if (x != 0 || y != 0) {
+      if (this.collision(this.player.x+x, this.player.y+y)) {
+        this.player.direction = direction
+        return 0
+      } else {
+        this.player.x += x
+        this.player.y += y
+        this.player.direction = direction
+        this.syncAM.push(new Animation(this.player.renderable, direction))
+        return 1
+      }
+    }
+    /*
     if (keys["ArrowDown"]) {
       this.player.direction = 'down'
       if (this.collision(this.player.x, this.player.y+1) || this.detectEnemy(this.player.x, this.player.y+1)) {
@@ -644,7 +653,7 @@ export default class MarsZero {
       this.syncAM.push(new Animation(this.player.renderable, "right"))
       this.player.x += 1
       return 1
-    } else if (keys["Shift"]) {
+    } else*/ if (keys["Shift"]) {
       this.playerPickUp()
       //return true
       return 0
@@ -654,20 +663,18 @@ export default class MarsZero {
         return this.playerUseHolding()
       } else {
         let enemy = null
+        let x = 0, y = 0
         switch (this.player.direction) {
-          case 'down':
-            enemy = this.detectEnemy(this.player.x, this.player.y+1)
-            break
-          case 'left':
-            enemy = this.detectEnemy(this.player.x-1, this.player.y)
-            break
-          case 'right':
-            enemy = this.detectEnemy(this.player.x+1, this.player.y)
-            break
-          case 'up':
-            enemy = this.detectEnemy(this.player.x, this.player.y-1)
-            break
+          case 'down': x = 0, y = 1; break
+          case 'down-left': x = -1, y = 1; break
+          case 'down-right': x = 1, y = 1; break
+          case 'left': x = -1, y = 0; break
+          case 'right': x = 1, y = 0; break
+          case 'up': x = 0, y = -1; break
+          case 'up-left': x = -1, y = -1; break
+          case 'up-right': x = 1, y = -1; break
         }
+        enemy = this.detectEnemy(this.player.x+x, this.player.y+y)
         if (this.player.stat.holding && this.player.stat.holding.stat.type == 'weapon' && this.player.stat.holding.stat.weaponType == 'watering' && !enemy) {
           return this.playerUseHolding()
         } else {
@@ -739,20 +746,18 @@ export default class MarsZero {
       return
     }
     let target = null
+    let x = 0, y = 0
     switch (this.player.direction) {
-      case 'down':
-        target = this.detectFarm(this.player.x, this.player.y+1)
-        break
-      case 'left':
-        target = this.detectFarm(this.player.x-1, this.player.y)
-        break
-      case 'right':
-        target = this.detectFarm(this.player.x+1, this.player.y)
-        break
-      case 'up':
-        target = this.detectFarm(this.player.x, this.player.y-1)
-        break
+      case 'down': x = 0, y = 1; break
+      case 'down-left': x = -1, y = 1; break
+      case 'down-right': x = 1, y = 1; break
+      case 'left': x = -1, y = 0; break
+      case 'right': x = 1, y = 0; break
+      case 'up': x = 0, y = -1; break
+      case 'up-left': x = -1, y = -1; break
+      case 'up-right': x = 1, y = -1; break
     }
+    target = this.detectFarm(this.player.x+x, this.player.y+y)
     if (!target) {
       this.messageWindow.push('そこには何もない。')
       return
@@ -946,8 +951,24 @@ export default class MarsZero {
       farm.stat.water = Math.max(0, farm.stat.water-1)
     }
   }
+  playerLevelUp() {
+    this.player.stat.lv += 1
+    this.messageWindow.push(`${this.player.stat.name}はLv.${this.player.stat.lv}になった！`)
+    const hp = 10
+    const atk = Math.ceil(Math.random()*3+1)
+    const def = Math.ceil(Math.random()*3+1)
+    this.messageWindow.push(`${this.player.stat.name}のHPが${hp}増えた！ATKが${atk}増えた！DEFが${def}増えた！ `)
+    this.player.stat.maxhp += hp
+    this.player.stat.atk += atk
+    this.player.stat.def += def
+  }
   updatePlayerStatus() {
-    this.player.stat.satiety -= 10
+    if (this.player.stat.exp >= this.player.stat.maxexp) {
+      this.player.stat.exp = 0
+      this.player.stat.maxexp += this.player.stat.maxexp
+      this.playerLevelUp()
+    }
+    this.player.stat.satiety -= 1
     if (this.player.stat.satiety == Math.ceil(this.player.stat.maxSatiety*0.5)) {
       this.messageWindow.push(`${this.player.stat.name}はお腹がすいた。`)
     }
@@ -990,37 +1011,44 @@ export default class MarsZero {
   }
   renderInfo(mx, my, gx, gy) {
     const stat = this.player.stat
+    const lv = stat.lv
     const hp = stat.hp
     const maxhp = stat.maxhp
     const money = stat.money
+    const exp = stat.exp
+    const maxexp = stat.maxexp
     const satiety = Math.ceil((stat.satiety / stat.maxSatiety) * 100)
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
-    this.ctx.fillRect(12, 12, 232, 72)
+    this.ctx.fillRect(12, 12, 260, 72)
     this.ctx.strokeStyle = 'white'
-    this.ctx.strokeRect(12, 12, 232, 72)
+    this.ctx.strokeRect(12, 12, 260, 72)
     this.ctx.globalAlpha = 0.3
-    this.player.renderable.tiles.render(this.ctx, 1, 12, 12, 64, 64)
-    const satietyCh = Math.max(0, Math.ceil(32 * (stat.satiety / stat.maxSatiety)))
+    this.player.renderable.tiles.render(this.ctx, 1, 12, 16, 64, 64)
+    const tw = this.player.renderable.tiles.width
+    const th = this.player.renderable.tiles.height
+    const rw = tw * 64/th
+    const satietyCh = Math.max(0, Math.ceil(th * (stat.satiety / stat.maxSatiety)))
     const satietyRh = Math.max(0, Math.ceil(64 * (stat.satiety / stat.maxSatiety)))
     this.ctx.globalAlpha = 1
-    this.player.renderable.tiles.copy(this.ctx, 1, 0, 32-satietyCh, 32, satietyCh, 12, 12+64-satietyRh, 64, satietyRh)
+    this.player.renderable.tiles.copy(this.ctx, 1, 0, th-satietyCh, tw, satietyCh, 12+32-rw/2, 16+64-satietyRh, rw, satietyRh)
     this.ctx.fillStyle = 'green'
-    this.ctx.fillRect(80, 32, (hp/maxhp) * 150, 12)
+    this.ctx.fillRect(140, 32, (hp/maxhp) * 120, 12)
     this.ctx.fillStyle = 'orange'
-    this.ctx.fillRect(80, 46, 150, 2)
+    this.ctx.fillRect(140, 46, (exp/maxexp) * 120, 2)
     this.ctx.font = "400 20px 'M PLUS Rounded 1c'"
     //this.ctx.font = "400 20px 'Sawarabi Gothic'"
     this.ctx.fillStyle = 'white'
     this.ctx.strokeStyle = 'rgba(0, 0, 0, 1)'
     this.ctx.lineJoin = 'round'
     this.ctx.lineWidth = 1
+    this.ctx.fillText(`Lv.${lv}`, 78, 20)
     //this.ctx.fillText(`Lv 1`, 120, 12)
-    this.ctx.fillText('HP', 80, 20)
+    this.ctx.fillText('HP', 140, 20)
     //this.ctx.strokeText('HP', 80, 32)
     //this.ctx.fillText(`${satiety}%`, 560, 12)
     this.ctx.textAlign = 'right'
     //this.ctx.strokeText(`${satiety}%`, 66, 54)
-    this.ctx.fillText(`${hp}/${maxhp}`, 230, 20)
+    this.ctx.fillText(`${hp}/${maxhp}`, 260, 20)
     //this.ctx.strokeText(`${hp}/${maxhp}`, 230, 32)
     this.ctx.fillText('1F / テスト広場', 780, 20)
     this.ctx.font = "400 18px 'M PLUS Rounded 1c'"
@@ -1065,13 +1093,14 @@ export default class MarsZero {
     this.ctx.strokeRect(x+TILESIZE*inventory.length, y, TILESIZE, TILESIZE)
   }
   renderFarmStat(mx, my, gx, gy) {
+    this.ctx.font = `400 ${TILESIZE/4}px 'M PLUS Rounded 1c'`
+    this.ctx.globalAlpha = 0.8
     this.farmList.map(x => {
       const farm = x.renderable
       const stat = x.stat
       const seedling = stat.seedling
       const remain = seedling.seed.requireTime - seedling.elapsed
       const requireWater = seedling.nutrition == 0 && stat.water == 0
-      this.ctx.font = `${TILESIZE/4}px sans`
       if (remain <= 0) {
         this.ctx.fillStyle = 'yellow'
         this.ctx.fillText("収穫可能", farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
@@ -1083,6 +1112,7 @@ export default class MarsZero {
         this.ctx.fillText(`あと${remain}分`, farm.prop.x+gx, farm.prop.y+gy+TILESIZE-8)
       }
     })
+    this.ctx.globalAlpha = 1
   }
   renderFarmDetail(mx, my, gx, gy) {
     const x = 12, y = 360
@@ -1154,9 +1184,9 @@ export default class MarsZero {
         if (r.stat.type) {
           this.ctx.globalAlpha = 0.8 - (d/10)
           this.ctx.globalCompositeOperation = 'source-atop'
-          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx-d, r.renderable.prop.y+gy-d, TILESIZE+d*2, TILESIZE+d*2)
+          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx-d, r.renderable.prop.y+gy-d, TILESIZE*0.8+d*2, TILESIZE*0.8+d*2)
           this.ctx.globalAlpha = 1
-          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
+          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE*0.8, TILESIZE*0.8)
           this.ctx.globalCompositeOperation = 'source-over'
         } else {
           r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
@@ -1197,7 +1227,7 @@ export default class MarsZero {
     this.renderObjects(mx, my, gx, gy)
     if (this.player.stat.holding) {
       let holding = this.player.stat.holding.renderable
-      holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx, this.player.renderable.prop.y+gy-20, TILESIZE, TILESIZE)
+      holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx+4, this.player.renderable.prop.y+gy-20, TILESIZE*0.8, TILESIZE*0.8)
     }
     this.renderNpcHpGage(mx, my, gx, gy)
     this.date.renderPeriodFilter(this.ctx, 800, 600)

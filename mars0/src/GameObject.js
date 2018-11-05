@@ -35,14 +35,26 @@ export default class GameObject {
       case 'down':
         this._tileId = this.renderable.prop.tileId = 1
         break
-      case 'left':
+      case 'down-left':
         this._tileId = this.renderable.prop.tileId = 4
         break
-      case 'right':
+      case 'left':
         this._tileId = this.renderable.prop.tileId = 7
         break
-      case 'up':
+      case 'down-right':
         this._tileId = this.renderable.prop.tileId = 10
+        break
+      case 'right':
+        this._tileId = this.renderable.prop.tileId = 13
+        break
+      case 'up-left':
+        this._tileId = this.renderable.prop.tileId = 16
+        break
+      case 'up':
+        this._tileId = this.renderable.prop.tileId = 19
+        break
+      case 'up-right':
+        this._tileId = this.renderable.prop.tileId = 22
         break
     }
   }

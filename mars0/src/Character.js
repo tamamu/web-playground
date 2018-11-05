@@ -2,20 +2,23 @@
 import GameObject from './GameObject'
 
 export class CharaStatus {
-  constructor(name, maxhp, atk, def, luk, isEnemy=false) {
+  constructor(name, maxhp, atk, def, luk, exp, isEnemy=false) {
     this.name = name
     this.maxhp = maxhp
     this.hp = maxhp
     this.atk = atk
     this.def = def
     this.luk = luk
-    this.satiety = 3000
-    this.maxSatiety = 3000
+    this.satiety = 720
+    this.maxSatiety = 720
     this.itemList = [null, null, null, null, null]
     this.money = 0
     this.holding = null
     this.isEnemy = isEnemy
     this.isDead = false
+    this.exp = exp ? exp : 0
+    this.maxexp = 10
+    this.lv = 1
   }
 }
 

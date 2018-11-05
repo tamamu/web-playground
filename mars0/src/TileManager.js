@@ -8,13 +8,19 @@ export default class TileManager {
     this.base.onload = () => {
       this.numx = this.base.width / this.width
       this.numy = this.base.height / this.height
-      console.log(this.numx, this.numy)
+      console.log(path, this.numx, this.numy)
     }
   }
   render(ctx, id, x, y, width, height) {
     const ix = id % this.numx
     const iy = (id - ix) / this.numx
-    ctx.drawImage(this.base, ix*this.width, iy*this.height, this.width, this.height, x, y, width, height)
+    if (this.height > this.width) {
+      const w = this.width * (height/this.height)
+      const l = width/2 - w/2
+      ctx.drawImage(this.base, ix*this.width, iy*this.height, this.width, this.height, x+l, y, w, height)
+    } else {
+      ctx.drawImage(this.base, ix*this.width, iy*this.height, this.width, this.height, x, y, width, height)
+    }
   }
   copy(ctx, id, x, y, w, h, rx, ry, rw, rh) {
     const ix = id % this.numx
