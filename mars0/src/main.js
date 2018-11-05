@@ -577,7 +577,7 @@ export default class MarsZero {
     }
     this.keyStore.omit()
     if (x != 0 || y != 0) {
-      if (this.collision(this.player.x+x, this.player.y+y)) {
+      if (this.collision(this.player.x+x, this.player.y+y) || keys["Alt"]) {
         this.player.direction = direction
         return 0
       } else {
@@ -588,72 +588,7 @@ export default class MarsZero {
         return 1
       }
     }
-    /*
-    if (keys["ArrowDown"]) {
-      this.player.direction = 'down'
-      if (this.collision(this.player.x, this.player.y+1) || this.detectEnemy(this.player.x, this.player.y+1)) {
-        return 0
-      }
-      if (keys["ArrowRight"]) {
-        if (this.collision(this.player.x+1, this.player.y+1) || this.collision(this.player.x+1, this.player.y) || this.detectEnemy(this.player.x+1, this.player.y)) {
-          return 0
-        }
-        this.syncAM.push(new Animation(this.player.renderable, "down-right"))
-        this.player.x += 1
-        this.player.y += 1
-      } else if (keys["ArrowLeft"]) {
-        if (this.collision(this.player.x-1, this.player.y+1) || this.detectEnemy(this.player.x-1, this.player.y+1)) {
-          return 0
-        }
-        this.syncAM.push(new Animation(this.player.renderable, "down-left"))
-        this.player.x -= 1
-        this.player.y += 1
-      } else {
-        this.syncAM.push(new Animation(this.player.renderable, "down"))
-        this.player.y += 1
-      }
-      return 1
-    } else if (keys["ArrowUp"]) {
-      this.player.direction = 'up'
-      if (this.collision(this.player.x, this.player.y-1) || this.detectEnemy(this.player.x, this.player.y-1)) {
-        return 0
-      }
-      if (keys["ArrowRight"]) {
-        if (this.collision(this.player.x+1, this.player.y-1) || this.collision(this.player.x+1, this.player.y) || this.detectEnemy(this.player.x+1, this.player.y)) {
-          return 0
-        }
-        this.syncAM.push(new Animation(this.player.renderable, "up-right"))
-        this.player.x += 1
-        this.player.y -= 1
-      } else if (keys["ArrowLeft"]) {
-        if (this.collision(this.player.x-1, this.player.y-1) || this.collision(this.player.x-1, this.player.y) || this.detectEnemy(this.player.x-1, this.player.y)) {
-          return 0
-        }
-        this.syncAM.push(new Animation(this.player.renderable, "up-left"))
-        this.player.x -= 1
-        this.player.y -= 1
-      } else {
-        this.syncAM.push(new Animation(this.player.renderable, "up"))
-        this.player.y -= 1
-      }
-      return 1
-    } else if (keys["ArrowLeft"]) {
-      this.player.direction = 'left'
-      if (this.collision(this.player.x-1, this.player.y) || this.detectEnemy(this.player.x-1, this.player.y)) {
-        return 0
-      }
-      this.syncAM.push(new Animation(this.player.renderable, "left"))
-      this.player.x -= 1
-      return 1
-    } else if (keys["ArrowRight"]) {
-      this.player.direction = 'right'
-      if (this.collision(this.player.x+1, this.player.y) || this.detectEnemy(this.player.x+1, this.player.y)) {
-        return 0
-      }
-      this.syncAM.push(new Animation(this.player.renderable, "right"))
-      this.player.x += 1
-      return 1
-    } else*/ if (keys["Shift"]) {
+    if (keys["Shift"]) {
       this.playerPickUp()
       //return true
       return 0
@@ -1148,24 +1083,9 @@ export default class MarsZero {
     })
   }
   renderFieldTile(id, x, y) {
-    //this.tm1.render(this.ctx, 8*162, x, y, TILESIZE, TILESIZE)
-    /*
-    switch (id) {
-      case 0:
-        //this.ctx.fillStyle = "#efefef"
-        break
-      case 1:
-        this.tm2.render(this.ctx, 2, x, y, TILESIZE, TILESIZE)
-        break
-      default:
-        this.ctx.fillStyle = "red"
-        break
-    }
-    */
     if (id > 0) {
       this.tm1.render(this.ctx, id, x, y, TILESIZE, TILESIZE)
     }
-    //this.ctx.fillRect(x, y, x+TILESIZE, y+TILESIZE)
   }
   renderField(mx, my, gx, gy) {
     for (let h = 0; h < this.field.length; ++h) {
