@@ -85,8 +85,113 @@ const testMap = [
     [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
     [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,65,56,57,56,57,56,57,-1,-1,-1,],
     [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,56,57,-1,-1,-1,-1,-1,92,-1,-1,-1,]
+  ],[
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,86,87,0,0,0,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,104,0,0,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+    [0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,104,0,0,0,0,0,0,0,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,88,0,0,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+    [0,0,0,0,0,0,208,209,210,0,0,0,0,0,0,0,0,0,0,48,49,48,49,48,49,48,49,0,0,0,],
+    [0,0,0,0,0,0,216,217,218,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,224,225,226,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,85,0,0,0,0,0,0,0,0,0,0,0,93,93,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,95,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,65,56,57,56,57,56,57,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,56,57,0,0,0,0,0,92,0,0,0,]
   ]
 ]
+
+class GameMap {
+  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList) {
+    this.tm = tm
+    this.height = base.length
+    this.width = base[0].length
+    this.baseLayer = base
+    this.secondLayer = second
+    this._collision = collision
+    this.nuts = nuts
+    this.dropList = dropList ? dropList : []
+    this.farmList = farmList ? farmList : []
+    this.charaList = charaList ? charaList : []
+    this.animTimer = new Date()
+    this.player = player
+  }
+  collision(x, y) {
+    if (y >= this.height || y < 0 || x >= this.width || x < 0) {
+      return true
+    }
+    return this._collision[y][x] > 0 || this.detectChara(x, y, false)
+  }
+  detectChara(x, y, isEnemy) {
+    for (const chara of this.charaList) {
+      if (chara.x == x && chara.y == y) {
+        if (isEnemy && !chara.stat.isEnemy) {
+          continue
+        }
+        return chara
+      }
+    }
+    return null
+  }
+  detectFarm(x, y) {
+    for (const farm of this.farmList) {
+      if (farm.x == x && farm.y == y) {
+        return farm
+      }
+    }
+    return null
+  }
+  update() {
+    if (new Date() - this.animTimer > 1600) {
+      this.animTimer = new Date()
+    }
+    this.charaList = this.charaList.filter(x => {
+      if (x.stat.isDead) {
+        //this.messageWindow.push(`${x.stat.name}を倒した。`)
+        return false
+      }
+      return true
+    })
+  }
+  render(ctx, mx, my, gx, gy) {
+    for (let y = Math.max(my, 0); y < this.height; ++y) {
+      for (let x = Math.max(mx, 0); x < this.width; ++x) {
+        this.tm.render(ctx, this.baseLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
+      }
+    }
+
+    const now = new Date()
+    const d = Math.min(8, (now - this.animTimer) / 200)
+    for (let priority of [this.farmList, this.dropList, [this.player], this.charaList]) {
+      for (let r of priority) {
+        if (r.stat.type) {
+          ctx.globalAlpha = 0.8 - (d/10)
+          ctx.globalCompositeOperation = 'source-atop'
+          r.renderable.tiles.render(ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx-d, r.renderable.prop.y+gy-d, TILESIZE*0.8+d*2, TILESIZE*0.8+d*2)
+          ctx.globalAlpha = 1
+          r.renderable.tiles.render(ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE*0.8, TILESIZE*0.8)
+          ctx.globalCompositeOperation = 'source-over'
+        } else {
+          r.renderable.tiles.render(ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
+        }
+      }
+    }
+
+    for (let y = Math.max(my, 0); y < this.height; ++y) {
+      for (let x = Math.max(mx, 0); x < this.width; ++x) {
+        this.tm.render(ctx, this.secondLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
+      }
+    }
+  }
+}
 
 /*
 const testMap = [
@@ -321,12 +426,11 @@ export default class MarsZero {
     this.field = testMap
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
-    this.renderableList = []
-    this.farmList = this.renderableList[0] = []
-    this.dropList = this.renderableList[1] = []
-    this.playerList = this.renderableList[2] = []
-    this.npcList = this.renderableList[3] = []
-    this.holdingList = this.renderableList[4] = []
+    let farmList = []
+    let dropList = []
+    let playerList = []
+    let npcList = []
+    let holdingList = []
     this.keyStore = new KeyboardStore()
     this.messageWindow = new MessageWindow(4, 20)
     this.camera = new Camera()
@@ -336,10 +440,10 @@ export default class MarsZero {
     this.inventoryOpacity = 0
     this.date = new GameDate()
     this.date.elapseMinute(720)
+    this.tm1 = new TileManager("./resources/base.png", 16, 16)
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
-      this.tm1 = new TileManager("./resources/base.png", 16, 16)
       this.tm2 = new TileManager("./resources/kabe-ue_doukutu1.png", 16, 16)
       this.tm3 = new TileManager("./resources/02_town2.png", 24, 40)
       let tm4 = new TileManager("./resources/10_village5.png", 24, 40)
@@ -385,60 +489,32 @@ export default class MarsZero {
         let s = new Renderable(x*TILESIZE, y*TILESIZE, tm_seed, 0)
         return new Item(stat, s, x, y, 0)
       }
-      this.dropList.push(this.coin)
-      this.dropList.push(this.apple)
-      this.dropList.push(this.sword)
-      this.dropList.push(this.spear)
-      this.dropList.push(this.hammer)
-      this.dropList.push(this.pot)
-      this.dropList.push(makeSeed(sStat, 10, 10))
-      this.dropList.push(makeSeed(sStat, 8, 7))
-      this.dropList.push(makeSeed(sStat, 12, 5))
-      this.dropList.push(makeSeed(sStat, 16, 1))
-      this.dropList.push(makeSeed(sStat, 1, 5))
-      this.dropList.push(makeSeed(swsStat, 5, 5))
-      //this.renderableList.push(p)
-      //this.renderableList.push(e)
-      //this.renderableList.push(c)
-      this.playerList.push(this.player)
-      this.npcList.push(makeEnemy(3, 3))
-      this.npcList.push(makeEnemy(3, 4))
-      this.npcList.push(makeEnemy(4, 3))
-      this.npcList.push(makeEnemy(4, 4))
-      this.npcList.push(makeEnemy(4, 5))
-      this.npcList.push(makeEnemy(5, 4))
+      dropList.push(this.coin)
+      dropList.push(this.apple)
+      dropList.push(this.sword)
+      dropList.push(this.spear)
+      dropList.push(this.hammer)
+      dropList.push(this.pot)
+      dropList.push(makeSeed(sStat, 10, 10))
+      dropList.push(makeSeed(sStat, 8, 7))
+      dropList.push(makeSeed(sStat, 12, 5))
+      dropList.push(makeSeed(sStat, 16, 1))
+      dropList.push(makeSeed(sStat, 1, 5))
+      dropList.push(makeSeed(swsStat, 5, 5))
+      //renderableList.push(p)
+      //renderableList.push(e)
+      //renderableList.push(c)
+      playerList.push(this.player)
+      npcList.push(makeEnemy(3, 3))
+      npcList.push(makeEnemy(3, 4))
+      npcList.push(makeEnemy(4, 3))
+      npcList.push(makeEnemy(4, 4))
+      npcList.push(makeEnemy(4, 5))
+      npcList.push(makeEnemy(5, 4))
     // } End Animation Test
 
+    this.gameMap = new GameMap(this.tm1, this.player, testMap[0], testMap[1], testMap[2], null, dropList, farmList, npcList)
     this.lifecycle = this.genLifeCycle()
-  }
-  colWall(x, y) {
-    if (y >= this.field[0].length || y < 0 || x >= this.field[0][y].length || x < 0) {
-      return true
-    }
-    return this.field[0][y][x] == 1
-  }
-  collision(x, y) {
-    if (y >= this.field[0].length || y < 0 || x >= this.field[0][y].length || x < 0) {
-      return true
-    }
-    return this.field[0][y][x] == 1 || this.detectEnemy(x, y) || (this.player.x == x && this.player.y == y)
-  }
-  detectEnemy(x, y) {
-    console.log(this.npcList)
-    for (const npc of this.npcList) {
-      if (npc.x == x && npc.y == y && npc.stat.isEnemy) {
-        return npc
-      }
-    }
-    return null
-  }
-  detectFarm(x, y) {
-    for (const farm of this.farmList) {
-      if (farm.x == x && farm.y == y) {
-        return farm
-      }
-    }
-    return null
   }
   damage(from, to, damage) {
     this.messageWindow.push(`${from.stat.name}は${to.stat.name}に${damage}のダメージを与えた！`)
@@ -496,14 +572,13 @@ export default class MarsZero {
       }
     }
     attackRange.map(p => {
-      let e = this.detectEnemy(p[0], p[1])
+      let e = this.gameMap.detectChara(p[0], p[1], true)
       if (e) enemies.push({target: e, mag: p[2]})
     })
     let cameraFixed = this.camera.isFixed
     if (!cameraFixed) this.camera.fix()
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
       if (enemies.length > 0) {
-        console.log(`${enemies.length} enemies`)
         enemies.map(e => {
           let w = 0
           if (weapon) {
@@ -536,16 +611,16 @@ export default class MarsZero {
     let enemy = null
     switch (npc.direction) {
       case 'down':
-        enemy = (npc.x==this.player.x && npc.y+1==this.player.y) ? this.player : this.detectEnemy(npc.x, npc.y+1)
+        enemy = (npc.x==this.player.x && npc.y+1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x, npc.y+1, true)
         break
       case 'left':
-        enemy = (npc.x-1==this.player.x && npc.y==this.player.y) ? this.player : this.detectEnemy(npc.x-1, npc.y)
+        enemy = (npc.x-1==this.player.x && npc.y==this.player.y) ? this.player : this.gameMap.detectChara(npc.x-1, npc.y, true)
         break
       case 'right':
-        enemy = (npc.x+1==this.player.x && npc.y==this.player.y) ? this.player : this.detectEnemy(npc.x+1, npc.y)
+        enemy = (npc.x+1==this.player.x && npc.y==this.player.y) ? this.player : this.gameMap.detectChara(npc.x+1, npc.y, true)
         break
       case 'up':
-        enemy = (npc.x==this.player.x && npc.y-1==this.player.y) ? this.player : this.detectEnemy(npc.x, npc.y-1)
+        enemy = (npc.x==this.player.x && npc.y-1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x, npc.y-1, true)
         break
     }
     this.syncAM.push(new Animation(npc.renderable, `${npc.direction}-attack`, () => {
@@ -577,7 +652,7 @@ export default class MarsZero {
     }
     this.keyStore.omit()
     if (x != 0 || y != 0) {
-      if (this.collision(this.player.x+x, this.player.y+y) || keys["Alt"]) {
+      if (this.gameMap.collision(this.player.x+x, this.player.y+y) || keys["Alt"]) {
         this.player.direction = direction
         return 0
       } else {
@@ -593,7 +668,6 @@ export default class MarsZero {
       //return true
       return 0
     } else if (keys[" "]) {
-      console.log(this.player.direction)
       if (this.player.stat.holding && this.player.stat.holding.stat.type != 'weapon') {
         return this.playerUseHolding()
       } else {
@@ -609,7 +683,7 @@ export default class MarsZero {
           case 'up-left': x = -1, y = -1; break
           case 'up-right': x = 1, y = -1; break
         }
-        enemy = this.detectEnemy(this.player.x+x, this.player.y+y)
+        enemy = this.gameMap.detectChara(this.player.x+x, this.player.y+y, true)
         if (this.player.stat.holding && this.player.stat.holding.stat.type == 'weapon' && this.player.stat.holding.stat.weaponType == 'watering' && !enemy) {
           return this.playerUseHolding()
         } else {
@@ -692,7 +766,7 @@ export default class MarsZero {
       case 'up-left': x = -1, y = -1; break
       case 'up-right': x = 1, y = -1; break
     }
-    target = this.detectFarm(this.player.x+x, this.player.y+y)
+    target = this.gameMap.detectFarm(this.player.x+x, this.player.y+y)
     if (!target) {
       this.messageWindow.push('そこには何もない。')
       return
@@ -718,7 +792,7 @@ export default class MarsZero {
       this.player.y
     )
     this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}を地面に植えた。`)
-    this.farmList.push(farm)
+    this.gameMap.farmList.push(farm)
     this.player.stat.holding = null
     return 2
   }
@@ -757,19 +831,19 @@ export default class MarsZero {
     this.showInventory = true
     this.inventoryTimer = new Date()
     let target = null
-    for (let j = 0; j < this.farmList.length; ++j) {
-      if (this.player.x == this.farmList[j].x && this.player.y == this.farmList[j].y) {
-        target = this.harvest(this.farmList[j])
+    for (let j = 0; j < this.gameMap.farmList.length; ++j) {
+      if (this.player.x == this.gameMap.farmList[j].x && this.player.y == this.gameMap.farmList[j].y) {
+        target = this.harvest(this.gameMap.farmList[j])
         if (target) {
-          this.farmList.splice(j, 1)
+          this.gameMap.farmList.splice(j, 1)
           break
         }
       }
     }
-    for (let j = 0; j < this.dropList.length; ++j) {
-      if (this.player.x == this.dropList[j].x && this.player.y == this.dropList[j].y) {
-        target = this.dropList[j]
-        this.dropList.splice(j, 1)
+    for (let j = 0; j < this.gameMap.dropList.length; ++j) {
+      if (this.player.x == this.gameMap.dropList[j].x && this.player.y == this.gameMap.dropList[j].y) {
+        target = this.gameMap.dropList[j]
+        this.gameMap.dropList.splice(j, 1)
         break
       }
     }
@@ -778,7 +852,7 @@ export default class MarsZero {
         let holding = this.player.stat.holding
         holding.move(this.player.x, this.player.y)
         this.player.stat.holding = target
-        this.dropList.push(holding)
+        this.gameMap.dropList.push(holding)
         this.messageWindow.push(`${target.stat.screenName}と床に落ちている${holding.stat.screenName}を交換した。`)
       } else {
         this.player.stat.holding = target
@@ -788,7 +862,7 @@ export default class MarsZero {
       if (this.player.stat.holding) {
         let holding = this.player.stat.holding
         holding.move(this.player.x, this.player.y)
-        this.dropList.push(holding)
+        this.gameMap.dropList.push(holding)
         this.player.stat.holding = null
         this.messageWindow.push(`${holding.stat.screenName}を足元に置いた。`)
       } else {
@@ -797,84 +871,38 @@ export default class MarsZero {
     }
   }
   npcAction() {
-    for (let npc of this.npcList) {
+    for (let npc of this.gameMap.charaList) {
       if (Math.random() < 0.3) {
         return this.npcAttack(npc)
       }
       let x = Math.floor(Math.random() * 3 - 1)
       let y = Math.floor(Math.random() * 3 - 1)
-      if (y < 0 && !this.collision(npc.x, npc.y+y)) {
-        npc.direction = 'up'
-        if (x < 0 && !this.collision(npc.x+x, npc.y+y)) {
-          this.syncAM.push(new Animation(npc.renderable, "up-left", () => {
-            npc.x -= 1
-            npc.y -= 1
-          }))
-        } else if (x > 0 && !this.collision(npc.x+x, npc.y+y)) {
-          this.syncAM.push(new Animation(npc.renderable, "up-right", () => {
-            npc.x += 1
-            npc.y -= 1
-          }))
-        } else {
-          this.syncAM.push(new Animation(npc.renderable, "up", () => {
-            npc.y -= 1
-          }))
-        }
-      } else if (y > 0 && !this.collision(npc.x, npc.y+y)) {
-        npc.direction = 'down'
-        if (x < 0 && !this.collision(npc.x+x, npc.y+y)) {
-          this.syncAM.push(new Animation(npc.renderable, "down-left", () => {
-            npc.x -= 1
-            npc.y += 1
-          }))
-        } else if (x > 0 && !this.collision(npc.x+x, npc.y+y)) {
-          this.syncAM.push(new Animation(npc.renderable, "down-right", () => {
-            npc.x += 1
-            npc.y += 1
-          }))
-        } else {
-          this.syncAM.push(new Animation(npc.renderable, "down", () => {
-            npc.y += 1
-          }))
-        }
-      } else if (x < 0 && !this.collision(npc.x+x, npc.y)) {
-        npc.direction = 'left'
-        this.syncAM.push(new Animation(npc.renderable, "left", () => {
-          npc.x -= 1
-        }))
-      } else if (x > 0 && !this.collision(npc.x+x, npc.y)) {
-        npc.direction = 'right'
-        this.syncAM.push(new Animation(npc.renderable, "right", () => {
-          npc.x += 1
-        }))
+      let direction = this.toDirection(x, y)
+      if (this.gameMap.collision(npc.x+x, npc.y+y) || (this.player.x == npc.x+x && this.player.y == npc.y+y)) {
+        npc.direction = direction
+        continue
+      } else if (x != 0 || y != 0) {
+        npc.x += x
+        npc.y += y
+        npc.direction = direction
+        this.syncAM.push(new Animation(npc.renderable, direction))
       }
     }
   }
   checkPlayerFloor() {
-    for (let item of this.dropList) {
+    for (let item of this.gameMap.dropList) {
       if (this.player.x == item.x && this.player.y == item.y) {
         this.messageWindow.push(`${item.stat.screenName}が床に落ちている。`)
       }
     }
-    for (let farm of this.farmList) {
+    for (let farm of this.gameMap.farmList) {
       if (this.player.x == farm.x && this.player.y == farm.y) {
         this.messageWindow.push(`${farm.stat.seedling.seed.name}の畑がある。`)
       }
     }
   }
-  removeDeadCharas() {
-    console.log(this.renderableList)
-    console.log(this.npcList)
-    this.npcList = this.renderableList[3] = this.npcList.filter(x => {
-      if (x.stat.isDead) {
-        this.messageWindow.push(`${x.stat.name}を倒した。`)
-        return false
-      }
-      return true
-    })
-  }
   checkGrowth() {
-    for (let farm of this.farmList) {
+    for (let farm of this.gameMap.farmList) {
       console.log(farm)
       let seedling = farm.stat.seedling
       const seed = seedling.seed
@@ -937,7 +965,7 @@ export default class MarsZero {
         }
       }
       this.updatePlayerStatus()
-      this.removeDeadCharas()
+      //this.removeDeadCharas()
       this.npcAction()
       this.checkPlayerFloor()
       checkNpcFloor()
@@ -1030,7 +1058,7 @@ export default class MarsZero {
   renderFarmStat(mx, my, gx, gy) {
     this.ctx.font = `400 ${TILESIZE/4}px 'M PLUS Rounded 1c'`
     this.ctx.globalAlpha = 0.8
-    this.farmList.map(x => {
+    this.gameMap.farmList.map(x => {
       const farm = x.renderable
       const stat = x.stat
       const seedling = stat.seedling
@@ -1051,7 +1079,7 @@ export default class MarsZero {
   }
   renderFarmDetail(mx, my, gx, gy) {
     const x = 12, y = 360
-    for (const farm of this.farmList) {
+    for (const farm of this.gameMap.farmList) {
       if (this.player.x == farm.x && this.player.y == farm.y) {
         const stat = farm.stat
         const seedling = stat.seedling
@@ -1074,46 +1102,13 @@ export default class MarsZero {
     }
   }
   renderNpcHpGage(mx, my, gx, gy) {
-    this.npcList.map(x => {
+    this.gameMap.charaList.map(x => {
       const npc = x.renderable
       this.ctx.fillStyle = 'red'
       this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, TILESIZE, 4)
       this.ctx.fillStyle = 'green'
       this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, TILESIZE*(x.stat.hp/x.stat.maxhp), 4)
     })
-  }
-  renderFieldTile(id, x, y) {
-    if (id > 0) {
-      this.tm1.render(this.ctx, id, x, y, TILESIZE, TILESIZE)
-    }
-  }
-  renderField(mx, my, gx, gy) {
-    for (let h = 0; h < this.field.length; ++h) {
-      for (let y = Math.max(my, 0); y < this.field[h].length; ++y) {
-        for (let x = Math.max(mx, 0); x < this.field[h][y].length; ++x) {
-          this.renderFieldTile(this.field[h][y][x], x*TILESIZE+gx, y*TILESIZE+gy)
-        }
-      }
-    }
-  }
-  renderObjects(mx, my, gx, gy) {
-    const now = new Date()
-    const d = Math.min(8, (now - this.blinkTimer) / 200)
-    for (let priority of this.renderableList) {
-      for (let r of priority) {
-        if (r.stat.type) {
-          this.ctx.globalAlpha = 0.8 - (d/10)
-          this.ctx.globalCompositeOperation = 'source-atop'
-          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx-d, r.renderable.prop.y+gy-d, TILESIZE*0.8+d*2, TILESIZE*0.8+d*2)
-          this.ctx.globalAlpha = 1
-          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE*0.8, TILESIZE*0.8)
-          this.ctx.globalCompositeOperation = 'source-over'
-        } else {
-          r.renderable.tiles.render(this.ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
-        }
-      }
-    }
-    if (d >= 8) this.blinkTimer = now
   }
   update() {
     //this.syncAM.process()
@@ -1122,6 +1117,8 @@ export default class MarsZero {
       this.lifecycle.next()
     } else this.syncAM.process()
     this.asyncAM.process()
+
+    this.gameMap.update()
     if (new Date() - this.inventoryTimer > 4000) {
       this.showInventory = false
       this.inventoryTimer = new Date()
@@ -1143,8 +1140,9 @@ export default class MarsZero {
     let gy = camera.y
     this.ctx.fillStyle = 'black'
     this.ctx.fillRect(0, 0, 800, 600)
-    this.renderField(mx, my, gx, gy)
-    this.renderObjects(mx, my, gx, gy)
+    //this.renderField(mx, my, gx, gy)
+    //this.renderObjects(mx, my, gx, gy)
+    this.gameMap.render(this.ctx, mx, my, gx, gy)
     if (this.player.stat.holding) {
       let holding = this.player.stat.holding.renderable
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx+4, this.player.renderable.prop.y+gy-20, TILESIZE*0.8, TILESIZE*0.8)
