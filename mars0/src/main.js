@@ -124,11 +124,14 @@ class GameMap {
     this.animTimer = new Date()
     this.player = player
   }
-  collision(x, y) {
+  collisionWall(x, y) {
     if (y >= this.height || y < 0 || x >= this.width || x < 0) {
       return true
     }
-    return this._collision[y][x] > 0 || this.detectChara(x, y, false)
+    return this._collision[y][x] > 0
+  }
+  collision(x, y) {
+    return this.collisionWall(x, y) || this.detectChara(x, y, false)
   }
   detectChara(x, y, isEnemy) {
     for (const chara of this.charaList) {
@@ -441,6 +444,7 @@ export default class MarsZero {
     this.date = new GameDate()
     this.date.elapseMinute(720)
     this.tm1 = new TileManager("./resources/base.png", 16, 16)
+    this.ignoreLastInput = false
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -550,21 +554,21 @@ export default class MarsZero {
     if (weapon) {
       switch (weapon.stat.weaponType) {
         case 'spear':
-          if (!this.colWall(this.player.x+x*2, this.player.y+y*2)) {
+          if (!this.gameMap.collisionWall(this.player.x+x*2, this.player.y+y*2)) {
             attackRange.push([this.player.x+x*2, this.player.y+y*2, 0.6])
           }
           break
         case 'hammer':
-          if (!this.colWall(this.player.x+x-1, this.player.y+y)) {
+          if (!this.gameMap.collisionWall(this.player.x+x-1, this.player.y+y)) {
             attackRange.push([this.player.x+x-1, this.player.y+y, 0.2])
           }
-          if (!this.colWall(this.player.x+x+1, this.player.y+y)) {
+          if (!this.gameMap.collisionWall(this.player.x+x+1, this.player.y+y)) {
             attackRange.push([this.player.x+x+1, this.player.y+y, 0.2])
           }
-          if (!this.colWall(this.player.x+x, this.player.y+y-1)) {
+          if (!this.gameMap.collisionWall(this.player.x+x, this.player.y+y-1)) {
             attackRange.push([this.player.x+x, this.player.y+y-1, 0.2])
           }
-          if (!this.colWall(this.player.x+x, this.player.y+y+1)) {
+          if (!this.gameMap.collisionWall(this.player.x+x, this.player.y+y+1)) {
             attackRange.push([this.player.x+x, this.player.y+y+1, 0.2])
           }
           break
@@ -646,11 +650,14 @@ export default class MarsZero {
     let x = keys["ArrowLeft"] ? -1 : keys["ArrowRight"] ? 1 : 0
     let y = keys["ArrowUp"] ? -1 : keys["ArrowDown"] ? 1 : 0
     let direction = this.toDirection(x, y)
-    if (new Date() - this.keyStore.lastOmit < 1000/10) {
-      if (x != 0 || y != 0)this.player.direction = direction
-      return 0
+    if (x != 0 || y != 0) {
+      if (new Date() -this.keyStore.lastDown < 100) {
+        this.player.direction = direction
+        return 0
+      }
     }
     this.keyStore.omit()
+      console.log(this.player.x, this.player.y)
     if (x != 0 || y != 0) {
       if (this.gameMap.collision(this.player.x+x, this.player.y+y) || keys["Alt"]) {
         this.player.direction = direction
@@ -951,15 +958,18 @@ export default class MarsZero {
       checkEvent()
       //yield 1
       this.checkGrowth()
-      //yield 2
+      if (this.ignoreLastInput) yield 2
       PlayerTurn: while (true) {
         switch (this.playerAction()) {
           case 0:
+            this.ignoreLastInput = true
             yield 3
             break
           case 1:
+            this.ignoreLastInput = false
             break PlayerTurn
           case 2:
+            this.ignoreLastInput = false
             yield 3
             break PlayerTurn
         }
@@ -969,7 +979,7 @@ export default class MarsZero {
       this.npcAction()
       this.checkPlayerFloor()
       checkNpcFloor()
-      //yield 5
+      yield 5
     }
   }
   renderInfo(mx, my, gx, gy) {

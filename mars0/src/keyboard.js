@@ -3,9 +3,13 @@ export class KeyboardStore {
   constructor() {
     this.states = {}
     this.lastOmit = new Date()
+    this.lastDown = new Date()
   }
   onKeyDown(e) {
-    this.states[e.key] = true
+    if (this.states[e.key] == false) {
+      this.states[e.key] = true
+      this.lastDown = new Date()
+    }
   }
   onKeyUp(e) {
     this.states[e.key] = false
