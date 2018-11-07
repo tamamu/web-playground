@@ -432,6 +432,7 @@ class GameDate {
         break
     }
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
+    ctx.globalAlpha = 1
     ctx.fillRect(0, 0, w, h)
   }
 }
