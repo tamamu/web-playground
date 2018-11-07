@@ -1149,6 +1149,55 @@ export default class MarsZero {
       this.ctx.fillText(`${x.damage}`, target.renderable.prop.x+gx+20+dx, target.renderable.prop.y+gy+24+dy)
     })
   }
+  renderHoldingRange(mx, my, gx, gy) {
+    const holding = this.player.stat.holding
+    let x = 0, y = 0
+    switch (this.player.direction) {
+      case 'down': x = 0, y = 1; break
+      case 'down-left': x = -1, y = 1; break
+      case 'down-right': x = 1, y = 1; break
+      case 'left': x = -1, y = 0; break
+      case 'right': x = 1, y = 0; break
+      case 'up': x = 0, y = -1; break
+      case 'up-left': x = -1, y = -1; break
+      case 'up-right': x = 1, y = -1; break
+    }
+    let range = []
+    if (!holding) {
+      range.push([this.player.x+x, this.player.y+y])
+    } else {
+      let weapon = null
+      if (holding.stat.type == 'weapon') {
+        range.push([this.player.x+x, this.player.y+y])
+        switch (holding.stat.weaponType) {
+          case 'spear':
+            if (!this.gameMap.collisionWall(this.player.x+x*2, this.player.y+y*2)) {
+              range.push([this.player.x+x*2, this.player.y+y*2])
+            }
+            break
+          case 'hammer':
+            if (!this.gameMap.collisionWall(this.player.x+x-1, this.player.y+y) && (x-1 != 0)) {
+              range.push([this.player.x+x-1, this.player.y+y])
+            }
+            if (!this.gameMap.collisionWall(this.player.x+x+1, this.player.y+y) && (x+1 != 0)) {
+              range.push([this.player.x+x+1, this.player.y+y])
+            }
+            if (!this.gameMap.collisionWall(this.player.x+x, this.player.y+y-1) && (y-1 != 0)) {
+              range.push([this.player.x+x, this.player.y+y-1])
+            }
+            if (!this.gameMap.collisionWall(this.player.x+x, this.player.y+y+1) && (y+1 != 0)) {
+              range.push([this.player.x+x, this.player.y+y+1])
+            }
+            break
+          default:
+        }
+      }
+    }
+    this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)'
+    range.map(p => {
+      this.ctx.strokeRect(p[0]*TILESIZE+gx, p[1]*TILESIZE+gy, TILESIZE, TILESIZE)
+    })
+  }
   update() {
     //this.syncAM.process()
     if (this.syncAM.empty()) {
@@ -1184,6 +1233,7 @@ export default class MarsZero {
     //this.renderField(mx, my, gx, gy)
     //this.renderObjects(mx, my, gx, gy)
     this.gameMap.render(this.ctx, mx, my, gx, gy)
+    this.renderHoldingRange(mx, my, gx, gy)
     if (this.player.stat.holding) {
       let holding = this.player.stat.holding.renderable
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx+4, this.player.renderable.prop.y+gy-20, TILESIZE*0.8, TILESIZE*0.8)
