@@ -94,9 +94,9 @@ const testMap = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,88,0,0,0,0,0,],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
-    [0,0,0,0,0,0,208,209,210,0,0,0,0,0,0,0,0,0,0,48,49,48,49,48,49,48,49,0,0,0,],
-    [0,0,0,0,0,0,216,217,218,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,224,225,226,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,49,48,49,48,49,48,49,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
     [0,0,85,0,0,0,0,0,0,0,0,0,0,0,93,93,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
@@ -170,6 +170,11 @@ class GameMap {
         this.tm.render(ctx, this.baseLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
       }
     }
+    for (let y = Math.max(my, 0); y < this.height; ++y) {
+      for (let x = Math.max(mx, 0); x < this.width; ++x) {
+        this.tm.render(ctx, this.secondLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
+      }
+    }
 
     const now = new Date()
     const d = Math.min(8, (now - this.animTimer) / 200)
@@ -188,11 +193,6 @@ class GameMap {
       }
     }
 
-    for (let y = Math.max(my, 0); y < this.height; ++y) {
-      for (let x = Math.max(mx, 0); x < this.width; ++x) {
-        this.tm.render(ctx, this.secondLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
-      }
-    }
   }
 }
 
@@ -300,6 +300,19 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(-TILESIZE/4, -TILESIZE/4, 16, 48),
     ],
   })
+}
+
+class DamageEffect {
+  constructor(target, damage) {
+    this.target = target
+    this.damage = damage
+    this.timer = new Date()
+  }
+  update() {
+    if (new Date() - this.timer > 1000) {
+      this.end = true
+    }
+  }
 }
 
 class GameDate {
@@ -445,6 +458,7 @@ export default class MarsZero {
     this.date.elapseMinute(720)
     this.tm1 = new TileManager("./resources/base.png", 16, 16)
     this.ignoreLastInput = false
+    this.damageList = []
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Tile Manage Test {
@@ -462,7 +476,7 @@ export default class MarsZero {
     // Animation Test {
       let p = createWalkAnimatable(this.tm3, 1*TILESIZE, 1*TILESIZE, 1)
       let c = new Renderable(1*TILESIZE, 4*TILESIZE, this.tm_coin, 0)
-      let a = new Renderable(8*TILESIZE, 8*TILESIZE, this.tm_apple, 0)
+      let a = new Renderable(9*TILESIZE, 8*TILESIZE, this.tm_apple, 0)
       let sw = new Renderable(10*TILESIZE, 4*TILESIZE, this.tm_sword, 0)
       let sp = new Renderable(10*TILESIZE, 5*TILESIZE, this.tm_spear, 0)
       let ha = new Renderable(10*TILESIZE, 6*TILESIZE, this.tm_hammer, 0)
@@ -482,7 +496,7 @@ export default class MarsZero {
       }
       this.player = new Character(pStat, p, 1, 1, 1)
       this.coin = new Item(cStat, c, 1, 4, 0)
-      this.apple = new Item(aStat, a, 8, 8, 0)
+      this.apple = new Item(aStat, a, 9, 8, 0)
       this.sword = new Item(swStat, sw, 10, 4, 0)
       this.spear = new Item(spStat, sp, 10, 5, 0)
       this.hammer = new Item(haStat, ha, 10, 6, 0)
@@ -521,6 +535,7 @@ export default class MarsZero {
     this.lifecycle = this.genLifeCycle()
   }
   damage(from, to, damage) {
+    this.damageList.push(new DamageEffect(to, damage))
     this.messageWindow.push(`${from.stat.name}は${to.stat.name}に${damage}のダメージを与えた！`)
     to.stat.hp -= damage
     if (to.stat.hp <= 0) {
@@ -1120,6 +1135,19 @@ export default class MarsZero {
       this.ctx.fillRect(npc.prop.x+gx, npc.prop.y+gy-4, TILESIZE*(x.stat.hp/x.stat.maxhp), 4)
     })
   }
+  renderDamageEffect(mx, my, gx, gy) {
+    this.damageList.map(x => {
+      const target = x.target
+      const d = new Date() - x.timer
+      const dx = 12* 4e-7 * -(d-500)*(d-500)
+      console.log(dx)
+      const dy = Math.sin(d/30) * (12-d/100)
+      this.ctx.font = "20px 'M PLUS Rounded 1c'"
+      this.ctx.globalAlpha = Math.max(0, (1-(d*d / 1000000)))
+      this.ctx.fillStyle = 'white'
+      this.ctx.fillText(`${x.damage}`, target.renderable.prop.x+gx+20+dx, target.renderable.prop.y+gy+24+dy)
+    })
+  }
   update() {
     //this.syncAM.process()
     if (this.syncAM.empty()) {
@@ -1128,6 +1156,8 @@ export default class MarsZero {
     } else this.syncAM.process()
     this.asyncAM.process()
 
+    this.damageList.map(x => x.update())
+    this.damageList = this.damageList.filter(x => !x.end)
     this.gameMap.update()
     if (new Date() - this.inventoryTimer > 4000) {
       this.showInventory = false
@@ -1158,6 +1188,7 @@ export default class MarsZero {
       holding.tiles.render(this.ctx, holding.prop.tileId, this.player.renderable.prop.x+gx+4, this.player.renderable.prop.y+gy-20, TILESIZE*0.8, TILESIZE*0.8)
     }
     this.renderNpcHpGage(mx, my, gx, gy)
+    this.renderDamageEffect(mx, my, gx, gy)
     this.date.renderPeriodFilter(this.ctx, 800, 600)
     this.renderFarmStat(mx, my, gx, gy)
     this.renderFarmDetail(mx, my, gx, gy)
