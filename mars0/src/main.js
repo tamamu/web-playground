@@ -485,7 +485,7 @@ export default class MarsZero {
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
       let cStat = new ItemState("コイン")
       let aStat = new FoodState("りんご", 300)
-      let swStat = new WeaponState("テストソード", 'sword', 20, 0.1)
+      let swStat = new WeaponState("テストソード", 'sword', 30, 0.1)
       let spStat = new WeaponState("テストスピア", 'spear', 20, 0.1)
       let haStat = new WeaponState("テストハンマー", 'hammer', 20, 0.1)
       let poStat = new WeaponState("テストじょうろ", 'watering', 5, 0.1)
