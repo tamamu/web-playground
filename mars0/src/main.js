@@ -437,6 +437,23 @@ class GameDate {
   }
 }
 
+class Sound {
+  constructor(path) {
+    this.path = path
+    this.audio = new Audio()
+    //this.audio.preload = 'none'
+    this.audio.src = path
+    this.audio.autoplay = false
+    this.audio.load()
+  }
+  play(loop = false) {
+    let a = new Audio()
+    a.src = this.path
+    a.loop = loop
+    return a.play()
+  }
+}
+
 export default class MarsZero {
   constructor(ctx) {
     this.ctx = ctx
@@ -462,6 +479,14 @@ export default class MarsZero {
     this.damageList = []
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
+    // Sound Test {
+      this.bgm = new Sound("./resources/Elven-Sanctuary_loop.ogg")
+      this.snd_hit = new Sound("./resources/se_maoudamashii_battle16.wav")
+      this.snd_swd = new Sound("./resources/se_maoudamashii_battle17.wav")
+      this.snd_eatk = new Sound("./resources/se_maoudamashii_battle03.wav")
+      this.snd_spr = new Sound("./resources/se_maoudamashii_battle14.wav")
+      this.snd_equip = new Sound("./resources/soubi-01.wav")
+    // }
     // Tile Manage Test {
       this.tm2 = new TileManager("./resources/kabe-ue_doukutu1.png", 16, 16)
       this.tm3 = new TileManager("./resources/02_town2.png", 24, 40)
@@ -597,9 +622,30 @@ export default class MarsZero {
     })
     let cameraFixed = this.camera.isFixed
     if (!cameraFixed) this.camera.fix()
+
+    if (enemies.length > 0) {
+      this.snd_eatk.play()
+    }
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
       if (enemies.length > 0) {
-        enemies.map(e => {
+        /*
+          if (weapon) {
+            switch (weapon.stat.weaponType) {
+              case 'sword':
+                this.snd_swd.play()
+                break
+              case 'spear':
+                this.snd_spr.play()
+                break
+              default:
+                this.snd_hit.play()
+                break
+            }
+          } else {
+            this.snd_hit.play()
+          }
+          */
+          enemies.map(e => {
           let w = 0
           if (weapon) {
             w = weapon.stat.atk
@@ -642,6 +688,9 @@ export default class MarsZero {
       case 'up':
         enemy = (npc.x==this.player.x && npc.y-1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x, npc.y-1, true)
         break
+    }
+    if (enemy) {
+      this.snd_eatk.play()
     }
     this.syncAM.push(new Animation(npc.renderable, `${npc.direction}-attack`, () => {
       if (enemy) {
@@ -734,8 +783,6 @@ export default class MarsZero {
       this.player.stat.itemList.unshift(holding)
       head = this.player.stat.itemList.pop()
     }
-    console.log(holding)
-    console.log(head)
     if (holding != null) {
       if (head != null) {
         this.messageWindow.push(`${this.player.stat.name}は${holding.stat.screenName}をカバンにしまい、${head.stat.name}を取り出した。`)
@@ -748,6 +795,9 @@ export default class MarsZero {
       }
     }
     this.player.stat.holding = head
+    if (this.player.stat.holding && this.player.stat.holding.stat.weaponType) {
+      this.snd_equip.play()
+    }
   }
   playerUseHolding() {
     const holding = this.player.stat.holding
@@ -845,7 +895,6 @@ export default class MarsZero {
       }
       let item = new Item(stat, renderable, farm.x, farm.y, renderable.prop.tileId)
       item.stat.isSoiled = true
-      console.log(item)
       return item
     }
     return null
@@ -871,6 +920,9 @@ export default class MarsZero {
       }
     }
     if (target) {
+      if (target.stat.weaponType) {
+        this.snd_equip.play()
+      }
       if (this.player.stat.holding) {
         let holding = this.player.stat.holding
         holding.move(this.player.x, this.player.y)
@@ -969,6 +1021,9 @@ export default class MarsZero {
     }
   }
   *genLifeCycle() {
+    while(!this.bgm.play()) {
+      yield 1
+    }
     while(true) {
       this.date.elapseMinute(5)
       checkEvent()
@@ -1141,7 +1196,6 @@ export default class MarsZero {
       const target = x.target
       const d = new Date() - x.timer
       const dx = 12* 4e-7 * -(d-500)*(d-500)
-      console.log(dx)
       const dy = Math.sin(d/30) * (12-d/100)
       this.ctx.font = "20px 'M PLUS Rounded 1c'"
       this.ctx.globalAlpha = Math.max(0, (1-(d*d / 1000000)))
