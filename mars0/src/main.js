@@ -13,6 +13,8 @@ import FoodState from './Food'
 import {ItemState, Item} from './Item'
 import SeedState from './Seed'
 import WeaponState from './Weapon'
+import GameMap from './GameMap'
+import GameDate from './GameDate'
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -109,92 +111,6 @@ const testMap = [
   ]
 ]
 
-class GameMap {
-  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList) {
-    this.tm = tm
-    this.height = base.length
-    this.width = base[0].length
-    this.baseLayer = base
-    this.secondLayer = second
-    this._collision = collision
-    this.nuts = nuts
-    this.dropList = dropList ? dropList : []
-    this.farmList = farmList ? farmList : []
-    this.charaList = charaList ? charaList : []
-    this.animTimer = new Date()
-    this.player = player
-  }
-  collisionWall(x, y) {
-    if (y >= this.height || y < 0 || x >= this.width || x < 0) {
-      return true
-    }
-    return this._collision[y][x] > 0
-  }
-  collision(x, y) {
-    return this.collisionWall(x, y) || this.detectChara(x, y, false)
-  }
-  detectChara(x, y, isEnemy) {
-    for (const chara of this.charaList) {
-      if (chara.x == x && chara.y == y) {
-        if (isEnemy && !chara.stat.isEnemy) {
-          continue
-        }
-        return chara
-      }
-    }
-    return null
-  }
-  detectFarm(x, y) {
-    for (const farm of this.farmList) {
-      if (farm.x == x && farm.y == y) {
-        return farm
-      }
-    }
-    return null
-  }
-  update() {
-    if (new Date() - this.animTimer > 1600) {
-      this.animTimer = new Date()
-    }
-    this.charaList = this.charaList.filter(x => {
-      if (x.stat.isDead) {
-        //this.messageWindow.push(`${x.stat.name}を倒した。`)
-        return false
-      }
-      return true
-    })
-  }
-  render(ctx, mx, my, gx, gy) {
-    for (let y = Math.max(my, 0); y < this.height; ++y) {
-      for (let x = Math.max(mx, 0); x < this.width; ++x) {
-        this.tm.render(ctx, this.baseLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
-      }
-    }
-    for (let y = Math.max(my, 0); y < this.height; ++y) {
-      for (let x = Math.max(mx, 0); x < this.width; ++x) {
-        this.tm.render(ctx, this.secondLayer[y][x], x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
-      }
-    }
-
-    const now = new Date()
-    const d = Math.min(8, (now - this.animTimer) / 200)
-    for (let priority of [this.farmList, this.dropList, [this.player], this.charaList]) {
-      for (let r of priority) {
-        if (r.stat.type) {
-          ctx.globalAlpha = 0.8 - (d/10)
-          ctx.globalCompositeOperation = 'source-atop'
-          r.renderable.tiles.render(ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx-d, r.renderable.prop.y+gy-d, TILESIZE*0.8+d*2, TILESIZE*0.8+d*2)
-          ctx.globalAlpha = 1
-          r.renderable.tiles.render(ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE*0.8, TILESIZE*0.8)
-          ctx.globalCompositeOperation = 'source-over'
-        } else {
-          r.renderable.tiles.render(ctx, r.renderable.prop.tileId, r.renderable.prop.x+gx, r.renderable.prop.y+gy, TILESIZE, TILESIZE)
-        }
-      }
-    }
-
-  }
-}
 
 /*
 const testMap = [
@@ -315,127 +231,6 @@ class DamageEffect {
   }
 }
 
-class GameDate {
-  constructor() {
-    this.year = 0
-    this.month = 0
-    this.day = 1
-    this.hour = 0
-    this.minute = 0
-  }
-  elapse() {
-    while (this.minute >= 60) {
-      this.minute -= 60
-      this.hour += 1
-    }
-    while (this.hour >= 24) {
-      this.hour -= 24
-      this.day += 1
-    }
-    while (this.month >= 4) {
-      this.month -= 4
-      this.year += 1
-    }
-  }
-  elapseMinute(n) {
-    this.minute += n
-    this.elapse()
-  }
-  elapseDay(h) {
-    this.day += 1
-    this.hour = h
-    this.elapse()
-  }
-  getPeriod() {
-    if (0 <= this.hour && this.hour <= 4) {
-      return 'midnight'
-    } else if (5 <= this.hour && this.hour <= 10) {
-      return 'morning'
-    } else if (11 <= this.hour && this.hour <= 13) {
-      return 'noon'
-    } else if (14 <= this.hour && this.hour <= 17) {
-      return 'evening'
-    } else if (18 <= this.hour && this.hour <= 21) {
-      return 'night'
-    } else {
-      return 'midnight'
-    }
-  }
-  getSeason() {
-    return ['春','夏','秋','冬'][this.month]
-  }
-  getTime() {
-    return `${this.hour}:${('0' + this.minute).slice(-2)}`
-  }
-  render(ctx, x, y) {
-    ctx.fillStyle = 'white'
-    ctx.font = "400 12px 'M PLUS Rounded 1c'"
-    ctx.fillText(`DATE: ${this.year+1}年 ${this.getSeason()}の月 ${this.day}日`, x, y)
-    ctx.fillText(`TIME: ${this.getTime()}`, x, y+12)
-  }
-  renderPeriodFilter(ctx, w, h) {
-    const period = this.getPeriod()
-    const m = this.hour * 60 + this.minute
-    let r, g, b, a
-    if (-270 <= m && m < 120) {
-      const t = (m+270)/(120+270)
-      r = t * 20
-      g = t * 20
-      b = 120 - t * 60
-      a = 0.5 + t * 0.3
-    } else if (120 <= m && m <= 450) {
-      const t = (m-120)/(450-120)
-      r = 20 + t * 40
-      g = 20 + t * 40
-      b = 60 + t * 20
-      a = 0.8 - t * 0.4
-    } else if (450 < m && m <= 720) {
-      const t = (m-450)/(720-450)
-      r = 60 + t * 195
-      g = 60 + t * 195
-      b = 80 + t * 120
-      a = 0.4 - t * 0.3
-    } else if (720 < m && m <= 930) {
-      const t = (m-720)/(930-720)
-      r = 255
-      g = 255 - t * 155
-      b = 200 - t * 100
-      a = 0.1 + t * 0.2
-    } else if (930 < m && m <= 1170) {
-      const t = (m-930)/(1170-930)
-      r = 255 - t * 255
-      g = 100 - t * 100
-      b = 100 + t * 20
-      a = 0.3 + t * 0.2
-    } else if (1170 < m <= 1500) {
-      const t = (m-1170)/(1500-1170)
-      r = t * 20
-      g = t * 20
-      b = 120 - t * 60
-      a = 0.5 + t * 0.3
-    }
-    switch (period) {
-      case 'midnight':
-        ctx.fillStyle = 'rgba(20, 20, 60, 0.8)'
-        break
-      case 'morning':
-        ctx.fillStyle = 'rgba(60, 60, 80, 0.4)'
-        break
-      case 'noon':
-        ctx.fillStyle = 'rgba(255, 255, 200, 0.1)'
-        break
-      case 'evening':
-        ctx.fillStyle = 'rgba(255, 100, 100, 0.3)'
-        break
-      case 'night':
-        ctx.fillStyle = 'rgba(0, 0, 120, 0.5)'
-        break
-    }
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
-    ctx.globalAlpha = 1
-    ctx.fillRect(0, 0, w, h)
-  }
-}
 
 class Sound {
   constructor(path) {
@@ -451,6 +246,70 @@ class Sound {
     a.src = this.path
     a.loop = loop
     return a.play()
+  }
+}
+
+function drawWindow(ctx, x, y, w, h) {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+  ctx.fillRect(x, y, w, h)
+  ctx.strokeStyle = 'white'
+  ctx.strokeRect(x, y, w, h)
+}
+
+class ProduceWindow {
+  constructor(keystore, inventory) {
+    this.keyStore = keystore
+    this.matchedRecipes = []
+    this.usingItems = []
+    this.inventory = inventory
+    this.selectContent = 0
+    this.cursor = 0
+    this.closed = false
+  }
+  input() {
+    const keys = this.keyStore.get()
+    if (keys['ArrowUp']) {
+      this.selectContent = this.selectContent == 0 ? 1 : 0;
+    } else if (keys['ArrowDown']) {
+      this.selectContent = this.selectContent == 1 ? 0 : 1;
+    }
+    if (keys['ArrowLeft']) {
+      this.cursor = this.cursor == 0 ? this.inventory.length-1 : this.cursor-1
+    } else if (keys['ArrowRight']) {
+      this.cursor = this.cursor == this.inventory.length-1 ? 0 : this.cursor+1
+    }
+    if (keys['Escape']) {
+      this.closed = true
+      return 0
+    }
+    return 1
+  }
+  *genLifeCycle() {
+    while(true) {
+      while(this.input() == 1) {
+        yield 1
+      }
+      if (this.closed) {
+        break
+      }
+    }
+    return 0
+  }
+  render(ctx) {
+    const w = TILESIZE*this.inventory.length
+    drawWindow(ctx, 250, 40, 300, 240)
+    drawWindow(ctx, 400-w/2, 292, w, TILESIZE)
+    drawWindow(ctx, 400-w/2, 352, w, TILESIZE)
+    for (let j=0; j < this.inventory.length; ++j) {
+      const item = this.inventory[j]
+      if (item) {
+        item.renderable.tiles.render(ctx, item.tileId, TILESIZE * j + 400-w/2, 352, TILESIZE, TILESIZE)
+      }
+    }
+    ctx.strokeStyle = 'blue'
+    const x = this.cursor * TILESIZE + 400-w/2
+    const y = this.selectContent == 0 ? 352 : 292
+    ctx.strokeRect(x, y, TILESIZE, TILESIZE)
   }
 }
 
@@ -477,6 +336,7 @@ export default class MarsZero {
     this.tm1 = new TileManager("./resources/base.png", 16, 16)
     this.ignoreLastInput = false
     this.damageList = []
+    this.upperWindow = null
     document.addEventListener("keydown", this.keyStore.onKeyDown.bind(this.keyStore))
     document.addEventListener("keyup", this.keyStore.onKeyUp.bind(this.keyStore))
     // Sound Test {
@@ -767,6 +627,10 @@ export default class MarsZero {
       return 0
     } else if (keys["k"]) {
       this.playerInventorySpin()
+    } else if (keys["Escape"]) {
+      this.upperWindow = new ProduceWindow(this.keyStore, this.player.stat.itemList)
+      this.upperWindowLifeCycle = this.upperWindow.genLifeCycle()
+      return 2
     }
     return 0
   }
@@ -1040,6 +904,16 @@ export default class MarsZero {
             this.ignoreLastInput = false
             break PlayerTurn
           case 2:
+            if (this.upperWindow) {
+              while(true) {
+                if (this.upperWindowLifeCycle.next()) {
+                  yield 4
+                } else {
+                  break
+                }
+              }
+              this.upperWindow = null
+            }
             this.ignoreLastInput = false
             yield 3
             break PlayerTurn
@@ -1301,5 +1175,8 @@ export default class MarsZero {
     this.renderInfo(mx, my, gx, gy)
     this.messageWindow.render(this.ctx, 0, 600-this.messageWindow.height)
     this.date.render(this.ctx, 78, 50)
+    if (this.upperWindow) {
+      this.upperWindow.render(this.ctx)
+    }
   }
 }
