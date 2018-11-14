@@ -136,8 +136,8 @@ const testMap = [
 function createWalkAnimatable(tm, x, y, tileId) {
   return new Animatable(x, y, tm, tileId, {
     "right-attack": [
-      new AnimationState(TILESIZE, 0, 13, 90),
-      new AnimationState(-TILESIZE, 0, 13, 90),
+      new AnimationState(TILESIZE, 0, 13, 96),
+      new AnimationState(-TILESIZE, 0, 13, 96),
     ],
     "right": [
       new AnimationState(TILESIZE/4, 0, 12, 48),
@@ -146,8 +146,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(TILESIZE/4, 0, 13, 48),
     ],
     "left-attack": [
-      new AnimationState(-TILESIZE, 0, 7, 90),
-      new AnimationState(TILESIZE, 0, 7, 90),
+      new AnimationState(-TILESIZE, 0, 7, 96),
+      new AnimationState(TILESIZE, 0, 7, 96),
     ],
     "left": [
       new AnimationState(-TILESIZE/4, 0, 6, 48),
@@ -156,8 +156,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(-TILESIZE/4, 0, 7, 48),
     ],
     "up-attack": [
-      new AnimationState(0, -TILESIZE, 19, 90),
-      new AnimationState(0, TILESIZE, 19, 90),
+      new AnimationState(0, -TILESIZE, 19, 96),
+      new AnimationState(0, TILESIZE, 19, 96),
     ],
     "up": [
       new AnimationState(0, -TILESIZE/4, 18, 48),
@@ -166,8 +166,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(0, -TILESIZE/4, 19, 48),
     ],
     "down-attack": [
-      new AnimationState(0, TILESIZE, 1, 90),
-      new AnimationState(0, -TILESIZE, 1, 90),
+      new AnimationState(0, TILESIZE, 1, 96),
+      new AnimationState(0, -TILESIZE, 1, 96),
     ],
     "down": [
       new AnimationState(0, TILESIZE/4, 0, 48),
@@ -176,8 +176,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(0, TILESIZE/4, 1, 48),
     ],
     "down-right-attack": [
-      new AnimationState(TILESIZE, TILESIZE, 10, 90),
-      new AnimationState(-TILESIZE, -TILESIZE, 10, 90),
+      new AnimationState(TILESIZE, TILESIZE, 10, 96),
+      new AnimationState(-TILESIZE, -TILESIZE, 10, 96),
     ],
     "down-right": [
       new AnimationState(TILESIZE/4, TILESIZE/4, 9, 48),
@@ -186,8 +186,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(TILESIZE/4, TILESIZE/4, 10, 48),
     ],
     "down-left-attack": [
-      new AnimationState(-TILESIZE, TILESIZE, 4, 90),
-      new AnimationState(TILESIZE, -TILESIZE, 4, 90),
+      new AnimationState(-TILESIZE, TILESIZE, 4, 96),
+      new AnimationState(TILESIZE, -TILESIZE, 4, 96),
     ],
     "down-left": [
       new AnimationState(-TILESIZE/4, TILESIZE/4, 3, 48),
@@ -196,8 +196,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(-TILESIZE/4, TILESIZE/4, 4, 48),
     ],
     "up-right-attack": [
-      new AnimationState(TILESIZE, -TILESIZE, 22, 90),
-      new AnimationState(-TILESIZE, TILESIZE, 22, 90),
+      new AnimationState(TILESIZE, -TILESIZE, 22, 96),
+      new AnimationState(-TILESIZE, TILESIZE, 22, 96),
     ],
     "up-right": [
       new AnimationState(TILESIZE/4, -TILESIZE/4, 21, 48),
@@ -206,8 +206,8 @@ function createWalkAnimatable(tm, x, y, tileId) {
       new AnimationState(TILESIZE/4, -TILESIZE/4, 22, 48),
     ],
     "up-left-attack": [
-      new AnimationState(-TILESIZE, -TILESIZE, 16, 90),
-      new AnimationState(TILESIZE, TILESIZE, 16, 90),
+      new AnimationState(-TILESIZE, -TILESIZE, 16, 96),
+      new AnimationState(TILESIZE, TILESIZE, 16, 96),
     ],
     "up-left": [
       new AnimationState(-TILESIZE/4, -TILESIZE/4, 15, 48),
@@ -1181,6 +1181,7 @@ export default class MarsZero {
     if (this.syncAM.empty()) {
       this.syncAM.wait()
       this.lifecycle.next()
+      if (!this.syncAM.empty()) this.syncAM.process()
     } else this.syncAM.process()
     this.asyncAM.process()
 
