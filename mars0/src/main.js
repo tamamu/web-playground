@@ -554,24 +554,7 @@ export default class MarsZero {
     }
     this.syncAM.push(new Animation(this.player.renderable, `${this.player.direction}-attack`, () => {
       if (enemies.length > 0) {
-        /*
-          if (weapon) {
-            switch (weapon.stat.weaponType) {
-              case 'sword':
-                this.snd_swd.play()
-                break
-              case 'spear':
-                this.snd_spr.play()
-                break
-              default:
-                this.snd_hit.play()
-                break
-            }
-          } else {
-            this.snd_hit.play()
-          }
-          */
-          enemies.map(e => {
+        enemies.map(e => {
           let w = 0
           if (weapon) {
             w = weapon.stat.atk
@@ -651,7 +634,6 @@ export default class MarsZero {
     }
     this.keyStore.omit()
     this.keyStore.lastDown = new Date()
-      console.log(this.player.x, this.player.y)
     if (x != 0 || y != 0) {
       if (this.gameMap.collision(this.player.x+x, this.player.y+y) || keys["Alt"]) {
         this.player.direction = direction
