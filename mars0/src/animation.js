@@ -49,8 +49,9 @@ export class AnimationManager {
     return this.animationList.length == 0
   }
   process() {
-    let delta = new Date() - this.lastProcessed
+    const delta = new Date() - this.lastProcessed
     this.animationList = this.animationList.filter(target => {
+      let d = delta
       let head = target.queue.head()
       if (!head) {
         target.prop.x = target.prevProp.x
@@ -60,12 +61,12 @@ export class AnimationManager {
         return false
       }
 
-      head.elapsed += delta
+      head.elapsed += d
       while (head.elapsed >= head.time) {
         target.prevProp.x += head.x
         target.prevProp.y += head.y
         target.prop.tileId = head.tileId
-        delta = head.elapsed - head.time
+        d = head.elapsed - head.time
         target.queue.pop()
         head = target.queue.head()
         if (!head) {
@@ -75,7 +76,7 @@ export class AnimationManager {
           target.animated ? target.animated() : null
           return false
         }
-        head.elapsed += delta
+        head.elapsed += d
       }
 
       let calculatedX = target.prevProp.x + head.x * (head.elapsed / head.time)
