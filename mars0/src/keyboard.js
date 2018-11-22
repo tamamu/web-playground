@@ -6,7 +6,7 @@ export class KeyboardStore {
     this.lastDown = new Date()
   }
   onKeyDown(e) {
-    if (this.states[e.key] == false) {
+    if (!this.states[e.key]) {
       this.states[e.key] = true
       this.lastDown = new Date()
     }
