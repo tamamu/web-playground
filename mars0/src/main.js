@@ -15,6 +15,7 @@ import SeedState from './Seed'
 import WeaponState from './Weapon'
 import GameMap from './GameMap'
 import GameDate from './GameDate'
+import Dungeon from './Dungeon'
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -483,7 +484,17 @@ export default class MarsZero {
       npcList.push(makeEnemy(5, 4))
     // } End Animation Test
 
-    this.gameMap = new GameMap(this.tm1, this.player, testMap[0], testMap[1], testMap[2], null, dropList, farmList, npcList)
+    let d = new Dungeon(40, 40)
+    d.generate()
+    let d1 = d.field.map(row => row.map(x => x == 1 ? 1798 : 385))
+    let d2 = new Array(40)
+    for (let j=0; j < d2.length; ++j) d2[j] = new Array(40).fill(-1)
+    this.gameMap = new GameMap(this.tm1, this.player, d1, d2, d.field, null, dropList, farmList, npcList)
+    this.player.x = d.playerPosition[0]
+    this.player.y = d.playerPosition[1]
+    this.player.renderable.prop.x = this.player.x * TILESIZE
+    this.player.renderable.prop.y = this.player.y * TILESIZE
+    //this.gameMap = new GameMap(this.tm1, this.player, testMap[0], testMap[1], testMap[2], null, dropList, farmList, npcList)
     this.lifecycle = this.genLifeCycle()
   }
   damage(from, to, damage) {
@@ -1018,7 +1029,7 @@ export default class MarsZero {
     //this.ctx.strokeText(`${satiety}%`, 66, 54)
     this.ctx.fillText(`${hp}/${maxhp}`, 260, 20)
     //this.ctx.strokeText(`${hp}/${maxhp}`, 230, 32)
-    this.ctx.fillText('1F / テスト広場', 780, 20)
+    this.ctx.fillText('1F / テストダンジョン', 780, 20)
     this.ctx.font = "400 18px 'M PLUS Rounded 1c'"
     this.ctx.fillText(`${satiety}%`, 66, 54)
     //this.ctx.strokeText('1F / テスト広場', 780, 32)
