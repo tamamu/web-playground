@@ -9,8 +9,8 @@ export class CharaStatus {
     this.atk = atk
     this.def = def
     this.luk = luk
-    this.satiety = 720
-    this.maxSatiety = 720
+    this.satiety = 1200
+    this.maxSatiety = 1200
     this.itemList = [null, null, null, null, null]
     this.money = 0
     this.holding = null
