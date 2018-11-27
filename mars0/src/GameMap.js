@@ -1,7 +1,7 @@
 import {TILESIZE} from './constants'
 
 export default class GameMap {
-  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList) {
+  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList, isDungeon=true) {
     this.tm = tm
     this.height = base.length
     this.width = base[0].length
@@ -14,6 +14,7 @@ export default class GameMap {
     this.charaList = charaList ? charaList : []
     this.animTimer = new Date()
     this.player = player
+    this.isDungeon = isDungeon
   }
   collisionWall(x, y) {
     if (y >= this.height || y < 0 || x >= this.width || x < 0) {
