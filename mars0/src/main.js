@@ -16,6 +16,7 @@ import WeaponState from './Weapon'
 import GameMap from './GameMap'
 import GameDate from './GameDate'
 import Dungeon from './Dungeon'
+import {FloorProperty, FloorObject} from './FloorObject'
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -486,10 +487,14 @@ export default class MarsZero {
 
     let d = new Dungeon(40, 40)
     d.generate()
+    let stair_stat = new FloorProperty('Stair', 'stair')
+    let s = new Renderable(d.stair[0]*TILESIZE, d.stair[1]*TILESIZE, this.tm1, 1336)
+    let stair = new FloorObject(stair_stat, s, d.stair[0], d.stair[1], 1336)
+    console.log(stair)
     let d1 = d.field.map(row => row.map(x => x == 1 ? 1798 : 385))
     let d2 = new Array(40)
     for (let j=0; j < d2.length; ++j) d2[j] = new Array(40).fill(-1)
-    this.gameMap = new GameMap(this.tm1, this.player, d1, d2, d.field, null, dropList, farmList, npcList)
+    this.gameMap = new GameMap(this.tm1, this.player, d1, d2, d.field, null, dropList, farmList, npcList, [stair])
     this.player.x = d.playerPosition[0]
     this.player.y = d.playerPosition[1]
     this.player.renderable.prop.x = this.player.x * TILESIZE
@@ -907,6 +912,13 @@ export default class MarsZero {
     }
   }
   checkPlayerFloor() {
+    for (let floor of this.gameMap.floorList) {
+      if (this.player.x == floor.x && this.player.y == floor.y) {
+        if (floor.stat.objType === 'stair') {
+          this.messageWindow.push(`階段がある。`)
+        }
+      }
+    }
     for (let item of this.gameMap.dropList) {
       if (this.player.x == item.x && this.player.y == item.y) {
         this.messageWindow.push(`${item.stat.screenName}が床に落ちている。`)
@@ -976,6 +988,10 @@ export default class MarsZero {
         this.dashing = false
         return false
       }
+    }
+    if (this.gameMap.detectFloor(this.player.x, this.player.y)) {
+      this.dashing = false
+      return false
     }
     if (this.gameMap.detectFarm(this.player.x, this.player.y)) {
       this.dashing = false
