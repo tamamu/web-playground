@@ -10,6 +10,7 @@ export default class Dungeon {
     this.field = new Array(h)
     this.rooms = []
     this.playerPosition = [0, 0]
+    this.stair = null
     this.init()
   }
 
@@ -19,12 +20,24 @@ export default class Dungeon {
     }
   }
 
+  installStair() {
+    if (this.rooms.length == 0) {
+      return 0
+    }
+    const room = this.rooms[randint(0, this.rooms.length-1)]
+    const x = randint(room[0], room[0]+room[2])
+    const y = randint(room[1], room[1]+room[3])
+    this.stair = [x, y]
+    return 1
+  }
+
   generate() {
     while(this.rooms.length < 2) {
       this.rooms = []
       this.init()
       this.divHorizontal(1, 1, this.width-1, this.height-1)
     }
+    this.installStair()
     let connected = new Array(this.rooms.length)
     for (let j=0; j < connected.length; ++j) {
       connected[j] = new Array(this.rooms.length).fill(false)
