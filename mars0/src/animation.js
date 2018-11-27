@@ -48,8 +48,8 @@ export class AnimationManager {
   empty() {
     return this.animationList.length == 0
   }
-  process() {
-    const delta = new Date() - this.lastProcessed
+  process(diam=1) {
+    const delta = (new Date() - this.lastProcessed)*diam
     this.animationList = this.animationList.filter(target => {
       let d = delta
       let head = target.queue.head()
