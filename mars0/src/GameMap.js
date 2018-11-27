@@ -35,6 +35,14 @@ export default class GameMap {
     }
     return null
   }
+  detectDrop(x, y) {
+    for (const drop of this.dropList) {
+      if (drop.x == x && drop.y == y) {
+        return drop
+      }
+    }
+    return null
+  }
   detectFarm(x, y) {
     for (const farm of this.farmList) {
       if (farm.x == x && farm.y == y) {
