@@ -1,7 +1,7 @@
 import {TILESIZE} from './constants'
 
 export default class GameMap {
-  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList, isDungeon=true) {
+  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList, floorList, isDungeon=true) {
     this.tm = tm
     this.height = base.length
     this.width = base[0].length
@@ -12,6 +12,7 @@ export default class GameMap {
     this.dropList = dropList ? dropList : []
     this.farmList = farmList ? farmList : []
     this.charaList = charaList ? charaList : []
+    this.floorList = floorList ? floorList : []
     this.animTimer = new Date()
     this.player = player
     this.isDungeon = isDungeon
@@ -32,6 +33,14 @@ export default class GameMap {
           continue
         }
         return chara
+      }
+    }
+    return null
+  }
+  detectFloor(x, y) {
+    for (const floor of this.floorList) {
+      if (floor.x == x && floor.y == y) {
+        return floor
       }
     }
     return null
@@ -78,7 +87,7 @@ export default class GameMap {
 
     const now = new Date()
     const d = Math.min(8, (now - this.animTimer) / 200)
-    for (let priority of [this.farmList, this.dropList, [this.player], this.charaList]) {
+    for (let priority of [this.floorList, this.farmList, this.dropList, [this.player], this.charaList]) {
       for (let r of priority) {
         if (r.stat.type) {
           ctx.globalAlpha = 0.8 - (d/10)
