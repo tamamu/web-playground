@@ -667,6 +667,10 @@ export default class MarsZero {
         return 1
       }
     }
+    if (keys['Alt']) {
+      this.playerPickUp()
+      return 0
+    }
     if (keys["Shift"]) {
       /////////////////////////////this.playerPickUp()
       //this.playerDash()
@@ -944,7 +948,7 @@ export default class MarsZero {
       this.player.stat.maxexp += this.player.stat.maxexp
       this.playerLevelUp()
     }
-    this.player.stat.satiety -= 1
+    this.player.stat.satiety -= this.gameMap.isDungeon ? 1 : 5
     if (this.player.stat.satiety == Math.ceil(this.player.stat.maxSatiety*0.5)) {
       this.messageWindow.push(`${this.player.stat.name}はお腹がすいた。`)
     }
@@ -996,7 +1000,7 @@ export default class MarsZero {
       yield 1
     }
     while(true) {
-      this.date.elapseMinute(5)
+      this.date.elapseMinute(this.gameMap.isDungeon ? 1 : 5)
       checkEvent()
       //yield 1
       this.checkGrowth()
