@@ -496,6 +496,7 @@ export default class MarsZero {
     this.player.renderable.prop.y = this.player.y * TILESIZE
     //this.gameMap = new GameMap(this.tm1, this.player, testMap[0], testMap[1], testMap[2], null, dropList, farmList, npcList)
     this.lifecycle = this.genLifeCycle()
+    this.dashing = false
   }
   damage(from, to, damage) {
     this.damageList.push(new DamageEffect(to, damage))
@@ -508,6 +509,19 @@ export default class MarsZero {
   calcDamage(atk, def) {
     return Math.floor(atk*Math.pow(15/16, def)*(Math.random()*0.4+0.8))
   }
+  toMovement(direction) {
+    switch (direction) {
+      case 'down': return [0, 1]
+      case 'down-left': return [-1, 1]
+      case 'down-right': return [1, 1]
+      case 'left': return [-1, 0]
+      case 'right': return [1, 0]
+      case 'up': return [0, -1]
+      case 'up-left': return [-1, -1]
+      case 'up-right': return [1, -1]
+      default: return [0, 0]
+    }
+  }
   playerAttack() {
     let enemies = []
     let holding = this.player.stat.holding
@@ -516,17 +530,7 @@ export default class MarsZero {
       weapon = holding
     }
     let attackRange = []
-    let x = 0, y = 0
-    switch (this.player.direction) {
-      case 'down': x = 0, y = 1; break
-      case 'down-left': x = -1, y = 1; break
-      case 'down-right': x = 1, y = 1; break
-      case 'left': x = -1, y = 0; break
-      case 'right': x = 1, y = 0; break
-      case 'up': x = 0, y = -1; break
-      case 'up-left': x = -1, y = -1; break
-      case 'up-right': x = 1, y = -1; break
-    }
+    let [x, y] = this.toMovement(this.player.direction)
     attackRange.push([this.player.x+x, this.player.y+y, 1])
 
     if (weapon) {
@@ -630,6 +634,9 @@ export default class MarsZero {
     if (x ==  1 && y ==  1) return 'down-right'
     return 'down'
   }
+  playerDash() {
+    this.dashing = true
+  }
   playerAction() {
     let keys = this.keyStore.get()
     let x = keys["ArrowLeft"] ? -1 : keys["ArrowRight"] ? 1 : 0
@@ -654,13 +661,18 @@ export default class MarsZero {
         this.player.y += y
         this.player.direction = direction
         this.syncAM.push(new Animation(this.player.renderable, direction))
+        if (keys['Shift']) {
+          this.playerDash()
+        }
         return 1
       }
     }
     if (keys["Shift"]) {
-      this.playerPickUp()
+      /////////////////////////////this.playerPickUp()
+      //this.playerDash()
+      //return 3
       //return true
-      return 0
+      //return 0
     } else if (keys[" "]) {
       if (this.player.stat.holding && this.player.stat.holding.stat.type != 'weapon') {
         return this.playerUseHolding()
@@ -946,6 +958,39 @@ export default class MarsZero {
       this.player.stat.hp += this.player.stat.satiety
     }
   }
+  continueDash() {
+    let keys = {...this.keyStore.get()}
+    let x, y
+    [x, y] = this.toMovement(this.player.direction)
+    if (y == 1) keys['ArrowDown'] = false
+    if (y == -1) keys['ArrowUp'] = false
+    if (x == 1) keys['ArrowRight'] = false
+    if (x == -1) keys['ArrowLeft'] = false
+    keys['Shift'] = false
+    for (const k in keys) {
+      if (keys[k]) {
+        this.dashing = false
+        return false
+      }
+    }
+    if (this.gameMap.detectFarm(this.player.x, this.player.y)) {
+      this.dashing = false
+      return false
+    }
+    if (this.gameMap.detectDrop(this.player.x, this.player.y)) {
+      this.dashing = false
+      return false
+    }
+    if (this.gameMap.collision(this.player.x+x, this.player.y+y)) {
+      this.dashing = false
+      return false
+    } else {
+      this.player.x += x
+      this.player.y += y
+      this.syncAM.push(new Animation(this.player.renderable, this.player.direction))
+      return true
+    }
+  }
   *genLifeCycle() {
     while(!this.bgm.play()) {
       yield 1
@@ -956,28 +1001,34 @@ export default class MarsZero {
       //yield 1
       this.checkGrowth()
       if (this.ignoreLastInput) yield 2
-      PlayerTurn: while (true) {
-        switch (this.playerAction()) {
-          case 0:
-            while(this.upperWindow && !this.upperWindow.closed) {
-              const v = this.upperWindowLifeCycle.next()
-              if (v == 0) {
-                this.upperWindow = null
-              } else {
-                yield 1
+      let canUserInput = true
+      if (this.dashing) {
+        canUserInput = !this.continueDash()
+      }
+      if (canUserInput) {
+        PlayerTurn: while (true) {
+          switch (this.playerAction()) {
+            case 0:
+              while(this.upperWindow && !this.upperWindow.closed) {
+                const v = this.upperWindowLifeCycle.next()
+                if (v == 0) {
+                  this.upperWindow = null
+                } else {
+                  yield 1
+                }
               }
-            }
-            this.upperWindow = null
-            this.ignoreLastInput = true
-            yield 3
-            break
-          case 1:
-            this.ignoreLastInput = false
-            break PlayerTurn
-          case 2:
-            this.ignoreLastInput = false
-            yield 3
-            break PlayerTurn
+              this.upperWindow = null
+              this.ignoreLastInput = true
+              yield 3
+              break
+            case 1:
+              this.ignoreLastInput = false
+              break PlayerTurn
+            case 2:
+              this.ignoreLastInput = false
+              yield 3
+              break PlayerTurn
+          }
         }
       }
       this.updatePlayerStatus()
@@ -1193,7 +1244,7 @@ export default class MarsZero {
       this.syncAM.wait()
       this.lifecycle.next()
       if (!this.syncAM.empty()) this.syncAM.process()
-    } else this.syncAM.process()
+    } else this.syncAM.process(this.dashing ? 8 : 1)
     this.asyncAM.process()
 
     this.damageList.map(x => x.update())
