@@ -1,7 +1,9 @@
 import {TILESIZE} from './constants'
 
 export default class GameMap {
-  constructor(tm, player, base, second, collision, nuts, dropList, farmList, charaList, floorList, isDungeon=true) {
+  constructor(name, floor, tm, player, base, second, collision, nuts, dropList, farmList, charaList, floorList, isDungeon=true) {
+    this.name = name
+    this.floor = floor
     this.tm = tm
     this.height = base.length
     this.width = base[0].length

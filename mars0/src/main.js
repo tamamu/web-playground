@@ -6,6 +6,8 @@ import GameObject from './GameObject'
 import TileManager from './TileManager'
 import {TILESIZE} from './constants'
 import MessageWindow from './MessageWindow'
+import ProduceWindow from './ProduceWindow'
+import SelectWindow from './SelectWindow'
 import Camera from './Camera'
 import {CharaStatus, Character} from './Character'
 import {Seedling, FarmState, Farm} from './Farm'
@@ -45,94 +47,6 @@ function npcAction() {
 function checkNpcFloor() {
   //console.log("checkNpcFloor")
 }
-
-const testMap = [
-  [
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-    [129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,],
-  ],[
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,86,87,-1,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,80,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,104,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,80,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,104,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,89,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,88,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,208,209,210,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,48,49,48,49,48,49,48,49,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,216,217,218,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,224,225,226,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,85,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,93,93,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,95,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,73,72,73,72,73,72,65,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,65,56,57,56,57,56,57,-1,-1,-1,],
-    [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,56,57,-1,-1,-1,-1,-1,92,-1,-1,-1,]
-  ],[
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,86,87,0,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,104,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
-    [0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,104,0,0,0,0,0,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,88,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,49,48,49,48,49,48,49,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,85,0,0,0,0,0,0,0,0,0,0,0,93,93,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,95,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,73,72,73,72,73,72,65,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,65,56,57,56,57,56,57,0,0,0,],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,56,57,0,0,0,0,0,92,0,0,0,]
-  ]
-]
-
-
-/*
-const testMap = [
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-]
-*/
-
 
 
 function createWalkAnimatable(tm, x, y, tileId) {
@@ -251,140 +165,9 @@ class Sound {
   }
 }
 
-function drawWindow(ctx, x, y, w, h) {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
-  ctx.fillRect(x, y, w, h)
-  ctx.strokeStyle = 'white'
-  ctx.strokeRect(x, y, w, h)
-}
-
-class ProduceWindow {
-  constructor(keystore, inventory) {
-    this.keyStore = keystore
-    this.recipes = []
-    this.matchedRecipes = []
-    this.usingItems = inventory.map(x => null)
-    this.inventory = inventory
-    this.selectedItems = inventory.map(x => false)
-    this.selectContent = 1
-    this.cursor = 0
-    this.closed = false
-  }
-  input() {
-    if (new Date() - this.keyStore.lastDown < 80) {
-      return 1
-    }
-    this.keyStore.lastDown = new Date()
-    const keys = this.keyStore.get()
-    console.log(keys)
-    if (keys['ArrowUp']) {
-      this.selectContent = this.selectContent - 1
-      if (this.selectContent < 0) {
-        this.selectContent = 2
-      }
-    } else if (keys['ArrowDown']) {
-      this.selectContent = this.selectContent + 1
-      if (this.selectContent > 2) {
-        this.selectContent = 0
-      }
-    }
-    if (keys['ArrowLeft']) {
-      this.cursor = this.cursor == 0 ? this.inventory.length-1 : this.cursor-1
-    } else if (keys['ArrowRight']) {
-      this.cursor = this.cursor == this.inventory.length-1 ? 0 : this.cursor+1
-    }
-    if (keys[' ']) {
-      if (this.selectContent == 0) {
-        const itemNum = this.usingItems[this.cursor]
-        if (itemNum != null) {
-          this.selectedItems[itemNum] = false
-          this.usingItems[this.cursor] = null
-        }
-      } else if (this.selectContent == 1) {
-        const item = this.inventory[this.cursor]
-        if (item) {
-          this.selectedItems[this.cursor] = !this.selectedItems[this.cursor]
-          if (this.selectedItems[this.cursor]) {
-            for (let j=0; j < this.usingItems.length; ++j) {
-              if (this.usingItems[j] == null) {
-                this.usingItems[j] = this.cursor
-                break
-              }
-            }
-          } else {
-            this.usingItems = this.usingItems.map(x => x == this.cursor ? null : x)
-          }
-        }
-      } else {
-        console.log("enter")
-      }
-    }
-    if (keys['Escape']) {
-      this.closed = true
-      return 0
-    }
-    return 1
-  }
-  *genLifeCycle() {
-    while(true) {
-      while(this.input() == 1) {
-        yield 1
-      }
-      if (this.closed) {
-        break
-      }
-    }
-    return 0
-  }
-  render(ctx) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'
-    ctx.fillRect(0, 0, 800, 600)
-    const w = TILESIZE*this.inventory.length
-    ctx.fillStyle = 'white'
-    ctx.font = "400 18px 'M PLUS Rounded 1c'"
-    ctx.fillText('材料を選んでください', 310, 12)
-    const y1 = 56
-    const y2 = 312
-    const y3 = 372
-    const y4 = 428
-    drawWindow(ctx, 250, y1, 300, 240)
-    drawWindow(ctx, 400-w/2, y2, w, TILESIZE)
-    drawWindow(ctx, 400-w/2, y3, w, TILESIZE)
-    drawWindow(ctx, 368, y4, 62, 32)
-    ctx.fillStyle = 'white'
-    ctx.fillText("決定", 380, y4+4)
-    for (let j=0; j < this.inventory.length; ++j) {
-      const item = this.inventory[j]
-      if (item) {
-        if (this.selectedItems[j]) {
-          ctx.fillStyle = 'white'
-          ctx.fillRect(TILESIZE * j + 400-w/2, y3, TILESIZE, TILESIZE)
-        }
-        item.renderable.tiles.render(ctx, item.tileId, TILESIZE * j + 400-w/2, y3, TILESIZE, TILESIZE)
-      }
-    }
-    for (let j=0; j < this.usingItems.length; ++j) {
-      const itemNum = this.usingItems[j]
-      if (itemNum != null) {
-        const item = this.inventory[itemNum]
-        item.renderable.tiles.render(ctx, item.tileId, TILESIZE * j + 400-w/2, y2, TILESIZE, TILESIZE)
-      }
-    }
-    ctx.strokeStyle = 'blue'
-    if (this.selectContent < 2) {
-      const x = this.cursor * TILESIZE + 400-w/2
-      const y = this.selectContent == 0 ? y2 : y3
-      ctx.strokeRect(x, y, TILESIZE, TILESIZE)
-    } else {
-      ctx.strokeRect(368, y4, 62, 32)
-    }
-  }
-}
-
 export default class MarsZero {
   constructor(ctx) {
     this.ctx = ctx
-    this.field = testMap
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
     let farmList = []
@@ -494,7 +277,7 @@ export default class MarsZero {
     let d1 = d.field.map(row => row.map(x => x == 1 ? 1798 : 385))
     let d2 = new Array(40)
     for (let j=0; j < d2.length; ++j) d2[j] = new Array(40).fill(-1)
-    this.gameMap = new GameMap(this.tm1, this.player, d1, d2, d.field, null, dropList, farmList, npcList, [stair])
+    this.gameMap = new GameMap("テストダンジョン", 1, this.tm1, this.player, d1, d2, d.field, null, dropList, farmList, npcList, [stair])
     this.player.x = d.playerPosition[0]
     this.player.y = d.playerPosition[1]
     this.player.renderable.prop.x = this.player.x * TILESIZE
@@ -502,6 +285,7 @@ export default class MarsZero {
     //this.gameMap = new GameMap(this.tm1, this.player, testMap[0], testMap[1], testMap[2], null, dropList, farmList, npcList)
     this.lifecycle = this.genLifeCycle()
     this.dashing = false
+    this.shadowOpacity = 1
   }
   damage(from, to, damage) {
     this.damageList.push(new DamageEffect(to, damage))
@@ -911,11 +695,31 @@ export default class MarsZero {
       }
     }
   }
+  downStair() {
+    let d = new Dungeon(40, 40)
+    d.generate()
+    let stair_stat = new FloorProperty('Stair', 'stair')
+    let s = new Renderable(d.stair[0]*TILESIZE, d.stair[1]*TILESIZE, this.tm1, 1336)
+    let stair = new FloorObject(stair_stat, s, d.stair[0], d.stair[1], 1336)
+    let d1 = d.field.map(row => row.map(x => x == 1 ? 1798 : 385))
+    let d2 = new Array(40)
+    for (let j=0; j < d2.length; ++j) d2[j] = new Array(40).fill(-1)
+    this.gameMap = new GameMap(this.gameMap.name, this.gameMap.floor+1, this.tm1, this.player, d1, d2, d.field, null, null, null, null, [stair])
+    this.player.x = d.playerPosition[0]
+    this.player.y = d.playerPosition[1]
+    this.player.renderable.prop.x = this.player.x * TILESIZE
+    this.player.renderable.prop.y = this.player.y * TILESIZE
+  }
   checkPlayerFloor() {
+    let foundStair = false
     for (let floor of this.gameMap.floorList) {
       if (this.player.x == floor.x && this.player.y == floor.y) {
         if (floor.stat.objType === 'stair') {
           this.messageWindow.push(`階段がある。`)
+          this.upperWindow = new SelectWindow(this.keyStore, ['階段を下りる', '下りない'], [() => {}, () => {}])
+          this.upperWindowLifeCycle = this.upperWindow.genLifeCycle()
+          foundStair = true
+          this.dashing = false
         }
       }
     }
@@ -929,6 +733,7 @@ export default class MarsZero {
         this.messageWindow.push(`${farm.stat.seedling.seed.name}の畑がある。`)
       }
     }
+    return foundStair ? 1 : 0
   }
   checkGrowth() {
     for (let farm of this.gameMap.farmList) {
@@ -1011,9 +816,29 @@ export default class MarsZero {
       return true
     }
   }
+  fadeIn() {
+    this.shadowOpacity += 0.026
+    if (this.shadowOpacity >= 1) {
+      this.shadowOpacity = 1
+      return 0
+    }
+    return 1
+  }
+  fadeOut() {
+    this.shadowOpacity -= 0.025
+    if (this.shadowOpacity <= 0) {
+      this.shadowOpacity = 0
+      return 0
+    }
+    return 1
+  }
   *genLifeCycle() {
     while(!this.bgm.play()) {
       yield 1
+    }
+    while(this.fadeOut()) {
+      yield 1
+      console.log('fade')
     }
     while(true) {
       this.date.elapseMinute(this.gameMap.isDungeon ? 1 : 5)
@@ -1054,7 +879,39 @@ export default class MarsZero {
       this.updatePlayerStatus()
       //this.removeDeadCharas()
       this.npcAction()
-      this.checkPlayerFloor()
+      yield 4
+      switch(this.checkPlayerFloor()) {
+        case 1: // stair
+          while (this.upperWindow && !this.upperWindow.closed) {
+            const {value, done} = this.upperWindowLifeCycle.next()
+            if (done) {
+              switch (value) {
+                case 0:
+                  this.upperWindow = null
+                  while(this.fadeIn()) {
+                    yield 1
+                  }
+                  this.downStair()
+                  this.lifecycle = this.genLifeCycle()
+                  yield 1
+                  break
+                case 1:
+                  break
+                default:
+                  yield 1
+                  break
+              }
+            } else {
+              yield 1
+            }
+          }
+          this.upperWindow = null
+          this.ignoreLastInput = true
+          yield 3
+          break
+        default:
+          break
+      }
       checkNpcFloor()
       yield 5
     }
@@ -1100,7 +957,7 @@ export default class MarsZero {
     //this.ctx.strokeText(`${satiety}%`, 66, 54)
     this.ctx.fillText(`${hp}/${maxhp}`, 260, 20)
     //this.ctx.strokeText(`${hp}/${maxhp}`, 230, 32)
-    this.ctx.fillText('1F / テストダンジョン', 780, 20)
+    this.ctx.fillText(`${this.gameMap.floor}F / ${this.gameMap.name}`, 780, 20)
     this.ctx.font = "400 18px 'M PLUS Rounded 1c'"
     this.ctx.fillText(`${satiety}%`, 66, 54)
     //this.ctx.strokeText('1F / テスト広場', 780, 32)
@@ -1311,5 +1168,9 @@ export default class MarsZero {
     if (this.upperWindow) {
       this.upperWindow.render(this.ctx)
     }
+    this.ctx.fillStyle = 'black'
+    this.ctx.globalAlpha = this.shadowOpacity
+    this.ctx.fillRect(0, 0, 800, 600)
+    this.ctx.globalAlpha = 1
   }
 }
