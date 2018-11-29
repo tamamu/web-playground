@@ -103,7 +103,27 @@ export default class GameMap {
         }
       }
     }
-
+  }
+  renderMiniMap(ctx, mx, my, gx, gy) {
+    const left = 600, top = 64
+    ctx.globalAlpha = 0.45
+    ctx.fillStyle = 'rgb(50, 50, 255)'
+    for (let y = 0; y < this.height; ++y) {
+      for (let x = 0; x < this.width; ++x) {
+        if (this._collision[y][x] <= 0) {
+          ctx.fillRect(left+x*4, top+y*4, 4, 4)
+        }
+      }
+    }
+    ctx.fillStyle = 'yellow'
+    for (const drop of this.dropList) {
+      ctx.fillRect(left+drop.x*4, top+drop.y*4, 4, 4)
+    }
+    ctx.fillStyle = 'red'
+    for (const chara of this.charaList) {
+      ctx.fillRect(left+chara.x*4, top+chara.y*4, 4, 4)
+    }
+    ctx.globalAlpha = 1
   }
 }
 
