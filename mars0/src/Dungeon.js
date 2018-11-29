@@ -20,6 +20,27 @@ export default class Dungeon {
     }
   }
 
+  place(list) {
+    let result = []
+    for (let j = 0; j < list.length; ++j) {
+      let duplicate
+      do {
+        duplicate = false
+        let room = this.rooms[randint(0, this.rooms.length-1)]
+        let x = randint(room[0], room[0]+room[2])
+        let y = randint(room[1], room[1]+room[3])
+        result[j] = [x, y]
+        for (let k = 0; k < j; ++k) {
+          if (result[j][0] == result[k][0] && result[j][1] == result[k][1]) {
+            duplicate = true
+            break
+          }
+        }
+      } while (duplicate)
+    }
+    return result
+  }
+
   installStair() {
     if (this.rooms.length == 0) {
       return 0

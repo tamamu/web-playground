@@ -229,7 +229,7 @@ export default class MarsZero {
       poStat.water = 720*3
       function makeEnemy(x, y) {
         let e = createWalkAnimatable(tm4, x*TILESIZE, y*TILESIZE, 5)
-        return new Character(new CharaStatus("テストさん", 30, 10, 10, 10, 3, true), e, x, y)
+        return new Character(new CharaStatus("テストさん", 30, 10, 10, 10, 3, true), e, x, y, 0)
       }
       this.player = new Character(pStat, p, 1, 1, 1)
       this.coin = new Item(cStat, c, 1, 4, 0)
@@ -270,6 +270,16 @@ export default class MarsZero {
 
     let d = new Dungeon(40, 40)
     d.generate()
+    d.place(npcList).map((e, i) => {
+      npcList[i].x = e[0]
+      npcList[i].y = e[1]
+      npcList[i].fix()
+    })
+    d.place(dropList).map((e, i) => {
+      dropList[i].x = e[0]
+      dropList[i].y = e[1]
+      dropList[i].fix()
+    })
     let stair_stat = new FloorProperty('Stair', 'stair')
     let s = new Renderable(d.stair[0]*TILESIZE, d.stair[1]*TILESIZE, this.tm1, 1336)
     let stair = new FloorObject(stair_stat, s, d.stair[0], d.stair[1], 1336)
