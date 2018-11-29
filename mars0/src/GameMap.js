@@ -105,24 +105,26 @@ export default class GameMap {
     }
   }
   renderMiniMap(ctx, mx, my, gx, gy) {
-    const left = 600, top = 64
+    const bin = 5, left = 800-bin*(this.width+5), top = 64
     ctx.globalAlpha = 0.45
     ctx.fillStyle = 'rgb(50, 50, 255)'
     for (let y = 0; y < this.height; ++y) {
       for (let x = 0; x < this.width; ++x) {
         if (this._collision[y][x] <= 0) {
-          ctx.fillRect(left+x*4, top+y*4, 4, 4)
+          ctx.fillRect(left+x*bin, top+y*bin, bin, bin)
         }
       }
     }
     ctx.fillStyle = 'yellow'
     for (const drop of this.dropList) {
-      ctx.fillRect(left+drop.x*4, top+drop.y*4, 4, 4)
+      ctx.fillRect(left+drop.x*bin, top+drop.y*bin, bin, bin)
     }
     ctx.fillStyle = 'red'
     for (const chara of this.charaList) {
-      ctx.fillRect(left+chara.x*4, top+chara.y*4, 4, 4)
+      ctx.fillRect(left+chara.x*bin, top+chara.y*bin, bin, bin)
     }
+    ctx.fillStyle = 'white'
+    ctx.fillRect(left+this.player.x*bin, top+this.player.y*bin, bin, bin)
     ctx.globalAlpha = 1
   }
 }
