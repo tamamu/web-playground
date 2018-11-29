@@ -154,6 +154,7 @@ export default class GameMap {
       }
       return true
     })
+    this.updateReached()
   }
   render(ctx, mx, my, gx, gy) {
     for (let y = Math.max(my, 0); y < this.height; ++y) {
