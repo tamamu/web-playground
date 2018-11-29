@@ -950,7 +950,7 @@ export default class MarsZero {
   }
   renderPlayerInventory(mx, my, gx, gy) {
     const inventory = this.player.stat.itemList
-    const x = 460, y = 412
+    const x = 800 - TILESIZE * (inventory.length+2), y = 480 - TILESIZE*1.5
     this.ctx.globalAlpha = this.inventoryOpacity
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
     this.ctx.fillRect(x, y, TILESIZE*inventory.length, TILESIZE)
@@ -1152,6 +1152,7 @@ export default class MarsZero {
     if (this.upperWindow) {
       this.upperWindow.render(this.ctx)
     }
+    this.gameMap.renderMiniMap(this.ctx, mx, my, gx, gy)
     this.ctx.fillStyle = 'black'
     this.ctx.globalAlpha = this.shadowOpacity
     this.ctx.fillRect(0, 0, 800, 600)
