@@ -109,14 +109,14 @@ export default class MarsZero {
     let holdingList = []
     this.keyStore = new KeyboardStore()
     if (keys) {
-      keys.space.addEventListener('touchstart', this.keyStore.downKey(' '))
-      keys.shift.addEventListener('touchstart', this.keyStore.downKey('Shift'))
-      keys.option.addEventListener('touchstart', this.keyStore.downKey('Alt'))
-      keys.j.addEventListener('touchstart', this.keyStore.downKey('j'))
-      keys.left.addEventListener('touchstart', this.keyStore.downKey('ArrowLeft'))
-      keys.up.addEventListener('touchstart', this.keyStore.downKey('ArrowUp'))
-      keys.right.addEventListener('touchstart', this.keyStore.downKey('ArrowRight'))
-      keys.down.addEventListener('touchstart', this.keyStore.downKey('ArrowDown'))
+      keys.space.addEventListener('touchmove', this.keyStore.downKey(' '))
+      keys.shift.addEventListener('touchmove', this.keyStore.downKey('Shift'))
+      keys.option.addEventListener('touchmove', this.keyStore.downKey('Alt'))
+      keys.j.addEventListener('touchmove', this.keyStore.downKey('j'))
+      keys.left.addEventListener('touchmove', this.keyStore.downKey('ArrowLeft'))
+      keys.up.addEventListener('touchmove', this.keyStore.downKey('ArrowUp'))
+      keys.right.addEventListener('touchmove', this.keyStore.downKey('ArrowRight'))
+      keys.down.addEventListener('touchmove', this.keyStore.downKey('ArrowDown'))
 
       keys.space.addEventListener('touchend', this.keyStore.upKey(' '))
       keys.shift.addEventListener('touchend', this.keyStore.upKey('Shift'))

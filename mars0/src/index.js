@@ -17,9 +17,16 @@ window.onload = () => {
     shift: document.querySelector('#shift'),
     option: document.querySelector('#option'),
     j: document.querySelector('#j'),
+    fullscreen: document.querySelector('#fullscreen')
   } : null
   let game = new Game(root, MarsZero, keys)
   game.size(800, 600)
+  if (window.SP) {
+    document.body.onwebkitfullscreenchange = () => {
+      game.screen.style.height=`${window.innerHeight}px`
+      game.screen.style.width=`${window.innerHeight * (4/3)}px`
+    }
+  }
   if (window.SP) {
     game.screen.style.height=`${window.innerHeight}px`
     game.screen.style.width=`${window.innerHeight * (4/3)}px`
