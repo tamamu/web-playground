@@ -14,6 +14,19 @@ export class KeyboardStore {
   onKeyUp(e) {
     this.states[e.key] = false
   }
+  downKey(k) {
+    return () => {
+      if (!this.states[k]) {
+        this.states[k] = true
+        this.lastDown = new Date()
+      }
+    }
+  }
+  upKey(k) {
+    return () => {
+      this.states[k] = false
+    }
+  }
   get() {
     /*
     let result = []

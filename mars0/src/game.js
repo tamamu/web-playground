@@ -1,12 +1,12 @@
 
 export default class Game {
-  constructor(root, generator) {
+  constructor(root, generator, options=null) {
     this.screen = document.createElement('canvas')
     this.ctx = this.screen.getContext('2d')
     this.lastRendered = new Date()
     this.width = this.screen.clientWidth
     this.height = this.screen.clientHeight
-    this.generator = new generator(this.ctx)
+    this.generator = new generator(this.ctx, options)
     root.appendChild(this.screen)
   }
   size(width, height) {

@@ -86,7 +86,7 @@ class Sound {
 }
 
 export default class MarsZero {
-  constructor(ctx) {
+  constructor(ctx, keys=null) {
     this.ctx = ctx
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
@@ -108,6 +108,25 @@ export default class MarsZero {
     let npcList = []
     let holdingList = []
     this.keyStore = new KeyboardStore()
+    if (keys) {
+      keys.space.addEventListener('touchstart', this.keyStore.downKey(' '))
+      keys.shift.addEventListener('touchstart', this.keyStore.downKey('Shift'))
+      keys.option.addEventListener('touchstart', this.keyStore.downKey('Alt'))
+      keys.j.addEventListener('touchstart', this.keyStore.downKey('j'))
+      keys.left.addEventListener('touchstart', this.keyStore.downKey('ArrowLeft'))
+      keys.up.addEventListener('touchstart', this.keyStore.downKey('ArrowUp'))
+      keys.right.addEventListener('touchstart', this.keyStore.downKey('ArrowRight'))
+      keys.down.addEventListener('touchstart', this.keyStore.downKey('ArrowDown'))
+
+      keys.space.addEventListener('touchend', this.keyStore.upKey(' '))
+      keys.shift.addEventListener('touchend', this.keyStore.upKey('Shift'))
+      keys.option.addEventListener('touchend', this.keyStore.upKey('Alt'))
+      keys.j.addEventListener('touchend', this.keyStore.upKey('j'))
+      keys.left.addEventListener('touchend', this.keyStore.upKey('ArrowLeft'))
+      keys.up.addEventListener('touchend', this.keyStore.upKey('ArrowUp'))
+      keys.right.addEventListener('touchend', this.keyStore.upKey('ArrowRight'))
+      keys.down.addEventListener('touchend', this.keyStore.upKey('ArrowDown'))
+    }
     this.messageWindow = new MessageWindow(4, 20)
     this.camera = new Camera()
     this.inventoryTimer = new Date()
