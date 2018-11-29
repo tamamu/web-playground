@@ -26,7 +26,7 @@ export default class Dungeon {
       let duplicate
       do {
         duplicate = false
-        let room = this.rooms[randint(0, this.rooms.length-1)]
+        let room = this.rooms[randint(0, this.rooms.length)]
         let x = randint(room[0], room[0]+room[2])
         let y = randint(room[1], room[1]+room[3])
         result[j] = [x, y]
@@ -45,7 +45,7 @@ export default class Dungeon {
     if (this.rooms.length == 0) {
       return 0
     }
-    const room = this.rooms[randint(0, this.rooms.length-1)]
+    const room = this.rooms[randint(0, this.rooms.length)]
     const x = randint(room[0], room[0]+room[2])
     const y = randint(room[1], room[1]+room[3])
     this.stair = [x, y]
