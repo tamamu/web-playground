@@ -19,6 +19,8 @@ import GameMap from './GameMap'
 import GameDate from './GameDate'
 import Dungeon from './Dungeon'
 import {FloorProperty, FloorObject} from './FloorObject'
+import {TileDictionary, ItemDictionary} from './DataLoader'
+import ItemJSON from './item.json'
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -170,6 +172,17 @@ export default class MarsZero {
     this.ctx = ctx
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
+    this.tileDict = new TileDictionary('./resources/')
+    this.tileDict.register('02_town2.png', 24, 40)
+    this.tileDict.register('10_village5.png', 24, 40)
+    this.tileDict.register('icon020.png', 24, 24)
+    this.tileDict.register('icon028.png', 24, 24)
+    this.tileDict.register('icon002.png', 24, 24)
+    this.tileDict.register('icon004.png', 24, 24)
+    this.tileDict.register('icon003.png', 24, 24)
+    this.tileDict.register('icon030.png', 24, 24)
+    this.tileDict.register('icon021.png', 24, 24)
+    this.itemDict = new ItemDictionary(ItemJSON, this.tileDict)
     let farmList = []
     let dropList = []
     let playerList = []
@@ -212,53 +225,15 @@ export default class MarsZero {
     // } End Tile Manage Test
     // Animation Test {
       let p = createWalkAnimatable(this.tm3, 1*TILESIZE, 1*TILESIZE, 1)
-      let c = new Renderable(1*TILESIZE, 4*TILESIZE, this.tm_coin, 0)
-      let a = new Renderable(9*TILESIZE, 8*TILESIZE, this.tm_apple, 0)
-      let sw = new Renderable(10*TILESIZE, 4*TILESIZE, this.tm_sword, 0)
-      let sp = new Renderable(10*TILESIZE, 5*TILESIZE, this.tm_spear, 0)
-      let ha = new Renderable(10*TILESIZE, 6*TILESIZE, this.tm_hammer, 0)
-      let po = new Renderable(3*TILESIZE, 2*TILESIZE, this.tm_pot, 0)
       let pStat = new CharaStatus("You", 50, 10, 9, 8)
-      let cStat = new ItemState("コイン")
-      let aStat = new FoodState("りんご", 300)
-      let swStat = new WeaponState("テストソード", 'sword', 30, 0.1)
-      let spStat = new WeaponState("テストスピア", 'spear', 20, 0.1)
-      let haStat = new WeaponState("テストハンマー", 'hammer', 20, 0.1)
-      let poStat = new WeaponState("テストじょうろ", 'watering', 5, 0.1)
-      poStat.isStable = true
-      poStat.water = 720*3
       function makeEnemy(x, y) {
         let e = createWalkAnimatable(tm4, x*TILESIZE, y*TILESIZE, 5)
         return new Character(new CharaStatus("テストさん", 30, 10, 10, 10, 3, true), e, x, y, 0)
       }
       this.player = new Character(pStat, p, 1, 1, 1)
-      this.coin = new Item(cStat, c, 1, 4, 0)
-      this.apple = new Item(aStat, a, 9, 8, 0)
-      this.sword = new Item(swStat, sw, 10, 4, 0)
-      this.spear = new Item(spStat, sp, 10, 5, 0)
-      this.hammer = new Item(haStat, ha, 10, 6, 0)
-      this.pot = new Item(poStat, po, 3, 2, 0)
-      let sStat = new SeedState("コインの種", this.coin, [5], 3)
-      let swsStat = new SeedState("テストソードの種", this.sword, [10], 3)
-      function makeSeed(stat, x, y) {
-        let s = new Renderable(x*TILESIZE, y*TILESIZE, tm_seed, 0)
-        return new Item(stat, s, x, y, 0)
+      for (let key in this.itemDict.dict) {
+        dropList.push(this.itemDict.make(key))
       }
-      dropList.push(this.coin)
-      dropList.push(this.apple)
-      dropList.push(this.sword)
-      dropList.push(this.spear)
-      dropList.push(this.hammer)
-      dropList.push(this.pot)
-      dropList.push(makeSeed(sStat, 10, 10))
-      dropList.push(makeSeed(sStat, 8, 7))
-      dropList.push(makeSeed(sStat, 12, 5))
-      dropList.push(makeSeed(sStat, 16, 1))
-      dropList.push(makeSeed(sStat, 1, 5))
-      dropList.push(makeSeed(swsStat, 5, 5))
-      //renderableList.push(p)
-      //renderableList.push(e)
-      //renderableList.push(c)
       playerList.push(this.player)
       npcList.push(makeEnemy(3, 3))
       npcList.push(makeEnemy(3, 4))

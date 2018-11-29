@@ -1,0 +1,69 @@
+[
+  {
+    "id": 0,
+    "name": "りんご",
+    "type": "food",
+    "img": "icon028.png",
+    "satiety": 300
+  },
+  {
+    "id": 1,
+    "name": "コイン",
+    "type": "none",
+    "img": "icon020.png"
+  },
+  {
+    "id": 2,
+    "name": "テストソード",
+    "type": "weapon",
+    "img": "icon002.png",
+    "weaponType": "sword",
+    "atk": 20,
+    "stableRate": 0.1
+  },
+  {
+    "id": 3,
+    "name": "テストスピア",
+    "type": "weapon",
+    "img": "icon004.png",
+    "weaponType": "spear",
+    "atk": 10,
+    "stableRate": 0.1
+  },
+  {
+    "id": 4,
+    "name": "テストハンマー",
+    "type": "weapon",
+    "img": "icon003.png",
+    "weaponType": "hammer",
+    "atk": 10,
+    "stableRate": 0.1
+  },
+  {
+    "id": 5,
+    "name": "テストじょうろ",
+    "type": "weapon",
+    "img": "icon030.png",
+    "weaponType": "watering",
+    "atk": 5,
+    "stableRate": 0.1
+  },
+  {
+    "id": 6,
+    "name": "コインの種",
+    "type": "seed",
+    "img": "icon021.png",
+    "periods": [5],
+    "nutrition": 3,
+    "subId": 1
+  },
+  {
+    "id": 6,
+    "name": "テストソードの種",
+    "type": "seed",
+    "img": "icon021.png",
+    "periods": [10],
+    "nutrition": 3,
+    "subId": 2
+  }
+]
