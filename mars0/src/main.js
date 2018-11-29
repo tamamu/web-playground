@@ -596,9 +596,11 @@ export default class MarsZero {
     }
   }
   downStair() {
+    let d = new Dungeon(40, 40)
+    d.generate()
     let dropList = [], npcList = []
-    let dropCount = Math.floor(Math.random() * 9)
-    let enemyCount = Math.floor(Math.random() * 9)
+    let dropCount = Math.floor(Math.random() * d.rooms.length+2)
+    let enemyCount = Math.floor(Math.random() * d.rooms.length+2)
     for (let j=0; j < dropCount; ++j) {
       const keys = Object.keys(this.itemDict.dict)
       const key = keys[Math.floor(Math.random() * (keys.length-1))]
@@ -609,8 +611,6 @@ export default class MarsZero {
       const key = keys[Math.floor(Math.random() * (keys.length-1))]
       npcList.push(this.enemyDict.make(key))
     }
-    let d = new Dungeon(40, 40)
-    d.generate()
     d.place(npcList).map((e, i) => {
       npcList[i].x = e[0]
       npcList[i].y = e[1]
