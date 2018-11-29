@@ -429,7 +429,6 @@ export default class MarsZero {
     if (x != 0 || y != 0) {
       if (this.gameMap.collision(this.player.x+x, this.player.y+y) || keys["Alt"]) {
         this.player.direction = direction
-        return 0
       } else {
         this.player.x += x
         this.player.y += y
