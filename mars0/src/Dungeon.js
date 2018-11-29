@@ -36,6 +36,9 @@ export default class Dungeon {
             break
           }
         }
+        if (result[j][0] == this.playerPosition[0] && result[j][1] == this.playerPosition[1]) {
+          duplicate = true
+        }
       } while (duplicate)
     }
     return result
