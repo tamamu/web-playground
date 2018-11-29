@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Mars Zero SP</title>
+  <script>window.SP = true</script>
+  <script src="dist/main.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Sawarabi+Gothic" rel="stylesheet">
+</head>
+<body>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+    }
+    #root {
+      margin: 0 auto;
+      text-align: center;
+      height: 100%;
+    }
+    .gb {
+      position: absolute;
+      display: block;
+      width: 6vw;
+      height: 6vw;
+      border-radius: 100%;
+      background-color: black;
+      color: white;
+      text-align: center;
+    }
+    #left {
+      left: 1vw;
+      top: 50vh;
+    }
+    #up {
+      left: 5vw;
+      top: 42vh;
+    }
+    #right {
+      left: 9vw;
+      top: 50vh;
+    }
+    #down {
+      left: 5vw;
+      top: 58vh;
+    }
+    #space {
+      right: 1vw;
+      top: 50vh;
+    }
+    #option {
+      right: 5vw;
+      top: 42vh;
+    }
+    #j {
+      right: 9vw;
+      top: 50vh;
+    }
+    #shift {
+      right: 5vw;
+      top: 58vh;
+    }
+  </style>
+  <div id="root"></div>
+  <div class="gb" id="left">←</div>
+  <div class="gb" id="up">↑</div>
+  <div class="gb" id="right">→</div>
+  <div class="gb" id="down">↓</div>
+  <div class="gb" id="space">A</div>
+  <div class="gb" id="shift">B</div>
+  <div class="gb" id="option">X</div>
+  <div class="gb" id="j">Y</div>
+</body>
+</html>
