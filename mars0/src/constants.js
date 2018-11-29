@@ -1,2 +1,2 @@
 
-export const TILESIZE = 48
+export const TILESIZE = 72
