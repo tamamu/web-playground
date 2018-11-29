@@ -20,6 +20,9 @@ export class CharaStatus {
     this.maxexp = 10
     this.lv = 1
   }
+  static copy(stat) {
+    return new CharaStatus(stat.name, stat.maxhp, stat.atk, stat.def, stat.luk, stat.exp, stat.isEnemy)
+  }
 }
 
 export class Character extends GameObject {
