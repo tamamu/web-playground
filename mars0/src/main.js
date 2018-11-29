@@ -2,6 +2,7 @@
 import {KeyboardStore} from "./keyboard"
 import {Renderable} from "./renderable"
 import {Animatable, Animation, AnimationState, AnimationManager} from "./animation"
+import {createWalkAnimatable} from './Walker'
 import GameObject from './GameObject'
 import TileManager from './TileManager'
 import {TILESIZE} from './constants'
@@ -19,8 +20,9 @@ import GameMap from './GameMap'
 import GameDate from './GameDate'
 import Dungeon from './Dungeon'
 import {FloorProperty, FloorObject} from './FloorObject'
-import {TileDictionary, ItemDictionary} from './DataLoader'
+import {TileDictionary, ItemDictionary, CharaDictionary} from './DataLoader'
 import ItemJSON from './item.json'
+import EnemyJSON from './enemy.json'
 
 function checkEvent() {
   //console.log("checkEvent")
@@ -51,90 +53,6 @@ function checkNpcFloor() {
 }
 
 
-function createWalkAnimatable(tm, x, y, tileId) {
-  return new Animatable(x, y, tm, tileId, {
-    "right-attack": [
-      new AnimationState(TILESIZE, 0, 13, 96),
-      new AnimationState(-TILESIZE, 0, 13, 96),
-    ],
-    "right": [
-      new AnimationState(TILESIZE/4, 0, 12, 48),
-      new AnimationState(TILESIZE/4, 0, 13, 48),
-      new AnimationState(TILESIZE/4, 0, 14, 48),
-      new AnimationState(TILESIZE/4, 0, 13, 48),
-    ],
-    "left-attack": [
-      new AnimationState(-TILESIZE, 0, 7, 96),
-      new AnimationState(TILESIZE, 0, 7, 96),
-    ],
-    "left": [
-      new AnimationState(-TILESIZE/4, 0, 6, 48),
-      new AnimationState(-TILESIZE/4, 0, 7, 48),
-      new AnimationState(-TILESIZE/4, 0, 8, 48),
-      new AnimationState(-TILESIZE/4, 0, 7, 48),
-    ],
-    "up-attack": [
-      new AnimationState(0, -TILESIZE, 19, 96),
-      new AnimationState(0, TILESIZE, 19, 96),
-    ],
-    "up": [
-      new AnimationState(0, -TILESIZE/4, 18, 48),
-      new AnimationState(0, -TILESIZE/4, 19, 48),
-      new AnimationState(0, -TILESIZE/4, 20, 48),
-      new AnimationState(0, -TILESIZE/4, 19, 48),
-    ],
-    "down-attack": [
-      new AnimationState(0, TILESIZE, 1, 96),
-      new AnimationState(0, -TILESIZE, 1, 96),
-    ],
-    "down": [
-      new AnimationState(0, TILESIZE/4, 0, 48),
-      new AnimationState(0, TILESIZE/4, 1, 48),
-      new AnimationState(0, TILESIZE/4, 2, 48),
-      new AnimationState(0, TILESIZE/4, 1, 48),
-    ],
-    "down-right-attack": [
-      new AnimationState(TILESIZE, TILESIZE, 10, 96),
-      new AnimationState(-TILESIZE, -TILESIZE, 10, 96),
-    ],
-    "down-right": [
-      new AnimationState(TILESIZE/4, TILESIZE/4, 9, 48),
-      new AnimationState(TILESIZE/4, TILESIZE/4, 10, 48),
-      new AnimationState(TILESIZE/4, TILESIZE/4, 11, 48),
-      new AnimationState(TILESIZE/4, TILESIZE/4, 10, 48),
-    ],
-    "down-left-attack": [
-      new AnimationState(-TILESIZE, TILESIZE, 4, 96),
-      new AnimationState(TILESIZE, -TILESIZE, 4, 96),
-    ],
-    "down-left": [
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 3, 48),
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 4, 48),
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 5, 48),
-      new AnimationState(-TILESIZE/4, TILESIZE/4, 4, 48),
-    ],
-    "up-right-attack": [
-      new AnimationState(TILESIZE, -TILESIZE, 22, 96),
-      new AnimationState(-TILESIZE, TILESIZE, 22, 96),
-    ],
-    "up-right": [
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 21, 48),
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 22, 48),
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 23, 48),
-      new AnimationState(TILESIZE/4, -TILESIZE/4, 22, 48),
-    ],
-    "up-left-attack": [
-      new AnimationState(-TILESIZE, -TILESIZE, 16, 96),
-      new AnimationState(TILESIZE, TILESIZE, 16, 96),
-    ],
-    "up-left": [
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 15, 48),
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 16, 48),
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 17, 48),
-      new AnimationState(-TILESIZE/4, -TILESIZE/4, 16, 48),
-    ],
-  })
-}
 
 class DamageEffect {
   constructor(target, damage) {
@@ -183,6 +101,7 @@ export default class MarsZero {
     this.tileDict.register('icon030.png', 24, 24)
     this.tileDict.register('icon021.png', 24, 24)
     this.itemDict = new ItemDictionary(ItemJSON, this.tileDict)
+    this.enemyDict = new CharaDictionary(EnemyJSON, this.tileDict)
     let farmList = []
     let dropList = []
     let playerList = []
@@ -234,13 +153,10 @@ export default class MarsZero {
       for (let key in this.itemDict.dict) {
         dropList.push(this.itemDict.make(key))
       }
+      for (let key in this.enemyDict.dict) {
+        npcList.push(this.enemyDict.make(key))
+      }
       playerList.push(this.player)
-      npcList.push(makeEnemy(3, 3))
-      npcList.push(makeEnemy(3, 4))
-      npcList.push(makeEnemy(4, 3))
-      npcList.push(makeEnemy(4, 4))
-      npcList.push(makeEnemy(4, 5))
-      npcList.push(makeEnemy(5, 4))
     // } End Animation Test
 
     let d = new Dungeon(40, 40)
@@ -680,15 +596,38 @@ export default class MarsZero {
     }
   }
   downStair() {
+    let dropList = [], npcList = []
+    let dropCount = Math.floor(Math.random() * 9)
+    let enemyCount = Math.floor(Math.random() * 9)
+    for (let j=0; j < dropCount; ++j) {
+      const keys = Object.keys(this.itemDict.dict)
+      const key = keys[Math.floor(Math.random() * (keys.length-1))]
+      dropList.push(this.itemDict.make(key))
+    }
+    for (let j=0; j < enemyCount; ++j) {
+      const keys = Object.keys(this.enemyDict.dict)
+      const key = keys[Math.floor(Math.random() * (keys.length-1))]
+      npcList.push(this.enemyDict.make(key))
+    }
     let d = new Dungeon(40, 40)
     d.generate()
+    d.place(npcList).map((e, i) => {
+      npcList[i].x = e[0]
+      npcList[i].y = e[1]
+      npcList[i].fix()
+    })
+    d.place(dropList).map((e, i) => {
+      dropList[i].x = e[0]
+      dropList[i].y = e[1]
+      dropList[i].fix()
+    })
     let stair_stat = new FloorProperty('Stair', 'stair')
     let s = new Renderable(d.stair[0]*TILESIZE, d.stair[1]*TILESIZE, this.tm1, 1336)
     let stair = new FloorObject(stair_stat, s, d.stair[0], d.stair[1], 1336)
     let d1 = d.field.map(row => row.map(x => x == 1 ? 1798 : 385))
     let d2 = new Array(40)
     for (let j=0; j < d2.length; ++j) d2[j] = new Array(40).fill(-1)
-    this.gameMap = new GameMap(this.gameMap.name, this.gameMap.floor+1, this.tm1, this.player, d1, d2, d.field, null, null, null, null, [stair])
+    this.gameMap = new GameMap(this.gameMap.name, this.gameMap.floor+1, this.tm1, this.player, d1, d2, d.field, null, dropList, null, npcList, [stair])
     this.player.x = d.playerPosition[0]
     this.player.y = d.playerPosition[1]
     this.player.renderable.prop.x = this.player.x * TILESIZE
