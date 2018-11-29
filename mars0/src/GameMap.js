@@ -18,6 +18,86 @@ export default class GameMap {
     this.animTimer = new Date()
     this.player = player
     this.isDungeon = isDungeon
+    this.reached = new Array(this.height)
+    this.lightMap = new Array(this.height)
+    for (let y=0; y < this.height; ++y) {
+      this.reached[y] = new Array(this.width).fill(0)
+      this.lightMap[y] = new Array(this.width).fill(0)
+    }
+  }
+  updateReached() {
+    for (let y=0; y < this.height; ++y) {
+      for (let x=0; x < this.width; ++x) {
+        this.lightMap[y][x] = 0
+      }
+    }
+    let opened = [
+      [this.player.x, this.player.y],
+    ]
+    let closed = []
+    while (opened.length > 0) {
+      let floors = []
+      const head = opened.pop()
+      const [x, y] = head
+      this.reached[y][x] = 1
+      this.lightMap[y][x] = 1
+      closed.push(head)
+      if (!this.collisionWall(x-1, y)) {
+        floors.push([x-1, y])
+        this.reached[y][x-1] = 1
+        this.lightMap[y][x-1] = 1
+      }
+      if (!this.collisionWall(x+1, y)) {
+        floors.push([x+1, y])
+        this.reached[y][x+1] = 1
+        this.lightMap[y][x+1] = 1
+      }
+      if (!this.collisionWall(x, y-1)) {
+        floors.push([x, y-1])
+        this.reached[y-1][x] = 1
+        this.lightMap[y-1][x] = 1
+      }
+      if (!this.collisionWall(x, y+1)) {
+        floors.push([x, y+1])
+        this.reached[y+1][x] = 1
+        this.lightMap[y+1][x] = 1
+      }
+      if (!this.collisionWall(x-1, y-1)) {
+        floors.push([x-1, y-1])
+        this.reached[y-1][x-1] = 1
+        this.lightMap[y-1][x-1] = 1
+      }
+      if (!this.collisionWall(x+1, y-1)) {
+        floors.push([x+1, y-1])
+        this.reached[y-1][x+1] = 1
+        this.lightMap[y-1][x+1] = 1
+      }
+      if (!this.collisionWall(x-1, y+1)) {
+        floors.push([x-1, y+1])
+        this.reached[y+1][x-1] = 1
+        this.lightMap[y+1][x-1] = 1
+      }
+      if (!this.collisionWall(x+1, y+1)) {
+        floors.push([x+1, y+1])
+        this.reached[y+1][x+1] = 1
+        this.lightMap[y+1][x+1] = 1
+      }
+      if (floors.length >= 3) {
+        floors.map(f => {
+          let alreadyClosed = false
+          for (const c of closed) {
+            if (c[0] == f[0] && c[1] == f[1]) {
+              alreadyClosed = true
+              break
+            }
+          }
+          if (!alreadyClosed) {
+            opened.push(f)
+          }
+        })
+      }
+    }
+
   }
   collisionWall(x, y) {
     if (y >= this.height || y < 0 || x >= this.width || x < 0) {
@@ -103,6 +183,15 @@ export default class GameMap {
         }
       }
     }
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'
+    for (let y = Math.max(my, 0); y < this.height; ++y) {
+      for (let x = Math.max(mx, 0); x < this.width; ++x) {
+        if (this.lightMap[y][x] == 0) {
+          ctx.fillRect(x*TILESIZE+gx, y*TILESIZE+gy, TILESIZE, TILESIZE)
+        }
+      }
+    }
   }
   renderMiniMap(ctx, mx, my, gx, gy) {
     const bin = 5, left = 800-bin*(this.width+5), top = 64
@@ -110,7 +199,7 @@ export default class GameMap {
     ctx.fillStyle = 'rgb(50, 50, 255)'
     for (let y = 0; y < this.height; ++y) {
       for (let x = 0; x < this.width; ++x) {
-        if (this._collision[y][x] <= 0) {
+        if (this.reached[y][x] > 0) {
           ctx.fillRect(left+x*bin, top+y*bin, bin, bin)
         }
       }
