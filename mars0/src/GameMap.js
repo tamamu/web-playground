@@ -108,6 +108,98 @@ export default class GameMap {
   collision(x, y) {
     return this.collisionWall(x, y) || this.detectChara(x, y, false)
   }
+  _openPath(x, y, f) {
+    let nodes = []
+    if (x-1 >= 0 && f(x-1, y)) {
+      nodes.push([x-1, y])
+    }
+    if (x+1 < this.width && f(x+1, y)) {
+      nodes.push([x+1, y])
+    }
+    if (y-1 >= 0 && f(x, y-1)) {
+      nodes.push([x, y-1])
+    }
+    if (y+1 < this.height && f(x, y+1)) {
+      nodes.push([x, y+1])
+    }
+    if (x-1 >= 0 && y-1 >= 0 && f(x-1, y-1)) {
+      nodes.push([x-1, y-1])
+    }
+    if (x+1 < this.width && y-1 >= 0 && f(x+1, y-1)) {
+      nodes.push([x+1, y-1])
+    }
+    if (x-1 >= 0 && y+1 < this.height && f(x-1, y+1)) {
+      nodes.push([x-1, y+1])
+    }
+    if (x+1 < this.width && y+1 < this.height && f(x+1, y+1)) {
+      nodes.push([x+1, y+1])
+    }
+    return nodes
+  }
+  findRoute(x1, y1, x2, y2) {
+    let nodes = []
+    for (let j = 0; j < this.height; ++j) {
+      let row = []
+      for (let k = 0; k < this.width; ++k) {
+        const h = Math.abs(x2 - k) + Math.abs(y2 - j)
+        row.push({
+          x: j, y: k, from: null,
+          stat: this.collisionWall(k, j) ? -1 : 0,
+          c: 0,
+          h,
+          s: h
+        })
+      }
+      nodes.push(row)
+    }
+    nodes[y1][x1].stat = 1
+    let base = nodes[y1][x1]
+    console.log(base)
+    let opened = this._openPath(x1, y1, (x, y) => nodes[y][x].stat == 0).map(n => nodes[n[1]][n[0]])
+    Search: while(opened.length > 0) {
+      for (let j = 0; j < opened.length; ++j) {
+        const n = opened[j]
+        n.from = [base.x, base.y]
+        n.stat = 1
+        n.c += 1
+        n.s = n.c + n.h
+        if (n.x == x2 && n.y == y2) {
+          break Search
+        }
+      }
+      let _opened = opened.map(node =>
+        this._openPath(node.x, node.y,
+          (x, y) => x < this.width && y < this.height && nodes[y][x].stat == 0))
+      opened = []
+      for (const n of _opened) {
+        if (n.length > 0) {
+          for (const p of n) {
+            opened.push(nodes[p[1]][p[0]])
+          }
+        }
+      }
+      if (opened.length > 0) {
+        opened.sort((a, b) => {
+          if (a.s == b.s) {
+            return a.c < b.c
+          } else {
+            return a.s < b.s
+          }
+        })
+        base = opened[0]
+      }
+    }
+    let path = []
+    let n = nodes[y2][x2]
+    console.log(n)
+    while (n.from != null) {
+      path.push(n)
+      const [x, y] = n.from
+      n = nodes[y][x]
+    }
+    path.reverse()
+    return path
+  }
   detectChara(x, y, isEnemy) {
     for (const chara of this.charaList) {
       if (chara.x == x && chara.y == y) {
