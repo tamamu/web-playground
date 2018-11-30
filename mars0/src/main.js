@@ -91,7 +91,7 @@ export default class MarsZero {
     this.syncAM = new AnimationManager()
     this.asyncAM = new AnimationManager()
     this.tileDict = new TileDictionary('./resources/')
-    this.tileDict.register('02_town2.png', 24, 40)
+    this.tileDict.register('chara/02_town2.png', 24, 40)
     this.tileDict.register('10_village5.png', 24, 40)
     this.tileDict.register('icon020.png', 24, 24)
     this.tileDict.register('icon028.png', 24, 24)
@@ -151,7 +151,7 @@ export default class MarsZero {
     // }
     // Tile Manage Test {
       this.tm2 = new TileManager("./resources/kabe-ue_doukutu1.png", 16, 16)
-      this.tm3 = new TileManager("./resources/02_town2.png", 24, 40)
+      this.tm3 = new TileManager("./resources/chara/02_town2.png", 24, 40)
       let tm4 = new TileManager("./resources/10_village5.png", 24, 40)
       this.tm_coin = new TileManager("./resources/icon020.png", 24, 24)
       this.tm_apple = new TileManager("./resources/icon028.png", 24, 24)
