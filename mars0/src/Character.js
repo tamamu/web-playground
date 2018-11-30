@@ -2,7 +2,7 @@
 import GameObject from './GameObject'
 
 export class CharaStatus {
-  constructor(name, maxhp, atk, def, luk, exp, isEnemy=false) {
+  constructor(name, maxhp, atk, def, luk, exp, enemyId=null, superiorId=null) {
     this.name = name
     this.maxhp = maxhp
     this.hp = maxhp
@@ -14,14 +14,16 @@ export class CharaStatus {
     this.itemList = [null, null, null, null, null]
     this.money = 0
     this.holding = null
-    this.isEnemy = isEnemy
+    this.enemyId = enemyId
+    this.superiorId = superiorId
     this.isDead = false
+    this.removeMarked = false
     this.exp = exp ? exp : 0
     this.maxexp = 10
     this.lv = 1
   }
   static copy(stat) {
-    return new CharaStatus(stat.name, stat.maxhp, stat.atk, stat.def, stat.luk, stat.exp, stat.isEnemy)
+    return new CharaStatus(stat.name, stat.maxhp, stat.atk, stat.def, stat.luk, stat.exp, stat.enemyId, stat.superiorId)
   }
 }
 

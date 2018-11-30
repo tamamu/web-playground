@@ -212,7 +212,18 @@ export default class MarsZero {
     this.messageWindow.push(`${from.stat.name}は${to.stat.name}に${damage}のダメージを与えた！`)
     to.stat.hp -= damage
     if (to.stat.hp <= 0) {
+      this.messageWindow.push(`${from.stat.name}は${to.stat.name}を倒した！`)
       to.stat.isDead = true
+      if (from.stat.enemyId != null && from.stat.superiorId != null) {
+        let superior = this.enemyDict.make(from.stat.superiorId)
+        superior.x = from.x
+        superior.y = from.y
+        superior.direction = from.direction
+        superior.fix()
+        this.gameMap.charaList.push(superior)
+        this.messageWindow.push(`${from.stat.name}は${superior.stat.name}に進化した！`)
+        from.stat.removeMarked = true
+      }
     }
   }
   calcDamage(atk, def) {
@@ -312,14 +323,26 @@ export default class MarsZero {
       case 'down':
         enemy = (npc.x==this.player.x && npc.y+1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x, npc.y+1, true)
         break
+      case 'down-left':
+        enemy = (npc.x-1==this.player.x && npc.y+1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x-1, npc.y+1, true)
+        break
       case 'left':
         enemy = (npc.x-1==this.player.x && npc.y==this.player.y) ? this.player : this.gameMap.detectChara(npc.x-1, npc.y, true)
+        break
+      case 'down-right':
+        enemy = (npc.x+1==this.player.x && npc.y+1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x+1, npc.y+1, true)
         break
       case 'right':
         enemy = (npc.x+1==this.player.x && npc.y==this.player.y) ? this.player : this.gameMap.detectChara(npc.x+1, npc.y, true)
         break
+      case 'up-left':
+        enemy = (npc.x-1==this.player.x && npc.y-1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x-1, npc.y-1, true)
+        break
       case 'up':
         enemy = (npc.x==this.player.x && npc.y-1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x, npc.y-1, true)
+        break
+      case 'up-right':
+        enemy = (npc.x+1==this.player.x && npc.y-1==this.player.y) ? this.player : this.gameMap.detectChara(npc.x+1, npc.y-1, true)
         break
     }
     if (enemy) {
@@ -596,9 +619,14 @@ export default class MarsZero {
     }
   }
   npcAction() {
-    for (let npc of this.gameMap.charaList) {
-      if (Math.random() < 0.3) {
-        return this.npcAttack(npc)
+    for (let j=0; j < this.gameMap.charaList.length; ++j) {
+      const npc = this.gameMap.charaList[j]
+      if (npc.removeMarked || npc.isDead) {
+        continue
+      }
+      if (Math.random() < 0.8) {
+        this.npcAttack(npc)
+        continue
       }
       let x = Math.floor(Math.random() * 3 - 1)
       let y = Math.floor(Math.random() * 3 - 1)
@@ -611,6 +639,7 @@ export default class MarsZero {
         npc.y += y
         npc.direction = direction
         this.syncAM.push(new Animation(npc.renderable, direction))
+        continue
       }
     }
   }
@@ -619,7 +648,7 @@ export default class MarsZero {
     d.generate()
     let dropList = [], npcList = []
     let dropCount = Math.floor(Math.random() * d.rooms.length+2)
-    let enemyCount = Math.floor(Math.random() * d.rooms.length+2)
+    let enemyCount = 10//Math.floor(Math.random() * d.rooms.length+2)
     for (let j=0; j < dropCount; ++j) {
       const keys = Object.keys(this.itemDict.dict)
       const key = keys[Math.floor(Math.random() * (keys.length-1))]

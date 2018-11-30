@@ -8,6 +8,18 @@
     "def": 5,
     "luk": 80,
     "exp": 5,
-    "lv": 1
+    "lv": 1,
+    "superiorId": 1
+  },
+  {
+    "id": 1,
+    "name": "テスト課長",
+    "img": "10_village5.png",
+    "maxhp": 50,
+    "atk": 16,
+    "def": 10,
+    "luk": 160,
+    "exp": 10,
+    "lv": 2
   }
 ]

@@ -70,7 +70,7 @@ export class CharaDictionary {
     this.src = objList
     this.dict = {}
     for (const obj of objList) {
-      let instance = new CharaStatus(obj.name, obj.maxhp, obj.atk, obj.def, obj.lux, obj.exp, true)
+      let instance = new CharaStatus(obj.name, obj.maxhp, obj.atk, obj.def, obj.lux, obj.exp, obj.id, obj.superiorId)
       let tm = tileDict.get(obj.img)
       this.dict[obj.id] = {
         instance, tile: tm

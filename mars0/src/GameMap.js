@@ -111,7 +111,7 @@ export default class GameMap {
   detectChara(x, y, isEnemy) {
     for (const chara of this.charaList) {
       if (chara.x == x && chara.y == y) {
-        if (isEnemy && !chara.stat.isEnemy) {
+        if (isEnemy && !chara.stat.enemyId == null) {
           continue
         }
         return chara
@@ -148,7 +148,7 @@ export default class GameMap {
       this.animTimer = new Date()
     }
     this.charaList = this.charaList.filter(x => {
-      if (x.stat.isDead) {
+      if (x.stat.removeMarked || x.stat.isDead) {
         //this.messageWindow.push(`${x.stat.name}を倒した。`)
         return false
       }
