@@ -17,12 +17,23 @@ export class TileDictionary {
   }
   register(path, w, h) {
     this.dict[path] = new TileManager(this.searchDir+path, w, h)
+    return this.dict[path]
+  }
+  registerWithDiv(path, numx, numy) {
+    this.dict[path] = new TileManager(this.searchDir+path, numx, numy, true)
+    return this.dict[path]
   }
   get(path) {
+    /*
     if (!this.dict[path]) {
       throw new Error(`Tile ${path} has not been loaded.`)
     }
-    return this.dict[path]
+    */
+    if (this.dict[path]) {
+      return this.dict[path]
+    } else {
+      return null
+    }
   }
 }
 
@@ -72,6 +83,9 @@ export class CharaDictionary {
     for (const obj of objList) {
       let instance = new CharaStatus(obj.name, obj.maxhp, obj.atk, obj.def, obj.lux, obj.exp, obj.id, obj.superiorId)
       let tm = tileDict.get(obj.img)
+      if (tm == null) {
+        tm = tileDict.registerWithDiv(obj.img, 6, 4)
+      }
       this.dict[obj.id] = {
         instance, tile: tm
       }

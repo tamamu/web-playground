@@ -1,14 +1,21 @@
 
 export default class TileManager {
-  constructor(path, width, height) {
+  constructor(path, width, height, div=false) {
     this.base = new Image();
     this.base.src = path;
     this.width = width
     this.height = height
     this.base.onload = () => {
-      this.numx = this.base.width / this.width
-      this.numy = this.base.height / this.height
-      console.log(path, this.numx, this.numy)
+      if (div) {
+        this.numx = width
+        this.numy = height
+        this.width = this.base.width / this.numx
+        this.height = this.base.height / this.numy
+      } else {
+        this.numx = this.base.width / this.width
+        this.numy = this.base.height / this.height
+      }
+      console.log(path, this.numx, this.numy, this.width, this.height)
     }
   }
   render(ctx, id, x, y, width, height) {
