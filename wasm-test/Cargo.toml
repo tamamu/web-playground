@@ -1,0 +1,17 @@
+[package]
+name = "rustwasm-boilerplate"
+version = "0.1.0"
+authors = ["tamamu <tamamu.1r1s@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Window"
+]
