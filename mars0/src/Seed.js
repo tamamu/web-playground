@@ -1,5 +1,5 @@
 
-import {ItemState, Item} from './Item'
+import {ItemState} from './Item'
 
 export default class SeedState extends ItemState {
   constructor(name, item, growthPeriods, minimumNutrition) {

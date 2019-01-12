@@ -1,6 +1,5 @@
 
 import {drawWindow} from './Window'
-import {TILESIZE} from './constants'
 
 export default class SelectWindow {
   constructor(keystore, choices, callbacks) {

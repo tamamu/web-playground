@@ -14,10 +14,10 @@ export default class WeaponState extends ItemState {
   get screenName() {
     let n = this.name
     if (this.isSoiled) {
-      n = '土を被った' + n
+      n = `土を被った${n}`
     }
     if (!this.isStable) {
-      n = '不安定な' + n
+      n = `不安定な${n}`
     }
     return n
   }

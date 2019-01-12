@@ -5,7 +5,6 @@ import FoodState from './Food'
 import {ItemState, Item} from './Item'
 import SeedState from './Seed'
 import WeaponState from './Weapon'
-import {Animatable, Animation, AnimationState, AnimationManager} from "./animation"
 import {CharaStatus, Character} from './Character'
 import {createWalkAnimatable} from './Walker'
 
@@ -24,6 +23,7 @@ export class TileDictionary {
     return this.dict[path]
   }
   get(path) {
+
     /*
     if (!this.dict[path]) {
       throw new Error(`Tile ${path} has not been loaded.`)
@@ -96,7 +96,7 @@ export class CharaDictionary {
     if (!obj) {
       throw new Error(`Item ${id} has not been registered`)
     }
-    const renderable = new createWalkAnimatable(obj.tile, 0, 0, 1)
+    const renderable = createWalkAnimatable(obj.tile, 0, 0, 1)
     return new Character(CharaStatus.copy(obj.instance), renderable, 0, 0, 1)
   }
 }

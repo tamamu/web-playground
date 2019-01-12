@@ -28,6 +28,7 @@ export class KeyboardStore {
     }
   }
   get() {
+
     /*
     let result = []
     for (const key in this.states) {

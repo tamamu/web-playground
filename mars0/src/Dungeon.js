@@ -13,13 +13,11 @@ export default class Dungeon {
     this.stair = null
     this.init()
   }
-
   init() {
     for (let y=0; y < this.height; ++y) {
       this.field[y] = new Array(this.width).fill(1)
     }
   }
-
   place(list) {
     let result = []
     for (let j = 0; j < list.length; ++j) {
@@ -43,7 +41,6 @@ export default class Dungeon {
     }
     return result
   }
-
   installStair() {
     if (this.rooms.length == 0) {
       return 0
@@ -54,7 +51,6 @@ export default class Dungeon {
     this.stair = [x, y]
     return 1
   }
-
   generate() {
     while(this.rooms.length < 2) {
       this.rooms = []
@@ -81,7 +77,6 @@ export default class Dungeon {
     const pr = this.rooms[randint(0, this.rooms.length-1)]
     this.playerPosition = [randint(pr[0], pr[0]+pr[2]), randint(pr[1], pr[1]+pr[3])]
   }
-
   divVertical(x1, y1, x2, y2) {
     console.log("v", x1, y1, x2, y2)
     if (x2 - x1 < 8 && y2 - y1 < 8) {
@@ -95,7 +90,6 @@ export default class Dungeon {
       this.divHorizontal(x1, divy+1, x2, y2)
     }
   }
-
   divHorizontal(x1, y1, x2, y2) {
     console.log("h", x1, y1, x2, y2)
     if (x2 - x1 < 8 && y2 - y1 < 8) {
@@ -109,7 +103,6 @@ export default class Dungeon {
       this.divVertical(divx+1, y1, x2, y2)
     }
   }
-
   generateRoom(x1, y1, x2, y2) {
     if (x2-x1+1 < 4 || y2-y1+1 < 4) {
       return
@@ -121,7 +114,6 @@ export default class Dungeon {
     this.fill(0, rx, ry, rx+rw, ry+rh)
     this.rooms.push([rx, ry, rw, rh])
   }
-
   connect(r1, r2) {
     console.log(r1, r2)
     const r1w = r1[2]
@@ -144,7 +136,6 @@ export default class Dungeon {
         break
     }
   }
-
   fill(id, x1, y1, x2, y2) {
     const x = Math.min(x1, x2)
     const y = Math.min(y1, y2)
