@@ -143,7 +143,7 @@ export default class GameMap {
       for (let k = 0; k < this.width; ++k) {
         const h = Math.abs(x2 - k) + Math.abs(y2 - j)
         row.push({
-          x: j, y: k, from: null,
+          x: k, y: j, from: null,
           stat: this.collisionWall(k, j) ? -1 : 0,
           c: 0,
           h,
@@ -157,6 +157,7 @@ export default class GameMap {
     console.log(base)
     let opened = this._openPath(x1, y1, (x, y) => nodes[y][x].stat == 0).map(n => nodes[n[1]][n[0]])
     Search: while(opened.length > 0) {
+      console.log(opened)
       for (let j = 0; j < opened.length; ++j) {
         const n = opened[j]
         n.from = [base.x, base.y]
@@ -174,7 +175,14 @@ export default class GameMap {
       for (const n of _opened) {
         if (n.length > 0) {
           for (const p of n) {
-            opened.push(nodes[p[1]][p[0]])
+            let exists = false
+            for (const m of opened) {
+              if (m.x == p[1] && m.y == p[0]) {
+                exists = true
+                break
+              }
+            }
+            if (!exists) opened.push(nodes[p[1]][p[0]])
           }
         }
       }
@@ -192,10 +200,13 @@ export default class GameMap {
     let path = []
     let n = nodes[y2][x2]
     console.log(n)
+    let c = 0
     while (n.from != null) {
       path.push(n)
       const [x, y] = n.from
       n = nodes[y][x]
+      c += 1
+      if (c > 2) break
     }
     path.reverse()
     return path
