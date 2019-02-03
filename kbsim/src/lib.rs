@@ -2,7 +2,7 @@ extern crate web_sys;
 extern crate wasm_bindgen;
 
 use std::collections::HashMap;
-use std::cell::Cell;
+use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -17,8 +17,12 @@ macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
 
-macro_rules! rcmut {
-    ($e:tt) => (Rc::make_mut(&mut $e))
+macro_rules! make_mut {
+    ($e:expr) => (Rc::make_mut(&mut $e))
+}
+
+macro_rules! closure {
+    ($e:expr) => (Closure::wrap(Box::new($e) as Box<dyn FnMut(_)>))
 }
 
 fn create_canvas() -> Result<web_sys::HtmlCanvasElement, JsValue> {
@@ -39,7 +43,9 @@ fn update_canvas(canvas: &web_sys::HtmlCanvasElement, editor: &Editor) -> Result
         .get_context("2d")?
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
+    context.set_fill_style(&JsValue::from_str("rgba(0, 0, 0, 0.5)"));
     context.clear_rect(0.0, 0.0, width, height);
+    context.fill_rect(0.0, 0.0, width, height);
     context.set_text_baseline("top");
     context.set_fill_style(&JsValue::from_str("black"));
     context.set_font("20px monospace");
@@ -48,6 +54,14 @@ fn update_canvas(canvas: &web_sys::HtmlCanvasElement, editor: &Editor) -> Result
     let lpad = context.measure_text(&editor.text[0..(editor.caret_position.col as usize)])?.width();
     context.fill_rect(lpad, 0.0, 2.0, 20.0);
     Ok(())
+}
+
+fn create_draggable(text: &str) -> Result<web_sys::Element, JsValue> {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let div = document.create_element("div").unwrap();
+    div.set_attribute("draggable", "true")?;
+    div.set_inner_html(text);
+    Ok(div)
 }
 
 #[derive(Clone)]
@@ -88,6 +102,8 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
     let body = document.body().unwrap();
     let canvas = create_canvas()?;
     body.append_child(&canvas)?;
+    let draggable = create_draggable("q")?;
+    body.append_child(&draggable)?;
 /*
     let context = canvas
         .get_context("2d")?
@@ -107,30 +123,94 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
         caret_position: CaretPosition {row: 0, col: 0}
         };
 
+    let drag_src_element: Option<Box<web_sys::HtmlElement>> = None;
+    
+    let dse1 = Rc::new(RefCell::new(drag_src_element));
+    let dse2 = dse1.clone();
+    {
+        let closure = closure!(move |ev: web_sys::DragEvent| {
+            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            target.style().set_property("opacity", "0.4").unwrap();
+            web_sys::console::log_1(&ev.target().unwrap());
+            let dt = ev.data_transfer().unwrap();
+            dt.set_effect_allowed("move");
+            dt.set_data("text/html", &target.inner_html()).unwrap();
+            *dse1.borrow_mut() = Some(Box::new(target));
+        });
+        draggable.add_event_listener_with_callback("dragstart", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+    {
+        let closure = closure!(move |ev: web_sys::DragEvent| {
+            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            target.style().set_property("opacity", "1.0").unwrap();
+            web_sys::console::log_1(&ev);
+        });
+        draggable.add_event_listener_with_callback("dragend", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+    {
+        let closure = closure!(move |ev: web_sys::DragEvent| {
+            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            target.style().set_property("transform", "scale(0.8)").unwrap();
+            web_sys::console::log_1(&ev.target().unwrap());
+        });
+        draggable.add_event_listener_with_callback("dragenter", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+    {
+        let closure = closure!(move |ev: web_sys::DragEvent| {
+            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            target.style().set_property("transform", "scale(1.0)").unwrap();
+            web_sys::console::log_1(&ev);
+        });
+        draggable.add_event_listener_with_callback("dragleave", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+    {
+        let closure = closure!(move |ev: web_sys::DragEvent| {
+            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            let dt = ev.data_transfer().unwrap();
+            ev.stop_propagation();
+            ev.prevent_default();
+            match dse2.borrow().as_ref() {
+                Some(elem) => {
+                    if !elem.is_same_node(Some(&target)) {
+                        elem.set_inner_html(&target.inner_html());
+                        target.set_inner_html(&dt.get_data("text/html").unwrap());
+                    }
+                }
+                _ => {}
+            };
+        });
+        draggable.add_event_listener_with_callback("drop", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+
     let mut editor = Rc::new(editor);
     let canvas = Rc::new(canvas);
     {
-        let closure = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
+        let closure = closure!(move |ev: web_sys::KeyboardEvent| {
             let key = ev.key();
             match &*key {
                 "Backspace" => {
-                    rcmut!(editor).backspace();
+                    make_mut!(editor).backspace();
                 },
                 "ArrowLeft" => {
-                    rcmut!(editor).move_left();
+                    make_mut!(editor).move_left();
 
                 },
                 "ArrowRight" => {
-                    rcmut!(editor).move_right();
+                    make_mut!(editor).move_right();
                 }
                 _ => {
                     keymap.get(&ev.key()).map_or_else(
                         || web_sys::console::log_1(&ev),
-                        |k| rcmut!(editor).insert_str(k));
+                        |k| make_mut!(editor).insert_str(k));
                 }
             }
             update_canvas(&canvas, &editor).unwrap();
-        }) as Box<dyn FnMut(_)>);
+        });
         document.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
