@@ -136,6 +136,7 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
             dt.set_effect_allowed("move");
             dt.set_data("text/html", &target.inner_html()).unwrap();
             *dse1.borrow_mut() = Some(Box::new(target));
+            web_sys::console::log_1(&dt);
         });
         draggable.add_event_listener_with_callback("dragstart", closure.as_ref().unchecked_ref())?;
         closure.forget();
@@ -145,6 +146,7 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
             let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
             target.style().set_property("opacity", "1.0").unwrap();
             web_sys::console::log_1(&ev);
+            console_log!("dragend");
         });
         draggable.add_event_listener_with_callback("dragend", closure.as_ref().unchecked_ref())?;
         closure.forget();
@@ -173,6 +175,8 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
             let dt = ev.data_transfer().unwrap();
             ev.stop_propagation();
             ev.prevent_default();
+            console_log!("drop");
+            web_sys::console::log_1(&dt);
             match dse2.borrow().as_ref() {
                 Some(elem) => {
                     if !elem.is_same_node(Some(&target)) {
