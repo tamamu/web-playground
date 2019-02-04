@@ -25,4 +25,9 @@ features = [
     'CanvasRenderingContext2d',
     'HtmlCanvasElement',
     'TextMetrics',
+    'Event',
+    'DragEvent',
+    'EventTarget',
+    'CssStyleDeclaration',
+    'DataTransfer',
 ]
