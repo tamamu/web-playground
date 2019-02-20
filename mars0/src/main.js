@@ -174,6 +174,7 @@ export default class MarsZero {
       }
       for (let key in this.enemyDict.dict) {
         npcList.push(this.enemyDict.make(key))
+        break
       }
       playerList.push(this.player)
     // } End Animation Test
@@ -206,6 +207,7 @@ export default class MarsZero {
     this.lifecycle = this.genLifeCycle()
     this.dashing = false
     this.shadowOpacity = 1
+    console.log(this.gameMap.findRoute(this.player.x, this.player.y, d.stair[0], d.stair[1]))
   }
   damage(from, to, damage) {
     this.damageList.push(new DamageEffect(to, damage))
@@ -648,7 +650,7 @@ export default class MarsZero {
     d.generate()
     let dropList = [], npcList = []
     let dropCount = Math.floor(Math.random() * d.rooms.length+2)
-    let enemyCount = 10//Math.floor(Math.random() * d.rooms.length+2)
+    let enemyCount = 1//Math.floor(Math.random() * d.rooms.length+2)
     for (let j=0; j < dropCount; ++j) {
       const keys = Object.keys(this.itemDict.dict)
       const key = keys[Math.floor(Math.random() * (keys.length-1))]
