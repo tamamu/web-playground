@@ -137,6 +137,36 @@ class GLApp {
     }
 }
 
+interface CapturableHTMLCanvasElement extends HTMLCanvasElement {
+    captureStream(): any
+}
+
+function captureCanvas(canvas: HTMLCanvasElement, time: number) {
+    const stream = (<CapturableHTMLCanvasElement> canvas).captureStream()
+    const recorder = new MediaRecorder(stream)
+    let chunks: BlobPart[] = []
+    console.log(stream)
+    recorder.addEventListener('dataavailable', e => {
+        const be = e as BlobEvent
+        chunks.push(be.data)
+        console.log(be)
+    })
+    recorder.addEventListener('stop', () => {
+        const blob = new Blob(chunks, {type: 'video/webm'});
+        const e: HTMLVideoElement = document.createElement('video')
+        console.log(blob)
+        const anchor = document.createElement('a')
+        const now = new Date()
+        anchor.href = window.URL.createObjectURL(blob)
+        anchor.download = `canvas_${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}_${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}.webm`
+        anchor.click()
+    })
+    recorder.start(1000/40)
+    setTimeout(() => {
+        recorder.stop();
+    }, 10 * 1000)
+}
+
 window.onload = () => {
     let body = document.body
     let canvas = document.createElement('canvas')
@@ -144,5 +174,6 @@ window.onload = () => {
     canvas.height = 480
     body.appendChild(canvas)
     let app = new GLApp(canvas);
+    //captureCanvas(canvas, 10 * 1000)
     app.mainLoop()
 }
