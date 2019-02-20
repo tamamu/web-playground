@@ -1,0 +1,21 @@
+{
+  "name": "ts-webgl2",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "start": "webpack-dev-server --mode=development"
+  },
+  "dependencies": {
+    "@types/webgl2": "^0.0.4",
+    "ts-loader": "^5.3.1",
+    "typescript": "^3.2.2",
+    "webpack": "^4.27.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  },
+  "devDependencies": {
+    "ts-node": "7.0.1",
+    "tslint": "5.11.0"
+  }
+}
