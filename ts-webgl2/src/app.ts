@@ -317,7 +317,7 @@ class ImageProgram {
         }
         gl.useProgram(null)
     }
-    rect(gl: WebGL2RenderingContext, x: number, y: number, width: number, height: number) {
+    public rect(gl: WebGL2RenderingContext, x: number, y: number, width: number, height: number) {
         const positions = [
             x, y,
             x+width, y,
@@ -326,7 +326,7 @@ class ImageProgram {
         ]
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(positions), 0)
     }
-    rotate(gl: WebGL2RenderingContext, frame: number) {
+    public rotate(gl: WebGL2RenderingContext, frame: number) {
         gl.useProgram(this.program)
         this.uModelMat.rotate_(frame * 0.01, Vec3.from(0.0, 1.0, 0.0))
         gl.uniformMatrix4fv(this.loc_uModelMat, false, this.uModelMat.view())
@@ -334,7 +334,17 @@ class ImageProgram {
         gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
         gl.useProgram(null)
     }
-    withBind(gl: WebGL2RenderingContext, f: Function) {
+    public lookAt(gl: WebGL2RenderingContext, frame: number) {
+        gl.useProgram(this.program)
+      //this.uViewMat = new TransformMatrix()
+      //this.uViewMat.translate_(0, 0, -(frame % 2000) * 0.001)
+        this.uViewMat.rotate_(frame * 0.001, Vec3.from(0.5, 0.5, 0.0))
+        gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
+        this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
+        gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
+        gl.useProgram(null)
+    }
+    public withBind(gl: WebGL2RenderingContext, f: Function) {
         gl.useProgram(this.program)
         gl.bindVertexArray(this.vao)
         f()
@@ -350,6 +360,7 @@ class GLApp {
     static initTime: number = Date.now()
     private uptime: number = 0
     private renderTime: number = 0
+    private view: number = 0
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
         const context = canvas.getContext('webgl2')
@@ -382,6 +393,7 @@ class GLApp {
         })
 
         this.imageProgram.rotate(this.gl, (Date.now()-this.renderTime)/10)
+        this.imageProgram.lookAt(this.gl, (Date.now()-this.renderTime)/10)
         this.renderTime = Date.now()
     }
     public mainLoop() {
