@@ -334,11 +334,10 @@ class ImageProgram {
         gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
         gl.useProgram(null)
     }
-    public lookAt(gl: WebGL2RenderingContext, frame: number) {
+    public lookAt(gl: WebGL2RenderingContext, x: number, z: number) {
         gl.useProgram(this.program)
-      //this.uViewMat = new TransformMatrix()
-      //this.uViewMat.translate_(0, 0, -(frame % 2000) * 0.001)
-        this.uViewMat.rotate_(frame * 0.001, Vec3.from(0.5, 0.5, 0.0))
+        this.uViewMat = new TransformMatrix()
+        this.uViewMat.translate_(x, 0, z)
         gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
         this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
         gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
@@ -360,7 +359,8 @@ class GLApp {
     static initTime: number = Date.now()
     private uptime: number = 0
     private renderTime: number = 0
-    private view: number = 0
+    private x: number = 0
+    private z: number = -2
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
         const context = canvas.getContext('webgl2')
@@ -371,6 +371,23 @@ class GLApp {
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.CULL_FACE);
+            window.onkeydown = e => {
+              switch (e.key) {
+                case 'ArrowLeft':
+                  this.x += 0.01
+                  break
+                case 'ArrowRight':
+                  this.x -= 0.01
+                  break
+                case 'ArrowUp':
+                  this.z += 0.01
+                  break
+                case 'ArrowDown':
+                  this.z -= 0.01
+                  break
+              }
+              this.imageProgram.lookAt(this.gl, this.x, this.z)
+            }
         } else {
             throw new Error('WebGL2 has not been supported!')
         }
@@ -393,7 +410,6 @@ class GLApp {
         })
 
         this.imageProgram.rotate(this.gl, (Date.now()-this.renderTime)/10)
-        this.imageProgram.lookAt(this.gl, (Date.now()-this.renderTime)/10)
         this.renderTime = Date.now()
     }
     public mainLoop() {
