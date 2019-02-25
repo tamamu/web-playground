@@ -285,11 +285,17 @@ class ImageProgram {
                 gl.bindBuffer(gl.ARRAY_BUFFER, aPosBuf)
                 const positions = [
                     -0.5, -0.5, 0,
+                    0.5, 0.5, 0,
                     0.5, -0.5, 0,
+                    0.5, 0.5, 0,
+                    0.5, -0.5, 0.5,
+                    0.5, -0.5, 0,
+                    -0.5, -0.5, 0,
+                    0.5, -0.5, 0.5,
                     0.5, 0.5, 0,
                     -0.5, -0.5, 0,
-                    0.5, 0.5, 0,
                     0.5, -0.5, 0,
+                    0.5, -0.5, 0.5,
                 ]
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
                 gl.enableVertexAttribArray(aPosLoc)
@@ -301,12 +307,18 @@ class ImageProgram {
                 const aNormalBuf = gl.createBuffer()
                 gl.bindBuffer(gl.ARRAY_BUFFER, aNormalBuf)
                 const positions = [
-                    0, 0, -1,
-                    0, 0, -1,
-                    0, 0, -1,
                     0, 0, 1,
                     0, 0, 1,
                     0, 0, 1,
+                    -1, 0, 0,
+                    -1, 0, 0,
+                    -1, 0, 0,
+                    0.5, -0.5, -0.5,
+                    0.5, -0.5, -0.5,
+                    0.5, -0.5, -0.5,
+                    0, 1, 0,
+                    0, 1, 0,
+                    0, 1, 0,
                 ]
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
                 gl.enableVertexAttribArray(aNormalLoc)
@@ -328,7 +340,7 @@ class ImageProgram {
     }
     public rotate(gl: WebGL2RenderingContext, frame: number) {
         gl.useProgram(this.program)
-        this.uModelMat.rotate_(frame * 0.01, Vec3.from(0.0, 1.0, 0.0))
+        this.uModelMat.rotate_(frame * 0.01, Vec3.from(1.0, 1.0, 0.0))
         gl.uniformMatrix4fv(this.loc_uModelMat, false, this.uModelMat.view())
         this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
         gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
@@ -406,7 +418,7 @@ class GLApp {
             const x = Math.sin(this.uptime/1000)
             const y = Math.cos(this.uptime/1000)
             //this.imageProgram.rect(gl, x, y, x+0.5, y+0.5)
-            gl.drawArrays(gl.TRIANGLES, 0, 6)
+            gl.drawArrays(gl.TRIANGLES, 0, 12)
         })
 
         this.imageProgram.rotate(this.gl, (Date.now()-this.renderTime)/10)
@@ -458,6 +470,6 @@ window.onload = () => {
     canvas.height = 480
     body.appendChild(canvas)
     let app = new GLApp(canvas);
-    //captureCanvas(canvas, 10 * 1000)
+    captureCanvas(canvas, 10 * 1000)
     app.mainLoop()
 }
