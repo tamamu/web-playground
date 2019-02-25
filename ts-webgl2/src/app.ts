@@ -1,13 +1,15 @@
 
 const VS1 = `#version 300 es
-uniform mat4 uModelViewMat;
+uniform mat4 uModelMat;
+uniform mat4 uViewMat;
 uniform mat4 uProjectionMat;
 in vec3 aPos;
 in vec3 aNormal;
 out vec3 vNormal;
 void main() {
-    vNormal = mat3(uProjectionMat * uModelViewMat) * normalize(aNormal);
-    gl_Position = uProjectionMat * uModelViewMat * vec4(aPos.xyz, 1);
+    mat4 mvpMat = uProjectionMat * uViewMat * uModelMat;
+    vNormal = mat3(mvpMat) * normalize(aNormal);
+    gl_Position = mvpMat * vec4(aPos.xyz, 1);
 }
 `
 
@@ -228,8 +230,10 @@ function getUniformLocationChecked(gl: WebGL2RenderingContext, program: WebGLPro
 class ImageProgram {
     public program: WebGLProgram
     public vao: WebGLVertexArrayObject
-    private loc_uModelViewMat: WebGLUniformLocation
-    private uModelViewMat: TransformMatrix
+    private loc_uModelMat: WebGLVertexArrayObject
+    private uModelMat: TransformMatrix
+    private loc_uViewMat: WebGLVertexArrayObject
+    private uViewMat: TransformMatrix
     private loc_uProjectionMat: WebGLUniformLocation
     private uProjectionMat: TransformMatrix
     private loc_uInvMat: WebGLUniformLocation
@@ -243,11 +247,16 @@ class ImageProgram {
         gl.useProgram(this.program)
 
         {
-            this.loc_uModelViewMat = getUniformLocationChecked(gl, this.program, 'uModelViewMat')
-            this.uModelViewMat = new TransformMatrix()
-            this.uModelViewMat.translate_(0, 0, -2);
-            this.uModelViewMat.rotate_(0, Vec3.from(0, 1, 0))
-            gl.uniformMatrix4fv(this.loc_uModelViewMat, false, this.uModelViewMat.view())
+            this.loc_uModelMat = getUniformLocationChecked(gl, this.program, 'uModelMat')
+            this.uModelMat = new TransformMatrix()
+            this.uModelMat.rotate_(0, Vec3.from(0, 1, 0))
+            gl.uniformMatrix4fv(this.loc_uModelMat, false, this.uModelMat.view())
+        }
+        {
+            this.loc_uViewMat = getUniformLocationChecked(gl, this.program, 'uViewMat')
+            this.uViewMat = new TransformMatrix()
+            this.uViewMat.translate_(0, 0, -2);
+            gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
         }
         {
             this.loc_uProjectionMat = getUniformLocationChecked(gl, this.program, 'uProjectionMat')
@@ -257,7 +266,7 @@ class ImageProgram {
         }
         {
             this.loc_uInvMat = getUniformLocationChecked(gl, this.program, 'uInvMat')
-            this.uInvMat = this.uProjectionMat.multiply(this.uModelViewMat).invert()
+            this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
             gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
         }
         {
@@ -319,9 +328,9 @@ class ImageProgram {
     }
     rotate(gl: WebGL2RenderingContext, frame: number) {
         gl.useProgram(this.program)
-        this.uModelViewMat.rotate_(frame * 0.01, Vec3.from(0.0, 1.0, 0.0))
-        gl.uniformMatrix4fv(this.loc_uModelViewMat, false, this.uModelViewMat.view())
-        this.uInvMat = this.uProjectionMat.multiply(this.uModelViewMat).invert()
+        this.uModelMat.rotate_(frame * 0.01, Vec3.from(0.0, 1.0, 0.0))
+        gl.uniformMatrix4fv(this.loc_uModelMat, false, this.uModelMat.view())
+        this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
         gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
         gl.useProgram(null)
     }
