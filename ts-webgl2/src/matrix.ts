@@ -138,6 +138,60 @@ export class TransformMatrix {
         this.raw[15]= 0
     }
 
+    public lookAt_(ex: number, ey: number, ez: number, tx: number, ty: number, tz: number, ux: number, uy: number, uz: number) {
+        const out = new Float32Array(16)
+        let z0 = ex - tx, z1 = ey - ty, z2 = ez - tz
+        let len = 1 / Math.sqrt(z0*z0+z1*z1+z2*z2)
+        z0 *= len, z1 *= len, z2 *= len
+        let x0 = uy * z2 - uz * z1
+        let x1 = uz * z0 - ux * z2
+        let x2 = ux * z1 - uy * z0
+        len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2)
+        if (!len) {
+            x0 = 0
+            x1 = 0
+            x2 = 0
+        } else {
+            len = 1 / len
+            x0 *= len
+            x1 *= len
+            x2 *= len
+        }
+
+        let y0 = z1 * x2 - z2 * x1
+        let y1 = z2 * x0 - z0 * x2
+        let y2 = z0 * x1 - z1 * x0
+        len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2)
+        if (!len) {
+            y0 = 0
+            y1 = 0
+            y2 = 0
+        } else {
+            len = 1 / len
+            y0 *= len
+            y1 *= len
+            y2 *= len
+        }
+
+        out[0] = x0
+        out[1] = y0
+        out[2] = z0
+        out[3] = 0
+        out[4] = x1
+        out[5] = y1
+        out[6] = z1
+        out[7] = 0
+        out[8] = x2
+        out[9] = y2
+        out[10] = z2
+        out[11] = 0
+        out[12] = -(x0 * ex + x1 * ey + x2 * ez)
+        out[13] = -(y0 * ex + y1 * ey + y2 * ez)
+        out[14] = -(z0 * ex + z1 * ey + z2 * ez)
+        out[15] = 1
+        return out
+    }
+
     public translate_(x: number, y: number, z: number) {
         this.raw[12] += this.raw[0] * x + this.raw[4] * y + this.raw[8] * z
         this.raw[13] += this.raw[1] * x + this.raw[5] * y + this.raw[9] * z
@@ -181,5 +235,33 @@ export class TransformMatrix {
         this.raw[10] = a02 * b20 + a12 * b21 + a22 * b22;
         this.raw[11] = a03 * b20 + a13 * b21 + a23 * b22;
     }
+
+    public perspective_(fovy: number, aspect: number, near: number, far: number) {
+        const out = new Float32Array(16)
+        let f = 1.0 / Math.tan(fovy / 2), nf;
+        out[0] = f / aspect;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 0;
+        out[5] = f;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = 0;
+        out[9] = 0;
+        out[11] = -1;
+        out[12] = 0;
+        out[13] = 0;
+        out[15] = 0;
+        if (far != null && far !== Infinity) {
+          nf = 1 / (near - far);
+          out[10] = (far + near) * nf;
+          out[14] = (2 * far * near) * nf;
+        } else {
+          out[10] = -1;
+          out[14] = -2 * near;
+        }
+        return out;
+    } 
 }
 

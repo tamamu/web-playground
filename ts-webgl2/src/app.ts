@@ -7,16 +7,22 @@ uniform mat4 uViewMat;
 uniform mat4 uProjectionMat;
 uniform mat4 uInvMat;
 uniform vec3 uLightDirection;
+uniform vec3 uEyeDirection;
 uniform vec4 uAmbientColor;
 in vec3 aPos;
 in vec3 aNormal;
 out vec4 vColor;
 void main() {
-    mat4 mvpMat = uProjectionMat * uViewMat * uModelMat;
+    /*mat4 mvpMat = uProjectionMat * uViewMat * uModelMat;*/
+    mat4 mvpMat = uModelMat * uViewMat * uProjectionMat;
     vec3 invLight = normalize(uInvMat * vec4(uLightDirection, 0.0)).xyz;
+    vec3 invEye = normalize(uInvMat * vec4(uEyeDirection, 0.0)).xyz;
+    vec3 halfLE = normalize(invLight + invEye);
     float diffuse = clamp(dot(aNormal, invLight), 0.0, 1.0);
+    float specular = pow(clamp(dot(aNormal, halfLE), 0.0, 1.0), 50.0);
     vec4 color = vec4(1.0, 0.0, 0.7, 1.0);
-    vColor = color * vec4(vec3(diffuse), 1.0) + uAmbientColor;
+    vec4 light = color * vec4(vec3(diffuse), 1.0) + vec4(vec3(specular), 1.0);
+    vColor = light + uAmbientColor;
     gl_Position = mvpMat * vec4(aPos, 1);
 }
 `
@@ -107,6 +113,8 @@ class ImageProgram {
     private uLightDirection: Float32Array
     private loc_uAmbientColor: WebGLUniformLocation
     private uAmbientColor: Float32Array
+    private loc_uEyeDirection: WebGLUniformLocation
+    private uEyeDirection: Float32Array
     constructor(gl: WebGL2RenderingContext) {
         const vertexShader = createShader(gl, gl.VERTEX_SHADER, VS1);
         const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, FS1);
@@ -122,29 +130,36 @@ class ImageProgram {
         {
             this.loc_uViewMat = getUniformLocationChecked(gl, this.program, 'uViewMat')
             this.uViewMat = new TransformMatrix()
-            this.uViewMat.translate_(0, 0, -2);
+          //this.uViewMat.translate_(0, 0, -2);
+            this.uViewMat.lookAt_(0, 0, 10, 0, 0, 0, 0, 1, 0)
             gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
         }
         {
             this.loc_uProjectionMat = getUniformLocationChecked(gl, this.program, 'uProjectionMat')
             this.uProjectionMat = new TransformMatrix()
-            this.uProjectionMat.frustum_(-1, 1, -1, 1, 1, 3)
+          //this.uProjectionMat.frustum_(-0.5, 0.5, -0.5, 0.5, 0.1, 100)
+          this.uProjectionMat.perspective_(45, 640 / 480, 0.1, 20);
             gl.uniformMatrix4fv(this.loc_uProjectionMat, false, this.uProjectionMat.view())
         }
         {
             this.loc_uInvMat = getUniformLocationChecked(gl, this.program, 'uInvMat')
-            this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
+            this.uInvMat = this.uModelMat.invert()
             gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
         }
         {
             this.loc_uLightDirection = getUniformLocationChecked(gl, this.program, 'uLightDirection')
-            this.uLightDirection = Vec3.from(0, 0, 1)
+            this.uLightDirection = Vec3.from(-0.5, -0.5, 0.5)
             gl.uniform3fv(this.loc_uLightDirection, this.uLightDirection)
         }
         {
             this.loc_uAmbientColor = getUniformLocationChecked(gl, this.program, 'uAmbientColor')
             this.uAmbientColor = Vec4.from(0.1, 0.1, 0.1, 1)
             gl.uniform4fv(this.loc_uAmbientColor, this.uAmbientColor)
+        }
+        {
+            this.loc_uEyeDirection = getUniformLocationChecked(gl, this.program, 'uEyeDirection')
+            this.uEyeDirection = Vec3.from(0, 0, 10)
+            gl.uniform3fv(this.loc_uEyeDirection, this.uEyeDirection)
         }
         const vao = gl.createVertexArray()
         if (vao) {
@@ -227,10 +242,11 @@ class ImageProgram {
     }
     public lookAt(gl: WebGL2RenderingContext, x: number, z: number) {
         gl.useProgram(this.program)
-        this.uViewMat = new TransformMatrix()
-        this.uViewMat.translate_(x, 0, z)
+      //this.uViewMat = new TransformMatrix()
+        this.uViewMat.lookAt_(x, 0, z, x, 0, 0, 0, 1, 0)
+        this.uEyeDirection = Vec3.from(x, 0, z)
+        gl.uniform3fv(this.loc_uEyeDirection, this.uEyeDirection)
         gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
-        this.updateInvMat(gl)
         gl.useProgram(null)
     }
     public withBind(gl: WebGL2RenderingContext, f: Function) {
@@ -250,7 +266,7 @@ class GLApp {
     private uptime: number = 0
     private renderTime: number = 0
     private x: number = 0
-    private z: number = -2
+    private z: number = 10
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
         const context = canvas.getContext('webgl2')
@@ -264,16 +280,16 @@ class GLApp {
             window.onkeydown = e => {
               switch (e.key) {
                 case 'ArrowLeft':
-                  this.x += 0.01
+                  this.x += 1
                   break
                 case 'ArrowRight':
-                  this.x -= 0.01
+                  this.x -= 1
                   break
                 case 'ArrowUp':
-                  this.z += 0.01
+                  this.z += 1
                   break
                 case 'ArrowDown':
-                  this.z -= 0.01
+                  this.z -= 1
                   break
               }
               this.imageProgram.lookAt(this.gl, this.x, this.z)
@@ -348,6 +364,6 @@ window.onload = () => {
     canvas.height = 480
     body.appendChild(canvas)
     let app = new GLApp(canvas);
-    //captureCanvas(canvas, 10 * 1000)
+  //captureCanvas(canvas, 10 * 1000)
     app.mainLoop()
 }
