@@ -5,33 +5,28 @@ const VS1 = `#version 300 es
 uniform mat4 uModelMat;
 uniform mat4 uViewMat;
 uniform mat4 uProjectionMat;
+uniform mat4 uInvMat;
+uniform vec3 uLightDirection;
+uniform vec4 uAmbientColor;
 in vec3 aPos;
 in vec3 aNormal;
-out vec3 vNormal;
+out vec4 vColor;
 void main() {
     mat4 mvpMat = uProjectionMat * uViewMat * uModelMat;
-    vNormal = mat3(mvpMat) * normalize(aNormal);
-    gl_Position = mvpMat * vec4(aPos.xyz, 1);
+    vec3 invLight = normalize(uInvMat * vec4(uLightDirection, 0.0)).xyz;
+    float diffuse = clamp(dot(aNormal, invLight), 0.0, 1.0);
+    vec4 color = vec4(1.0, 0.0, 0.7, 1.0);
+    vColor = color * vec4(vec3(diffuse), 1.0) + uAmbientColor;
+    gl_Position = mvpMat * vec4(aPos, 1);
 }
 `
 
 const FS1 = `#version 300 es
 precision mediump float;
-uniform mat4 uInvMat;
-uniform vec3 uLightDirection;
-uniform vec4 uAmbientColor;
-in vec3 vNormal;
+in vec4 vColor;
 out vec4 FragColor;
 void main() {
-    vec3 normal = normalize(vNormal);
-    vec3 invLight = normalize(uInvMat * vec4(uLightDirection, 0.0)).xyz;
-    
-    float light = dot(normal, invLight);
-    float diffuse = clamp(light, 0.0, 1.0);
-    
-    FragColor = vec4(1.0, 0.0, 0.7, 1.0);
-    FragColor.rgb *= vec3(diffuse);
-    FragColor += uAmbientColor;
+    FragColor = vColor;
 }
 `
 
@@ -89,9 +84,9 @@ function verticesToNormal(vert: number[]) {
         const BC = Vec3.sub(C, B)
         const normal = Vec3.normalize(Vec3.cross(AB, BC))
         for (let k=0; k < 3; ++k) {
-            result[j*9+k*3] = -normal[0]
-            result[j*9+k*3+1] = -normal[1]
-            result[j*9+k*3+2] = -normal[2]
+            result[j*9+k*3] = normal[0]
+            result[j*9+k*3+1] = normal[1]
+            result[j*9+k*3+2] = normal[2]
         }
     }
     return result
@@ -148,7 +143,7 @@ class ImageProgram {
         }
         {
             this.loc_uAmbientColor = getUniformLocationChecked(gl, this.program, 'uAmbientColor')
-            this.uAmbientColor = Vec4.from(0, 0, 0, 1)
+            this.uAmbientColor = Vec4.from(0.1, 0.1, 0.1, 1)
             gl.uniform4fv(this.loc_uAmbientColor, this.uAmbientColor)
         }
         const vao = gl.createVertexArray()
@@ -219,12 +214,15 @@ class ImageProgram {
         ]
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(positions), 0)
     }
+    private updateInvMat(gl: WebGL2RenderingContext) {
+        this.uInvMat = this.uModelMat.invert()
+        gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
+    }
     public rotate(gl: WebGL2RenderingContext, frame: number) {
         gl.useProgram(this.program)
         this.uModelMat.rotate_(frame * 0.01, Vec3.from(1.0, 1.0, 0.0))
         gl.uniformMatrix4fv(this.loc_uModelMat, false, this.uModelMat.view())
-        this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
-        gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
+        this.updateInvMat(gl)
         gl.useProgram(null)
     }
     public lookAt(gl: WebGL2RenderingContext, x: number, z: number) {
@@ -232,8 +230,7 @@ class ImageProgram {
         this.uViewMat = new TransformMatrix()
         this.uViewMat.translate_(x, 0, z)
         gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
-        this.uInvMat = this.uProjectionMat.multiply(this.uViewMat.multiply(this.uModelMat)).invert()
-        gl.uniformMatrix4fv(this.loc_uInvMat, false, this.uInvMat.view())
+        this.updateInvMat(gl)
         gl.useProgram(null)
     }
     public withBind(gl: WebGL2RenderingContext, f: Function) {
