@@ -1,5 +1,5 @@
 
-import {Vec3, TransformMatrix} from './matrix'
+import {Vec3, Vec4, TransformMatrix} from './matrix'
 
 const VS1 = `#version 300 es
 uniform mat4 uModelMat;
@@ -19,6 +19,7 @@ const FS1 = `#version 300 es
 precision mediump float;
 uniform mat4 uInvMat;
 uniform vec3 uLightDirection;
+uniform vec4 uAmbientColor;
 in vec3 vNormal;
 out vec4 FragColor;
 void main() {
@@ -26,10 +27,11 @@ void main() {
     vec3 invLight = normalize(uInvMat * vec4(uLightDirection, 0.0)).xyz;
     
     float light = dot(normal, invLight);
-    float diffuse = clamp(light, 0.1, 1.0);
+    float diffuse = clamp(light, 0.0, 1.0);
     
     FragColor = vec4(1.0, 0.0, 0.7, 1.0);
     FragColor.rgb *= vec3(diffuse);
+    FragColor += uAmbientColor;
 }
 `
 
@@ -76,6 +78,25 @@ function getUniformLocationChecked(gl: WebGL2RenderingContext, program: WebGLPro
     }
 }
 
+function verticesToNormal(vert: number[]) {
+    const result = new Array(vert.length)
+    const numPoly = (vert.length / 3) / 3
+    for (let j=0; j < numPoly; ++j) {
+        const A = Vec3.from(vert[j*9], vert[j*9+1], vert[j*9+2])
+        const B = Vec3.from(vert[j*9+3], vert[j*9+3+1], vert[j*9+3+2])
+        const C = Vec3.from(vert[j*9+6], vert[j*9+6+1], vert[j*9+6+2])
+        const AB = Vec3.sub(B, A)
+        const BC = Vec3.sub(C, B)
+        const normal = Vec3.normalize(Vec3.cross(AB, BC))
+        for (let k=0; k < 3; ++k) {
+            result[j*9+k*3] = -normal[0]
+            result[j*9+k*3+1] = -normal[1]
+            result[j*9+k*3+2] = -normal[2]
+        }
+    }
+    return result
+}
+
 class ImageProgram {
     public program: WebGLProgram
     public vao: WebGLVertexArrayObject
@@ -89,6 +110,8 @@ class ImageProgram {
     private uInvMat: TransformMatrix
     private loc_uLightDirection: WebGLUniformLocation
     private uLightDirection: Float32Array
+    private loc_uAmbientColor: WebGLUniformLocation
+    private uAmbientColor: Float32Array
     constructor(gl: WebGL2RenderingContext) {
         const vertexShader = createShader(gl, gl.VERTEX_SHADER, VS1);
         const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, FS1);
@@ -123,53 +146,62 @@ class ImageProgram {
             this.uLightDirection = Vec3.from(0, 0, 1)
             gl.uniform3fv(this.loc_uLightDirection, this.uLightDirection)
         }
+        {
+            this.loc_uAmbientColor = getUniformLocationChecked(gl, this.program, 'uAmbientColor')
+            this.uAmbientColor = Vec4.from(0, 0, 0, 1)
+            gl.uniform4fv(this.loc_uAmbientColor, this.uAmbientColor)
+        }
         const vao = gl.createVertexArray()
         if (vao) {
             this.vao = vao
             gl.bindVertexArray(this.vao)
 
+            const vert_positions = [
+                -0.5, -0.5, 0,
+                0.5, 0.5, 0,
+                0.5, -0.5, 0,
+                0.5, 0.5, 0,
+                0.5, -0.5, 0.5,
+                0.5, -0.5, 0,
+                -0.5, -0.5, 0,
+                0.5, -0.5, 0.5,
+                0.5, 0.5, 0,
+                -0.5, -0.5, 0,
+                0.5, -0.5, 0,
+                0.5, -0.5, 0.5,
+            ]
             const aPosLoc = gl.getAttribLocation(this.program, 'aPos')
             {
                 const aPosBuf = gl.createBuffer()
                 gl.bindBuffer(gl.ARRAY_BUFFER, aPosBuf)
-                const positions = [
-                    -0.5, -0.5, 0,
-                    0.5, 0.5, 0,
-                    0.5, -0.5, 0,
-                    0.5, 0.5, 0,
-                    0.5, -0.5, 0.5,
-                    0.5, -0.5, 0,
-                    -0.5, -0.5, 0,
-                    0.5, -0.5, 0.5,
-                    0.5, 0.5, 0,
-                    -0.5, -0.5, 0,
-                    0.5, -0.5, 0,
-                    0.5, -0.5, 0.5,
-                ]
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vert_positions), gl.STATIC_DRAW)
                 gl.enableVertexAttribArray(aPosLoc)
                 gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0)
             }
     
+            /*
+            const norm_positions = [
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+            ]
+            */
+            const norm_positions = verticesToNormal(vert_positions)
+            console.log(norm_positions)
             const aNormalLoc = gl.getAttribLocation(this.program, 'aNormal')
             {
                 const aNormalBuf = gl.createBuffer()
                 gl.bindBuffer(gl.ARRAY_BUFFER, aNormalBuf)
-                const positions = [
-                    0, 0, 1,
-                    0, 0, 1,
-                    0, 0, 1,
-                    -1, 0, 0,
-                    -1, 0, 0,
-                    -1, 0, 0,
-                    0.5, -0.5, -0.5,
-                    0.5, -0.5, -0.5,
-                    0.5, -0.5, -0.5,
-                    0, 1, 0,
-                    0, 1, 0,
-                    0, 1, 0,
-                ]
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(norm_positions), gl.STATIC_DRAW)
                 gl.enableVertexAttribArray(aNormalLoc)
                 gl.vertexAttribPointer(aNormalLoc, 3, gl.FLOAT, false, 0, 0)
             }
@@ -319,6 +351,6 @@ window.onload = () => {
     canvas.height = 480
     body.appendChild(canvas)
     let app = new GLApp(canvas);
-    captureCanvas(canvas, 10 * 1000)
+    //captureCanvas(canvas, 10 * 1000)
     app.mainLoop()
 }

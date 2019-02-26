@@ -5,6 +5,36 @@ export class Vec3 {
             x, y, z
         ])
     }
+    public static cross(a: Float32Array, b: Float32Array) {
+        return new Float32Array([
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]
+        ])
+    }
+    public static sub(a: Float32Array, b: Float32Array) {
+        return new Float32Array([
+            a[0] - b[0],
+            a[1] - b[1],
+            a[2] - b[2]
+        ])
+    }
+    public static normalize(a: Float32Array) {
+        const length = Math.pow((a[0] * a[0]) + (a[1] * a[1]) + (a[2] * a[2]), 0.5)
+        return new Float32Array([
+            a[0] / length,
+            a[1] / length,
+            a[2] / length
+        ])
+	}
+}
+
+export class Vec4 {
+    public static from(x: number, y: number, z: number, w: number) {
+        return new Float32Array([
+            x, y, z, w
+        ])
+    }
 }
 
 export class TransformMatrix {
