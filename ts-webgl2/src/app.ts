@@ -1,5 +1,5 @@
 
-import {Vec3, Vec4, TransformMatrix} from './matrix'
+import { Vec3, Vec4, TransformMatrix } from './matrix'
 
 const VS1 = `#version 300 es
 uniform mat4 uModelMat;
@@ -11,6 +11,7 @@ uniform vec3 uEyeDirection;
 uniform vec4 uAmbientColor;
 in vec3 aPos;
 in vec3 aNormal;
+in vec3 aColor;
 out vec4 vColor;
 void main() {
     /*mat4 mvpMat = uProjectionMat * uViewMat * uModelMat;*/
@@ -20,7 +21,8 @@ void main() {
     vec3 halfLE = normalize(invLight + invEye);
     float diffuse = clamp(dot(aNormal, invLight), 0.0, 1.0);
     float specular = pow(clamp(dot(aNormal, halfLE), 0.0, 1.0), 50.0);
-    vec4 color = vec4(1.0, 0.0, 0.7, 1.0);
+    /*vec4 color = vec4(1.0, 0.0, 0.7, 1.0);*/
+    vec4 color = vec4(aColor, 1.0);
     vec4 light = color * vec4(vec3(diffuse), 1.0) + vec4(vec3(specular), 1.0);
     vColor = light + uAmbientColor;
     gl_Position = mvpMat * vec4(aPos, 1);
@@ -80,19 +82,19 @@ function getUniformLocationChecked(gl: WebGL2RenderingContext, program: WebGLPro
 }
 
 function verticesToNormal(vert: number[]) {
-    const result = new Array(vert.length)
-    const numPoly = (vert.length / 3) / 3
-    for (let j=0; j < numPoly; ++j) {
-        const A = Vec3.from(vert[j*9], vert[j*9+1], vert[j*9+2])
-        const B = Vec3.from(vert[j*9+3], vert[j*9+3+1], vert[j*9+3+2])
-        const C = Vec3.from(vert[j*9+6], vert[j*9+6+1], vert[j*9+6+2])
+    const result = new Array(vert.length/2)
+    const numPoly = (vert.length / 6) / 3
+    for (let j = 0; j < numPoly; ++j) {
+        const A = Vec3.from(vert[j * 18], vert[j * 18 + 1], vert[j * 18 + 2])
+        const B = Vec3.from(vert[j * 18 + 3], vert[j * 18 + 3 + 1], vert[j * 18 + 3 + 2])
+        const C = Vec3.from(vert[j * 18 + 6], vert[j * 18 + 6 + 1], vert[j * 18 + 6 + 2])
         const AB = Vec3.sub(B, A)
         const BC = Vec3.sub(C, B)
         const normal = Vec3.normalize(Vec3.cross(AB, BC))
-        for (let k=0; k < 3; ++k) {
-            result[j*9+k*3] = normal[0]
-            result[j*9+k*3+1] = normal[1]
-            result[j*9+k*3+2] = normal[2]
+        for (let k = 0; k < 3; ++k) {
+            result[j * 9 + k * 3] = -normal[0]
+            result[j * 9 + k * 3 + 1] = -normal[1]
+            result[j * 9 + k * 3 + 2] = -normal[2]
         }
     }
     return result
@@ -101,18 +103,27 @@ function verticesToNormal(vert: number[]) {
 class ImageProgram {
     public program: WebGLProgram
     public vao: WebGLVertexArrayObject
+    public vertexCount: number
     private loc_uModelMat: WebGLVertexArrayObject
     private uModelMat: TransformMatrix
+
     private loc_uViewMat: WebGLVertexArrayObject
     private uViewMat: TransformMatrix
+
     private loc_uProjectionMat: WebGLUniformLocation
     private uProjectionMat: TransformMatrix
+
+    private uCameraMat: TransformMatrix
+
     private loc_uInvMat: WebGLUniformLocation
     private uInvMat: TransformMatrix
+
     private loc_uLightDirection: WebGLUniformLocation
     private uLightDirection: Float32Array
+
     private loc_uAmbientColor: WebGLUniformLocation
     private uAmbientColor: Float32Array
+
     private loc_uEyeDirection: WebGLUniformLocation
     private uEyeDirection: Float32Array
     constructor(gl: WebGL2RenderingContext) {
@@ -128,17 +139,26 @@ class ImageProgram {
             gl.uniformMatrix4fv(this.loc_uModelMat, false, this.uModelMat.view())
         }
         {
+            this.uCameraMat = new TransformMatrix()
             this.loc_uViewMat = getUniformLocationChecked(gl, this.program, 'uViewMat')
-            this.uViewMat = new TransformMatrix()
-          //this.uViewMat.translate_(0, 0, -2);
-            this.uViewMat.lookAt_(0, 0, 10, 0, 0, 0, 0, 1, 0)
+            //this.uCameraMat.rotate_(1, Vec3.from(0,0, 1))
+            this.uCameraMat.translate_(0.0, 2.0, 0.0)
+            //this.uCameraMat.rotate_(Math.PI/6, Vec3.from(0, 0, 1))
+            //this.uCameraMat.translate_(0.0, 0.0, 0.5)
+            const cameraPosition = [
+                this.uCameraMat.view()[12],
+                this.uCameraMat.view()[13],
+                this.uCameraMat.view()[14]
+            ]
+            const look = TransformMatrix.lookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2], 0.5, 0.5, 0, 0, 1, 0)
+            this.uViewMat = look.invert()
             gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
         }
         {
             this.loc_uProjectionMat = getUniformLocationChecked(gl, this.program, 'uProjectionMat')
             this.uProjectionMat = new TransformMatrix()
-          //this.uProjectionMat.frustum_(-0.5, 0.5, -0.5, 0.5, 0.1, 100)
-          this.uProjectionMat.perspective_(45, 640 / 480, 0.1, 20);
+            //this.uProjectionMat.frustum_(-0.5, 0.5, -0.5, 0.5, 0.1, 100)
+            this.uProjectionMat.perspective_(45, 640 / 480, 1, 50);
             gl.uniformMatrix4fv(this.loc_uProjectionMat, false, this.uProjectionMat.view())
         }
         {
@@ -148,12 +168,12 @@ class ImageProgram {
         }
         {
             this.loc_uLightDirection = getUniformLocationChecked(gl, this.program, 'uLightDirection')
-            this.uLightDirection = Vec3.from(-0.5, -0.5, 0.5)
+            this.uLightDirection = Vec3.from(0, 1, 1)
             gl.uniform3fv(this.loc_uLightDirection, this.uLightDirection)
         }
         {
             this.loc_uAmbientColor = getUniformLocationChecked(gl, this.program, 'uAmbientColor')
-            this.uAmbientColor = Vec4.from(0.1, 0.1, 0.1, 1)
+            this.uAmbientColor = Vec4.from(0.2, 0.2, 0.2, 1)
             gl.uniform4fv(this.loc_uAmbientColor, this.uAmbientColor)
         }
         {
@@ -167,28 +187,71 @@ class ImageProgram {
             gl.bindVertexArray(this.vao)
 
             const vert_positions = [
-                -0.5, -0.5, 0,
-                0.5, 0.5, 0,
-                0.5, -0.5, 0,
-                0.5, 0.5, 0,
-                0.5, -0.5, 0.5,
-                0.5, -0.5, 0,
-                -0.5, -0.5, 0,
-                0.5, -0.5, 0.5,
-                0.5, 0.5, 0,
-                -0.5, -0.5, 0,
-                0.5, -0.5, 0,
-                0.5, -0.5, 0.5,
+
+                -10.0, -0.0, -10.0, 1.0, 0.0, 0.0,
+                10.0, -0.0, -10.0,  0.0, 1.0, 0.0,
+                -10.0, -0.0, 10.0,  0.0, 0.0, 1.0,
+
+                    -10.0, -0.0, -10.0, 1.0, 0.0, 0.0,
+                    -10.0, -0.0, 10.0,  0.0, 1.0, 0.0,
+                    10.0, -0.0, -10.0,  0.0, 0.0, 1.0,
+
+                10.0, -0.0, -10.0,  1.0, 0.0, 0.0,
+                10.0, -0.0, 10.0,   0.0, 1.0, 0.0,
+                -10.0, -0.0, 10.0,  0.0, 0.0, 1.0,
+
+                    10.0, -0.0, -10.0,  1.0, 0.0, 0.0,
+                    -10.0, -0.0, 10.0,  0.0, 1.0, 0.0,
+                    10.0, -0.0, 10.0,   0.0, 0.0, 1.0,
+
+
+                -5, -5, 0,  1.0, 0.0, 0.0,
+                5, 5, 0,    0.0, 1.0, 0.0,
+                5, -5, 0,   0.0, 0.0, 1.0,
+
+                5, 5, 0,   1.0, 0.0, 0.0,
+                5, -5, 5,  0.0, 1.0, 0.0,
+                5, -5, 0,  0.0, 0.0, 1.0,
+
+                -5, -5, 0,  1.0, 0.0, 0.0,
+                5, -5, 5,   0.0, 1.0, 0.0,
+                5, 5, 0,    0.0, 0.0, 1.0,
+
+                -5, -5, 0,  1.0, 0.0, 0.0,
+                5, -5, 0,   0.0, 1.0, 0.0,
+                5, -5, 5,   0.0, 0.0, 1.0,
+
+                /*
+                0.7, 0.7, 0.7,
+                1.0, 1.0, 0.7,
+                1.0, 0.7, 0.7,
+
+                1.0, 1.0, 0.7,
+                1.0, 0.7, 1.0,
+                1.0, 0.7, 0.7,
+
+                0.7, 0.7, 0.7,
+                1.0, 0.7, 1.0,
+                1.0, 1.0, 0.7,
+
+                0.7, 0.7, 0.7,
+                1.0, 0.7, 0.7,
+                1.0, 0.7, 1.0,
+                */
             ]
+            this.vertexCount = vert_positions.length / 6
             const aPosLoc = gl.getAttribLocation(this.program, 'aPos')
+            const aColorLoc = gl.getAttribLocation(this.program, 'aColor')
             {
                 const aPosBuf = gl.createBuffer()
                 gl.bindBuffer(gl.ARRAY_BUFFER, aPosBuf)
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vert_positions), gl.STATIC_DRAW)
                 gl.enableVertexAttribArray(aPosLoc)
-                gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0)
+                gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 24, 0)
+                gl.enableVertexAttribArray(aColorLoc)
+                gl.vertexAttribPointer(aColorLoc, 3, gl.FLOAT, false, 24, 12)
             }
-    
+
             /*
             const norm_positions = [
                 0, 0, 1,
@@ -220,12 +283,20 @@ class ImageProgram {
         }
         gl.useProgram(null)
     }
+    public info(elem: HTMLDivElement) {
+        const cameraPosition = [
+            this.uCameraMat.view()[12],
+            this.uCameraMat.view()[13],
+            this.uCameraMat.view()[14]
+        ]
+        elem.innerHTML = cameraPosition.toString()
+    }
     public rect(gl: WebGL2RenderingContext, x: number, y: number, width: number, height: number) {
         const positions = [
             x, y,
-            x+width, y,
-            x, y+height,
-            x+width, y+height,
+            x + width, y,
+            x, y + height,
+            x + width, y + height,
         ]
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(positions), 0)
     }
@@ -240,12 +311,22 @@ class ImageProgram {
         this.updateInvMat(gl)
         gl.useProgram(null)
     }
-    public lookAt(gl: WebGL2RenderingContext, x: number, z: number) {
+    public translate(gl: WebGL2RenderingContext, frame: number) {
         gl.useProgram(this.program)
-      //this.uViewMat = new TransformMatrix()
-        this.uViewMat.lookAt_(x, 0, z, x, 0, 0, 0, 1, 0)
-        this.uEyeDirection = Vec3.from(x, 0, z)
-        gl.uniform3fv(this.loc_uEyeDirection, this.uEyeDirection)
+        this.uCameraMat = new TransformMatrix()
+        this.uCameraMat.translate_(Math.sin(frame), -Math.cos(frame), 0.0)
+        //this.uCameraMat.rotate_(frame*Math.PI, Vec3.from(0, 1, 0))
+        //this.uCameraMat.translate_(Math.sin(frame)*6-5, 0, 2.5)
+        const cameraPosition = [
+            this.uCameraMat.view()[12],
+            this.uCameraMat.view()[13],
+            this.uCameraMat.view()[14]
+        ]
+        const look = TransformMatrix.lookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2], -2.5, 0, -1, 0, 1, 0)
+        this.uViewMat = look.invert()
+        //this.uViewMat = this.uCameraMat.invert()
+        //this.uViewMat = TransformMatrix.lookAt(2, 10, Math.cos(frame)*5, 0, 0, 0, 0, 1, 0).invert()
+        //this.uViewMat = new TransformMatrix()
         gl.uniformMatrix4fv(this.loc_uViewMat, false, this.uViewMat.view())
         gl.useProgram(null)
     }
@@ -260,6 +341,7 @@ class ImageProgram {
 
 class GLApp {
     private canvas: HTMLCanvasElement
+    private info: HTMLDivElement
     private gl: WebGL2RenderingContext
     private imageProgram: ImageProgram
     static initTime: number = Date.now()
@@ -267,8 +349,9 @@ class GLApp {
     private renderTime: number = 0
     private x: number = 0
     private z: number = 10
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, info: HTMLDivElement) {
         this.canvas = canvas
+        this.info = info
         const context = canvas.getContext('webgl2')
         if (context) {
             this.gl = context
@@ -278,21 +361,21 @@ class GLApp {
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.CULL_FACE);
             window.onkeydown = e => {
-              switch (e.key) {
-                case 'ArrowLeft':
-                  this.x += 1
-                  break
-                case 'ArrowRight':
-                  this.x -= 1
-                  break
-                case 'ArrowUp':
-                  this.z += 1
-                  break
-                case 'ArrowDown':
-                  this.z -= 1
-                  break
-              }
-              this.imageProgram.lookAt(this.gl, this.x, this.z)
+                switch (e.key) {
+                    case 'ArrowLeft':
+                        this.x += 1
+                        break
+                    case 'ArrowRight':
+                        this.x -= 1
+                        break
+                    case 'ArrowUp':
+                        this.z += 1
+                        break
+                    case 'ArrowDown':
+                        this.z -= 1
+                        break
+                }
+                //this.imageProgram.lookAt(this.gl, this.x, this.z)
             }
         } else {
             throw new Error('WebGL2 has not been supported!')
@@ -304,23 +387,24 @@ class GLApp {
     private render() {
         const gl = this.gl
         gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-        gl.clearColor(0, 0, 0, 1)
+        gl.clearColor(1, 1, 1, 1)
         gl.clearDepth(1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         this.imageProgram.withBind(gl, () => {
-            const x = Math.sin(this.uptime/1000)
-            const y = Math.cos(this.uptime/1000)
+            const x = Math.sin(this.uptime / 1000)
+            const y = Math.cos(this.uptime / 1000)
             //this.imageProgram.rect(gl, x, y, x+0.5, y+0.5)
-            gl.drawArrays(gl.TRIANGLES, 0, 12)
+            gl.drawArrays(gl.TRIANGLES, 0, this.imageProgram.vertexCount)
         })
-
-        this.imageProgram.rotate(this.gl, (Date.now()-this.renderTime)/10)
+        this.imageProgram.info(this.info)
+        //this.imageProgram.rotate(this.gl, (Date.now()-this.renderTime)/10)
+        this.imageProgram.translate(this.gl, this.uptime / 5000)
         this.renderTime = Date.now()
     }
     public mainLoop() {
         this.update()
-        if (Date.now() - this.renderTime > 1000/60) {
+        if (Date.now() - this.renderTime > 1000 / 60) {
             this.render()
         }
         requestAnimationFrame(this.mainLoop.bind(this))
@@ -332,7 +416,7 @@ interface CapturableHTMLCanvasElement extends HTMLCanvasElement {
 }
 
 function captureCanvas(canvas: HTMLCanvasElement, time: number) {
-    const stream = (<CapturableHTMLCanvasElement> canvas).captureStream()
+    const stream = (<CapturableHTMLCanvasElement>canvas).captureStream()
     const recorder = new MediaRecorder(stream)
     let chunks: BlobPart[] = []
     console.log(stream)
@@ -342,7 +426,7 @@ function captureCanvas(canvas: HTMLCanvasElement, time: number) {
         console.log(be)
     })
     recorder.addEventListener('stop', () => {
-        const blob = new Blob(chunks, {type: 'video/webm'});
+        const blob = new Blob(chunks, { type: 'video/webm' });
         const e: HTMLVideoElement = document.createElement('video')
         console.log(blob)
         const anchor = document.createElement('a')
@@ -351,7 +435,7 @@ function captureCanvas(canvas: HTMLCanvasElement, time: number) {
         anchor.download = `canvas_${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}_${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}.webm`
         anchor.click()
     })
-    recorder.start(1000/40)
+    recorder.start(1000 / 40)
     setTimeout(() => {
         recorder.stop();
     }, time)
@@ -360,10 +444,11 @@ function captureCanvas(canvas: HTMLCanvasElement, time: number) {
 window.onload = () => {
     let body = document.body
     let canvas = document.createElement('canvas')
+    let info = document.getElementById('info') as HTMLDivElement
     canvas.width = 640
     canvas.height = 480
     body.appendChild(canvas)
-    let app = new GLApp(canvas);
-  //captureCanvas(canvas, 10 * 1000)
+    let app = new GLApp(canvas, info);
+    //captureCanvas(canvas, 30 * 1000)
     app.mainLoop()
 }

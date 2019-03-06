@@ -138,7 +138,7 @@ export class TransformMatrix {
         this.raw[15]= 0
     }
 
-    public lookAt_(ex: number, ey: number, ez: number, tx: number, ty: number, tz: number, ux: number, uy: number, uz: number) {
+    public static lookAt(ex: number, ey: number, ez: number, tx: number, ty: number, tz: number, ux: number, uy: number, uz: number) {
         const out = new Float32Array(16)
         let z0 = ex - tx, z1 = ey - ty, z2 = ez - tz
         let len = 1 / Math.sqrt(z0*z0+z1*z1+z2*z2)
@@ -189,7 +189,7 @@ export class TransformMatrix {
         out[13] = -(y0 * ex + y1 * ey + y2 * ez)
         out[14] = -(z0 * ex + z1 * ey + z2 * ez)
         out[15] = 1
-        return out
+        return new TransformMatrix(out)
     }
 
     public translate_(x: number, y: number, z: number) {
