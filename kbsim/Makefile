@@ -1,9 +1,11 @@
 
-all: index.js
+TARGET=kbsim.wasm
 
-index.js: src/*.rs
+all: $(TARGET)
+
+$(TARGET): $(wildcard src/*.rs)
 	cargo +nightly build --target wasm32-unknown-unknown
-	wasm-bindgen target/wasm32-unknown-unknown/debug/kbsim.wasm --out-dir .
+	wasm-bindgen target/wasm32-unknown-unknown/debug/$(TARGET) --out-dir .
 
 serve:
 	npm run serve
