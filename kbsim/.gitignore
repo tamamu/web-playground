@@ -1,6 +1,7 @@
-*.js
-!./index.js
-*.ts
+/*.js
+!/index.js
+!/webpack.config.js
+/*.ts
 *.wasm
 target/
 node_modules/
