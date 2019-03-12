@@ -56,12 +56,48 @@ fn update_canvas(canvas: &web_sys::HtmlCanvasElement, editor: &Editor) -> Result
     Ok(())
 }
 
-fn create_draggable(text: &str) -> Result<web_sys::Element, JsValue> {
+fn create_draggable(text: &str) -> Result<web_sys::HtmlElement, JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
-    let div = document.create_element("div").unwrap();
+    let div = document.create_element("div").unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .map_err(|_| ())
+        .unwrap();
     div.set_attribute("draggable", "true")?;
     div.set_inner_html(text);
     Ok(div)
+}
+
+fn create_key_container() -> Result<web_sys::HtmlElement, JsValue> {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let div = document.create_element("div").unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .map_err(|_| ())
+        .unwrap();
+    div.set_id("key_container");
+    div.style().set_property("width", "600px").unwrap();
+    Ok(div)
+}
+
+fn create_style(decl: &str) -> Result<web_sys::HtmlStyleElement, JsValue> {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let style = document.create_element("style").unwrap()
+        .dyn_into::<web_sys::HtmlStyleElement>()
+        .map_err(|_| ())
+        .unwrap();
+    style.set_inner_html(decl);
+    Ok(style)
+}
+
+
+fn apply_style_keytop(elem: &web_sys::HtmlElement) {
+    elem.style().set_property("display", "inline-block").unwrap();
+    elem.style().set_property("width", "36px").unwrap();
+    elem.style().set_property("height", "32px").unwrap();
+    elem.style().set_property("margin", "0px 4px").unwrap();
+    elem.style().set_property("padding-bottom", "6px").unwrap();
+    elem.style().set_property("border", "1px solid black").unwrap();
+    elem.style().set_property("border-radius", "6px").unwrap();
+    elem.style().set_property("text-transform", "uppercase").unwrap();
 }
 
 #[derive(Clone)]
@@ -100,16 +136,29 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
+    let style = create_style("
+        #key_container div:nth-child(5) div {
+            width: 100%;
+        }
+    ")?;
     let canvas = create_canvas()?;
+    let key_container = create_key_container()?;
+    body.append_child(&style)?;
     body.append_child(&canvas)?;
-    let draggable = create_draggable("q")?;
-    body.append_child(&draggable)?;
+    body.append_child(&key_container)?;
 /*
     let context = canvas
         .get_context("2d")?
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
 */
+    let keyorder = vec![
+        vec!["1","2","3","4","5","6","7","8","9","0","[","]","¥"],
+        vec!["'",",",".","p","y","f","g","c","r","l","/","="],
+        vec!["a","o","e","u","i","d","h","t","n","s","-","\\"],
+        vec![";","q","j","k","x","b","m","w","v","z","`"],
+        vec![" "]
+    ];
     let keymap: HashMap<String, String> = [
         ("1","1"),("2","2"),("3","3"),("4","4"),("5","5"),("6","6"),("7","7"),("8","8"),("9","9"),("0","0"),("[","-"),("]","^"),("¥","\\"),
         ("'","q"),(",","w"),(".","e"),("p","r"),("y","t"),("f","y"),("g","u"),("c","i"),("r","o"),("l","p"),("/","@"),("=","["),
@@ -118,77 +167,105 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
         (" "," ")
     ].iter().map(|(a, b)| (a.to_string(), b.to_string())).collect();
 
+    let keytops: HashMap<String, web_sys::HtmlElement> = keymap.keys()
+        .map(|k| (k.clone(), create_draggable(&k).unwrap())).collect();
+    for line in keyorder {
+        let kline = document.create_element("div").unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .map_err(|_| ())
+            .unwrap();
+        for key in line.iter() {
+            let draggable = keytops.get(*key).unwrap();
+            apply_style_keytop(draggable);
+            kline.append_child(&draggable)?;
+        }
+        key_container.append_child(&kline)?;
+    }
+
     let editor = Editor {
         text: "Push any key to type text".to_string(),
         caret_position: CaretPosition {row: 0, col: 0}
         };
 
     let drag_src_element: Option<Box<web_sys::HtmlElement>> = None;
-    
-    let dse1 = Rc::new(RefCell::new(drag_src_element));
-    let dse2 = dse1.clone();
-    {
-        let closure = closure!(move |ev: web_sys::DragEvent| {
-            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            target.style().set_property("opacity", "0.4").unwrap();
-            web_sys::console::log_1(&ev.target().unwrap());
-            let dt = ev.data_transfer().unwrap();
-            dt.set_effect_allowed("move");
-            dt.set_data("text/html", &target.inner_html()).unwrap();
-            *dse1.borrow_mut() = Some(Box::new(target));
-            web_sys::console::log_1(&dt);
-        });
-        draggable.add_event_listener_with_callback("dragstart", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-    {
-        let closure = closure!(move |ev: web_sys::DragEvent| {
-            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            target.style().set_property("opacity", "1.0").unwrap();
-            web_sys::console::log_1(&ev);
-            console_log!("dragend");
-        });
-        draggable.add_event_listener_with_callback("dragend", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-    {
-        let closure = closure!(move |ev: web_sys::DragEvent| {
-            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            target.style().set_property("transform", "scale(0.8)").unwrap();
-            web_sys::console::log_1(&ev.target().unwrap());
-        });
-        draggable.add_event_listener_with_callback("dragenter", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-    {
-        let closure = closure!(move |ev: web_sys::DragEvent| {
-            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            target.style().set_property("transform", "scale(1.0)").unwrap();
-            web_sys::console::log_1(&ev);
-        });
-        draggable.add_event_listener_with_callback("dragleave", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-    {
-        let closure = closure!(move |ev: web_sys::DragEvent| {
-            let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            let dt = ev.data_transfer().unwrap();
-            ev.stop_propagation();
-            ev.prevent_default();
-            console_log!("drop");
-            web_sys::console::log_1(&dt);
-            match dse2.borrow().as_ref() {
-                Some(elem) => {
-                    if !elem.is_same_node(Some(&target)) {
-                        elem.set_inner_html(&target.inner_html());
-                        target.set_inner_html(&dt.get_data("text/html").unwrap());
+    let dse = Rc::new(RefCell::new(drag_src_element));
+
+    for draggable in keytops.values() {
+        let dse1 = dse.clone();
+        let dse2 = dse.clone();
+        {
+            let closure = closure!(move |ev: web_sys::DragEvent| {
+                let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+                target.style().set_property("opacity", "0.4").unwrap();
+                web_sys::console::log_1(&ev.target().unwrap());
+                let dt = ev.data_transfer().unwrap();
+                dt.set_effect_allowed("move");
+                dt.set_data("text/html", &target.inner_html()).unwrap();
+                *dse1.borrow_mut() = Some(Box::new(target));
+                web_sys::console::log_1(&dt);
+                web_sys::console::log_1(&JsValue::from_str(&dt.get_data("text/html").unwrap()));
+            });
+            draggable.add_event_listener_with_callback("dragstart", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+        {
+            let closure = closure!(move |ev: web_sys::DragEvent| {
+                let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+                target.style().set_property("opacity", "1.0").unwrap();
+                web_sys::console::log_1(&ev);
+                console_log!("dragend");
+            });
+            draggable.add_event_listener_with_callback("dragend", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+        {
+            let closure = closure!(move |ev: web_sys::DragEvent| {
+                let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+                target.style().set_property("border", "1px solid red").unwrap();
+                web_sys::console::log_1(&ev.target().unwrap());
+            });
+            draggable.add_event_listener_with_callback("dragenter", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+        {
+            let closure = closure!(move |ev: web_sys::DragEvent| {
+                ev.prevent_default();
+            });
+            draggable.add_event_listener_with_callback("dragover", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+        {
+            let closure = closure!(move |ev: web_sys::DragEvent| {
+                let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+                target.style().set_property("border", "1px solid black").unwrap();
+                web_sys::console::log_1(&ev);
+            });
+            draggable.add_event_listener_with_callback("dragleave", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+        {
+            let closure = closure!(move |ev: web_sys::DragEvent| {
+                let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+                let dt = ev.data_transfer().unwrap();
+                ev.stop_propagation();
+                ev.prevent_default();
+                console_log!("drop");
+                web_sys::console::log_1(&dt);
+                match dse2.borrow().as_ref() {
+                    Some(elem) => {
+                        if !elem.is_same_node(Some(&target)) {
+                            console_log!("swap");
+                            elem.set_inner_html(&target.inner_html());
+                            target.set_inner_html(&dt.get_data("text/html").unwrap());
+                            target.style().set_property("border", "1px solid black").unwrap();
+                        }
                     }
-                }
-                _ => {}
-            };
-        });
-        draggable.add_event_listener_with_callback("drop", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+                    _ => {}
+                };
+            });
+            draggable.add_event_listener_with_callback("drop", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
     }
 
     let mut editor = Rc::new(editor);

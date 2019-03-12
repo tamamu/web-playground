@@ -18,6 +18,7 @@ features = [
     'Element',
     'EventTarget',
     'HtmlElement',
+    'HtmlStyleElement',
     'MouseEvent',
     'KeyboardEvent',
     'Node',
