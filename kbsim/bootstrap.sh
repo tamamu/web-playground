@@ -43,14 +43,17 @@ else
 fi
 
 if [ `which cargo` ]; then
-  put_proc "Download wasm-bindgen tools"
-  cargo +nightly install wasm-bindgen-cli
-  if [ $? = 0 ]; then
-    put_comp "Installed wasm-bindgen-cli"
-  else
-    put_fail "Failed to install wasm-bindgen-cli"
-    exit 1
+  if [ ! `which wasm-bindgen` ]; then
+    put_proc "Download wasm-bindgen tools"
+    cargo +nightly install wasm-bindgen-cli
+    if [ $? = 0 ]; then
+      put_comp "Installed wasm-bindgen-cli"
+    else
+      put_fail "Failed to install wasm-bindgen-cli"
+      exit 1
+    fi
   fi
+  put_comp "Installed wasm-bindgen-cli"
 else
   put_fail "Not found command: cargo"
   echo 'Check your $PATH'
