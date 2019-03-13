@@ -63,6 +63,7 @@ fn create_draggable(text: &str) -> Result<web_sys::HtmlElement, JsValue> {
         .map_err(|_| ())
         .unwrap();
     div.set_attribute("draggable", "true")?;
+    div.set_attribute("data-key", text)?;
     div.set_inner_html(text);
     Ok(div)
 }
@@ -98,6 +99,19 @@ fn apply_style_keytop(elem: &web_sys::HtmlElement) {
     elem.style().set_property("border", "1px solid black").unwrap();
     elem.style().set_property("border-radius", "6px").unwrap();
     elem.style().set_property("text-transform", "uppercase").unwrap();
+}
+
+use std::cell::RefMut;
+fn swap_key(mut km: RefMut<HashMap<String, String>>, key1: &web_sys::HtmlElement, key2: &web_sys::HtmlElement) {
+    let key1_top = key1.inner_html();
+    let key2_top = key2.inner_html();
+    let key1_btn = key1.get_attribute("data-key").unwrap();
+    let key2_btn = key2.get_attribute("data-key").unwrap();
+    console_log!("{}(key:{}) <=> {}(key:{})", key1_top, key1_btn, key2_top, key2_btn);
+    key1.set_inner_html(&key2_top);
+    key2.set_inner_html(&key1_top);
+    km.insert(key1_btn, key2_top);
+    km.insert(key2_btn, key1_top);
 }
 
 #[derive(Clone)]
@@ -152,13 +166,14 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
 */
-    let keyorder = vec![
-        vec!["1","2","3","4","5","6","7","8","9","0","[","]","¥"],
-        vec!["'",",",".","p","y","f","g","c","r","l","/","="],
-        vec!["a","o","e","u","i","d","h","t","n","s","-","\\"],
-        vec![";","q","j","k","x","b","m","w","v","z","`"],
+    let keyboard_model = vec![
+        vec!["1","2","3","4","5","6","7","8","9","0","[","]"],
+        vec!["'",",",".","p","y","f","g","c","r","l","/","=", "\\"],
+        vec!["a","o","e","u","i","d","h","t","n","s","-"],
+        vec![";","q","j","k","x","b","m","w","v","z"],
         vec![" "]
     ];
+    /*
     let keymap: HashMap<String, String> = [
         ("1","1"),("2","2"),("3","3"),("4","4"),("5","5"),("6","6"),("7","7"),("8","8"),("9","9"),("0","0"),("[","-"),("]","^"),("¥","\\"),
         ("'","q"),(",","w"),(".","e"),("p","r"),("y","t"),("f","y"),("g","u"),("c","i"),("r","o"),("l","p"),("/","@"),("=","["),
@@ -166,10 +181,12 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
         (";","z"),("q","x"),("j","c"),("k","v"),("x","b"),("b","n"),("m","m"),("w",","),("v","."),("z","/"),("`","_"),
         (" "," ")
     ].iter().map(|(a, b)| (a.to_string(), b.to_string())).collect();
-
+    */
+    let keymap: HashMap<String, String> = keyboard_model
+        .iter().flat_map(|v|v.iter().map(|k| (k.to_string(), k.to_string()))).collect();
     let keytops: HashMap<String, web_sys::HtmlElement> = keymap.keys()
         .map(|k| (k.clone(), create_draggable(&k).unwrap())).collect();
-    for line in keyorder {
+    for line in keyboard_model {
         let kline = document.create_element("div").unwrap()
             .dyn_into::<web_sys::HtmlElement>()
             .map_err(|_| ())
@@ -189,6 +206,8 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
 
     let drag_src_element: Option<Box<web_sys::HtmlElement>> = None;
     let dse = Rc::new(RefCell::new(drag_src_element));
+
+    let km = Rc::new(RefCell::new(keymap));
 
     for draggable in keytops.values() {
         let dse1 = dse.clone();
@@ -243,6 +262,7 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
             draggable.add_event_listener_with_callback("dragleave", closure.as_ref().unchecked_ref())?;
             closure.forget();
         }
+        let km1 = km.clone();
         {
             let closure = closure!(move |ev: web_sys::DragEvent| {
                 let target = ev.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
@@ -254,9 +274,7 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
                 match dse2.borrow().as_ref() {
                     Some(elem) => {
                         if !elem.is_same_node(Some(&target)) {
-                            console_log!("swap");
-                            elem.set_inner_html(&target.inner_html());
-                            target.set_inner_html(&dt.get_data("text/html").unwrap());
+                            swap_key(km1.borrow_mut(), &elem, &target);
                             target.style().set_property("border", "1px solid black").unwrap();
                         }
                     }
@@ -270,6 +288,7 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
 
     let mut editor = Rc::new(editor);
     let canvas = Rc::new(canvas);
+    let km1 = km.clone();
     {
         let closure = closure!(move |ev: web_sys::KeyboardEvent| {
             let key = ev.key();
@@ -285,7 +304,7 @@ pub fn greet(name: &str) -> Result<(), JsValue> {
                     make_mut!(editor).move_right();
                 }
                 _ => {
-                    keymap.get(&ev.key()).map_or_else(
+                    km1.borrow().get(&ev.key()).map_or_else(
                         || web_sys::console::log_1(&ev),
                         |k| make_mut!(editor).insert_str(k));
                 }
