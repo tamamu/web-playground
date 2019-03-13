@@ -48,9 +48,9 @@ fn update_canvas(canvas: &web_sys::HtmlCanvasElement, editor: &Editor) -> Result
     context.fill_rect(0.0, 0.0, width, height);
     context.set_text_baseline("top");
     context.set_fill_style(&JsValue::from_str("white"));
-    context.set_font("20px monospace");
+    context.set_font("32px monospace");
     for (i, line) in editor.text.lines().enumerate() {
-        context.fill_text(line, 8.0, 8.0+20.0*i as f64)?;
+        context.fill_text(line, 8.0, 8.0+32.0*i as f64)?;
     }
     let mut last_head = 0usize;
     let mut row = 0;
@@ -71,7 +71,7 @@ fn update_canvas(canvas: &web_sys::HtmlCanvasElement, editor: &Editor) -> Result
     }
     context.set_fill_style(&JsValue::from_str("rgba(25, 255, 25, 0.8)"));
     //let lpad = context.measure_text(&editor.text[0..(editor.caret_position.col as usize)])?.width();
-    context.fill_rect(8.0+lpad, 8.0+20.0*row as f64, 2.0, 20.0);
+    context.fill_rect(8.0+lpad, 8.0+32.0*row as f64, 2.0, 32.0);
     Ok(())
 }
 
