@@ -1,5 +1,3 @@
-*.js
-!./index.js
 *.ts
 *.wasm
 target/
