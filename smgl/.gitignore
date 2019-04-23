@@ -1,0 +1,8 @@
+*.js
+!./index.js
+*.ts
+*.wasm
+target/
+node_modules/
+Cargo.lock
+package-lock.json
